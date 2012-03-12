@@ -140,7 +140,7 @@ static void test_TATXStat_avgElapsedTime()
   expectedtv.tv_sec = 1;
   expectedtv.tv_usec = 0;
   twentymsectv.tv_sec = 0;
-  twentymsectv.tv_usec = 1000;
+  twentymsectv.tv_usec = 20000;
 
   timersub(&avgelatv, &expectedtv, &difftv);
 
@@ -151,7 +151,7 @@ static void test_TATXStat_tps()
 {
   double tps = TATXStat_tps(tatxstat);
 
-  mu_assert((1.0 - 0.001) < tps && tps < (1.0 + 0.001));
+  mu_assert(1 / (1.0 + 0.02) < tps && tps < 1 / (1.0 - 0.02));
 }
 
 static void test_TATXStat_deepCopy()
