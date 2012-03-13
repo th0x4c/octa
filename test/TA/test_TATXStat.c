@@ -88,28 +88,28 @@ static void test_TATXStat_count()
 
 static void test_TATXStat_totalElapsedTime()
 {
-  struct timeval totalelatv, difftv, expectedtv, twentymsectv, withinmsectv;
+  struct timeval totalelatv, difftv, expectedtv, tenmsectv, withinmsectv;
   int i = 0;
 
   timerclear(&totalelatv);
   timerclear(&difftv);
   timerclear(&expectedtv);
-  timerclear(&twentymsectv);
+  timerclear(&tenmsectv);
   timerclear(&withinmsectv);
 
   totalelatv = TATXStat_totalElapsedTime(tatxstat);
   expectedtv.tv_sec = TEST_COUNT;
   expectedtv.tv_usec = 0;
-  twentymsectv.tv_sec = 0;
-  twentymsectv.tv_usec = 20000;
+  tenmsectv.tv_sec = 0;
+  tenmsectv.tv_usec = 10000; /* 10ms */
   for (i = 0; i < TEST_COUNT; i++)
   {
-    timeradd(&withinmsectv, &twentymsectv, &withinmsectv);
+    timeradd(&withinmsectv, &tenmsectv, &withinmsectv);
   }
 
   timersub(&totalelatv, &expectedtv, &difftv);
 
-  mu_assert(timercmp(&difftv, &twentymsectv, <));
+  mu_assert(timercmp(&difftv, &withinmsectv, <));
 }
 
 static void test_TATXStat_errorCount()
@@ -129,29 +129,29 @@ static void test_TATXStat_errorMessage()
 
 static void test_TATXStat_avgElapsedTime()
 {
-  struct timeval avgelatv, difftv, expectedtv, twentymsectv;
+  struct timeval avgelatv, difftv, expectedtv, tenmsectv;
 
   timerclear(&avgelatv);
   timerclear(&difftv);
   timerclear(&expectedtv);
-  timerclear(&twentymsectv);
+  timerclear(&tenmsectv);
 
   avgelatv = TATXStat_avgElapsedTime(tatxstat);
   expectedtv.tv_sec = 1;
   expectedtv.tv_usec = 0;
-  twentymsectv.tv_sec = 0;
-  twentymsectv.tv_usec = 20000;
+  tenmsectv.tv_sec = 0;
+  tenmsectv.tv_usec = 10000; /* 10ms */
 
   timersub(&avgelatv, &expectedtv, &difftv);
 
-  mu_assert(timercmp(&difftv, &twentymsectv, <));
+  mu_assert(timercmp(&difftv, &tenmsectv, <));
 }
 
 static void test_TATXStat_tps()
 {
   double tps = TATXStat_tps(tatxstat);
 
-  mu_assert(1 / (1.0 + 0.02) < tps && tps < 1 / (1.0 - 0.02));
+  mu_assert(1 / (1.0 + 0.01) < tps && tps < 1 / (1.0 - 0.01));
 }
 
 static void test_TATXStat_deepCopy()
