@@ -355,6 +355,7 @@ TATXStat TASession_currentStatByName(TASession self, const char *tx_name)
 
 int TASession_main(TASession self, void **inout)
 {
+  TATXStat txstat = NULL;
   int tx_idx = INVALID_INDEX;
   int error_code = 0;
 #define MAX_MSG_SIZE 256
@@ -429,17 +430,19 @@ int TASession_main(TASession self, void **inout)
       self->phase = TASession_BEFORE;
       if (self->beforeTXs[tx_idx])
       {
-        TATXStat_start(self->tx_stats[tx_idx][self->period][self->phase]);
+        txstat = self->tx_stats[tx_idx][self->period][self->phase];
+        TATXStat_start(txstat);
         self->beforeTXs[tx_idx](self, inout);
-        TATXStat_end(self->tx_stats[tx_idx][self->period][self->phase]);
+        TATXStat_end(txstat);
       }
 
       self->phase = TASession_TX;
       if (self->TXs[tx_idx])
       {
-        TATXStat_start(self->tx_stats[tx_idx][self->period][self->phase]);
+        txstat = self->tx_stats[tx_idx][self->period][self->phase];
+        TATXStat_start(txstat);
         error_code = self->TXs[tx_idx](self, inout);
-        TATXStat_end(self->tx_stats[tx_idx][self->period][self->phase]);
+        TATXStat_end(txstat);
       }
       if (error_code)
       {
@@ -450,8 +453,7 @@ int TASession_main(TASession self, void **inout)
                                       MAX_MSG_SIZE);
           error_message[MAX_MSG_SIZE - 1] = '\0';
         }
-        TATXStat_setError(self->tx_stats[tx_idx][self->period][self->phase],
-                          error_code, error_message);
+        TATXStat_setError(txstat, error_code, error_message);
         if (strcmp(error_message, "") != 0)
           TALog_error(self->log, error_message);
       }
@@ -459,9 +461,10 @@ int TASession_main(TASession self, void **inout)
       self->phase = TASession_AFTER;
       if (self->afterTXs[tx_idx])
       {
-        TATXStat_start(self->tx_stats[tx_idx][self->period][self->phase]);
+        txstat = self->tx_stats[tx_idx][self->period][self->phase];
+        TATXStat_start(txstat);
         self->afterTXs[tx_idx](self, inout);
-        TATXStat_end(self->tx_stats[tx_idx][self->period][self->phase]);
+        TATXStat_end(txstat);
       }
       break;
     default:
