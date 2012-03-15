@@ -4174,7 +4174,7 @@ fi
 done
 
 
-ac_config_files="$ac_config_files Makefile src/Makefile src/TA/Makefile test/Makefile test/TA/Makefile"
+ac_config_files="$ac_config_files Makefile src/Makefile src/TA/Makefile src/OC/Makefile test/Makefile test/TA/Makefile test/OC/Makefile"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -4891,8 +4891,10 @@ do
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "src/TA/Makefile") CONFIG_FILES="$CONFIG_FILES src/TA/Makefile" ;;
+    "src/OC/Makefile") CONFIG_FILES="$CONFIG_FILES src/OC/Makefile" ;;
     "test/Makefile") CONFIG_FILES="$CONFIG_FILES test/Makefile" ;;
     "test/TA/Makefile") CONFIG_FILES="$CONFIG_FILES test/TA/Makefile" ;;
+    "test/OC/Makefile") CONFIG_FILES="$CONFIG_FILES test/OC/Makefile" ;;
 
   *) as_fn_error "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac

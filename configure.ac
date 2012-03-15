@@ -24,6 +24,8 @@ AC_CHECK_FUNCS([gettimeofday memset])
 AC_CONFIG_FILES([Makefile
                  src/Makefile
                  src/TA/Makefile
+                 src/OC/Makefile
                  test/Makefile
-                 test/TA/Makefile])
+                 test/TA/Makefile
+                 test/OC/Makefile])
 AC_OUTPUT
