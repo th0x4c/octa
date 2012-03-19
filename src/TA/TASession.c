@@ -150,7 +150,7 @@ void TASession_deepCopy(TASession self, TASession dest)
           txstat = (TATXStat) TATXStat_nextAddr(txstat);
 
         dest->tx_stats[i][j][k] = txstat;
-        TATXStat_deepCopy(dest->tx_stats[i][j][k], self->tx_stats[i][j][k]);
+        TATXStat_deepCopy(self->tx_stats[i][j][k], dest->tx_stats[i][j][k]);
       }
     }
     dest->beforeTXs[i] = self->beforeTXs[i];
