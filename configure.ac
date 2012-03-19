@@ -25,6 +25,7 @@ AC_CONFIG_FILES([Makefile
                  src/Makefile
                  src/TA/Makefile
                  src/OC/Makefile
+                 src/octa/Makefile
                  test/Makefile
                  test/TA/Makefile
                  test/OC/Makefile])

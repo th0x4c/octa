@@ -1,2 +1,2 @@
-SUBDIRS = TA OC
+SUBDIRS = TA OC octa
 
