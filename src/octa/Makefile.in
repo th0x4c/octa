@@ -47,7 +47,7 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_octa_OBJECTS = OCTAMain.$(OBJEXT) OCTAOption.$(OBJEXT) \
 	OCTADDL.$(OBJEXT) OCTABSetup.$(OBJEXT) OCTABLoad.$(OBJEXT) \
-	OCTABTeardown.$(OBJEXT)
+	OCTABTeardown.$(OBJEXT) OCTABBench.$(OBJEXT)
 octa_OBJECTS = $(am_octa_OBJECTS)
 octa_DEPENDENCIES = ../OC/libOC.a ../TA/libTA.a
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
@@ -166,7 +166,9 @@ octa_SOURCES = OCTAMain.h           \
                OCTABLoad.h          \
                OCTABLoad.c          \
                OCTABTeardown.h      \
-               OCTABTeardown.c
+               OCTABTeardown.c      \
+               OCTABBench.h         \
+               OCTABBench.c
 
 octa_LDADD = ../OC/libOC.a ../TA/libTA.a 
 AM_CPPFLAGS = -I$(top_srcdir)/src -I$(ORACLE_HOME)/rdbms/public
@@ -254,6 +256,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTABBench.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTABLoad.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTABSetup.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTABTeardown.Po@am__quote@

@@ -13,6 +13,7 @@
 #include <stdio.h>  /* fprintf */
 #include <string.h> /* strtok strncpy strlen strcmp */
 #include <stdlib.h> /* atoi exit */
+#include <sys/time.h> /* timeval */
 
 struct OCTAOption
 {
@@ -26,8 +27,13 @@ struct OCTAOption
   int scale_factor;
 #define OCTA_SETUP    1
 #define OCTA_LOAD     2
-#define OCTA_TEARDOWN 3
+#define OCTA_BENCH    3
+#define OCTA_TEARDOWN 4
   int command;
+  struct timeval measurement_interval;
+  struct timeval rampup_time;
+  struct timeval rampdown_time;
+  struct timeval think_time;
 };
 typedef struct OCTAOption OCTAOption;
 
