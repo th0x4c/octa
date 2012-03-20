@@ -16,7 +16,6 @@
 
 typedef struct __OCOracle *OCOracle;
 
-#define IGNORE_OCI_NO_DATA
 #define OCOCIERROR(errhp, errmsg, errmsgsize, function)       \
         OCOracle_OCIError(__FILE__, __LINE__, (errhp),        \
                           (errmsg), (errmsgsize), (function))

@@ -156,12 +156,8 @@ sword OCOracle_OCIError(const char *fname, int lineno, OCIError *errhp,
                fname, lineno);
       break;
     case OCI_NO_DATA:
-#ifndef IGNORE_OCI_NO_DATA
       snprintf(errmsg, errmsgsize, "Module %s Line %d Error - OCI_NO_DATA",
                fname, lineno);
-#else
-      return 0;
-#endif
       break;
     case OCI_ERROR:
       OCIErrorGet((dvoid *) errhp, (ub4) 1, (text *) NULL, &errcode, errbuf,
