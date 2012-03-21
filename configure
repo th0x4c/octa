@@ -4091,6 +4091,31 @@ done
 
 
 # Checks for typedefs, structures, and compiler characteristics.
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/sem.h>
+int
+main ()
+{
+union semun foo;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  mf_have_semun=1
+else
+  mf_have_semun=0
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+if test $mf_have_semun = 1
+then
+
+$as_echo "#define HAVE_UNION_SEMUN 1" >>confdefs.h
+
+fi
 
 # Checks for library functions.
 for ac_header in stdlib.h

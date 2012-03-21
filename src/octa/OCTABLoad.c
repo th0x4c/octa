@@ -8,6 +8,14 @@
 
 #include "OCTABLoad.h"
 
+#ifndef HAVE_UNION_SEMUN
+union semun {
+  int             val;            /* value for SETVAL */
+  struct semid_ds *buf;           /* buffer for IPC_STAT & IPC_SET */
+  unsigned short  *array;         /* array for GETALL & SETALL */
+};
+#endif
+
 /* All sessions share the following variables */
 static OCTAOption option;
 static int semid;

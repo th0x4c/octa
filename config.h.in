@@ -37,6 +37,9 @@
 /* Define to 1 if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H
 
+/* union semun defined in sys/ipc.h or sys/sem.h */
+#undef HAVE_UNION_SEMUN
+
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 

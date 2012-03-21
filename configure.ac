@@ -16,6 +16,13 @@ AC_PROG_RANLIB
 AC_CHECK_HEADERS([stdlib.h string.h sys/time.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
+AC_TRY_COMPILE([#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/sem.h>],[union semun foo;], [mf_have_semun=1], [mf_have_semun=0])
+if test $mf_have_semun = 1
+then
+  AC_DEFINE(HAVE_UNION_SEMUN, 1, [union semun defined in sys/ipc.h or sys/sem.h])
+fi
 
 # Checks for library functions.
 AC_FUNC_MALLOC
