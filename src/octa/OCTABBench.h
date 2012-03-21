@@ -20,7 +20,7 @@
                        * OCITransCommit OCITransRollback            */
 #include <OC/OC.h>
 #include <TA/TA.h>
-#include <config.h>
+#include "config.h"
 #include "OCTAOption.h"
 
 #define ACCOUNTS_PER_BRANCH 100000
