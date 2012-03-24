@@ -9,7 +9,7 @@
 #ifndef _OCTABBENCH_H_
 #define _OCTABBENCH_H_
 
-#include <stdio.h>    /* printf snprintf */
+#include <stdio.h>    /* printf snprintf sprintf fflush */
 #include <stdlib.h>   /* srandom random exit malloc free */
 #include <string.h>   /* memset strlen */
 #include <unistd.h>   /* getpid */
