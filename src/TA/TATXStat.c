@@ -324,7 +324,11 @@ TATXStat TATXStat_minus(TATXStat self, TATXStat txstat)
 
   strcpy(ret->name, self->name);
   ret->count = self->count - txstat->count;
-  ret->first_time = txstat->end_time;
+  if (txstat->count > 0)
+    ret->first_time = txstat->end_time;
+  else
+    ret->first_time = self->first_time;
+
   ret->start_time = self->start_time;
   ret->end_time = self->end_time;
   ret->elapsed_time = self->elapsed_time;
