@@ -116,6 +116,30 @@ void TASessionManager_setMonitor(TASessionManager self,
   self->monitor = monitor;
 }
 
+TATXStat TASessionManager_summaryStatByNameInPeriodInPhase(
+           TASessionManager self,
+           const char *tx_name,
+           int period, int phase)
+{
+  TATXStat summary_stat = TATXStat_init();
+  TATXStat tmp_stat = NULL;
+  TATXStat ses_stat = NULL;
+  int i = 0;
+
+  for (i = 0; i < self->num_sessions; i++)
+  {
+    tmp_stat = summary_stat;
+    ses_stat = TASession_statByNameInPeriodInPhase(self->sessions[i], tx_name,
+                                                   period, phase);
+    summary_stat = TATXStat_plus(summary_stat, ses_stat);
+    TATXStat_release(tmp_stat);
+  }
+  TATXStat_setName(summary_stat, tx_name);
+
+  /* returned TATXStat must be released by caller */
+  return summary_stat;
+}
+
 int TASessionManager_main(TASessionManager self, void **inout)
 {
   TASession session = NULL;

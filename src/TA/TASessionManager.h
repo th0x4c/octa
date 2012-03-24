@@ -20,6 +20,7 @@
 #include <sys/wait.h>  /* wait */
 #include <signal.h>    /* sigemptyset sigaction */
 #include "TABool.h"
+#include "TATXStat.h"
 #include "TASession.h"
 
 typedef struct __TASessionManager *TASessionManager;
@@ -38,6 +39,10 @@ void TASessionManager_setAfterTeardown(TASessionManager self,
                                                 void **inout));
 void TASessionManager_setMonitor(TASessionManager self,
                                  void (*monitor)(TASessionManager self));
+TATXStat TASessionManager_summaryStatByNameInPeriodInPhase(
+           TASessionManager self,
+           const char *tx_name,
+           int period, int phase);
 int TASessionManager_main(TASessionManager self, void **inout);
 
 #endif /* _TASESSIONMANAGER_H_ */
