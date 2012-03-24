@@ -24,6 +24,22 @@ then
   AC_DEFINE(HAVE_UNION_SEMUN, 1, [union semun defined in sys/ipc.h or sys/sem.h])
 fi
 
+AC_CANONICAL_HOST
+case "$host_os" in
+darwin*) portname=darwin;;
+linux*) portname=linux;;
+hpux*) portname=hpux;;
+cygwin*) portname=cygwin;;
+esac
+AC_MSG_RESULT([$portname])
+AM_CONDITIONAL(DARWIN, test x$portname = xdarwin)
+AM_CONDITIONAL(LINUX, test x$portname = xlinux)
+AM_CONDITIONAL(HPUX, test x$portname = xhpux)
+if test x$portname = xhpux; then
+  CFLAGS="$CFLAGS -Ae -z +Olibmerrno +Z +DD64"
+  LDFLAGS="$LDFLAGS -Wl,+s -Wl,+n +DD64"
+fi
+
 # Checks for library functions.
 AC_FUNC_MALLOC
 AC_CHECK_FUNCS([gettimeofday memset])
