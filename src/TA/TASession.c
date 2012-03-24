@@ -497,6 +497,9 @@ static int TASession_TXIndexByName(TASession self, const char *tx_name)
     }
   }
 
+  if (ret == INVALID_INDEX)
+    fprintf(stderr, "TX name: %s is invalid.", tx_name);
+
   return ret;
 }
 

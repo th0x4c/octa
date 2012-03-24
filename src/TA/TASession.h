@@ -11,7 +11,7 @@
 
 #include <stdlib.h> /* malloc free */
 #include <string.h> /* memset strcpy strcmp */
-#include <stdio.h>  /* snprintf */
+#include <stdio.h>  /* snprintf fprintf */
 #include <time.h>   /* nanosleep */
 #include <signal.h> /* sigemptyset sigaction */
 #include "TALog.h"
