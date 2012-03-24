@@ -121,7 +121,7 @@ static int OCTABLoad_oracleTX(OCIEnv *envhp, OCIError *errhp, OCISvcCtx *svchp,
   static char *insert_account_sql =
     "INSERT INTO account (account_id, branch_id, account_balance, filler) "
     "VALUES (:1, :2, 0, '1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567')";
-  static num_inserts = 0;
+  static int num_inserts = 0;
   int i = 0;
 
   if (*account_id > total_account)
