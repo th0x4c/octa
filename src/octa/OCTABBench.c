@@ -92,6 +92,7 @@ static void OCTABBench_setup(TASession self, void **inout)
   io->oracle = OCOracle_init();
   OCOracle_connect(io->oracle, io->option.username, io->option.password,
                    io->option.tnsname);
+  TASession_setPeriod(self, TASession_RAMPUP);
   TASession_setStatus(self, TASession_RUNNING);
 
   srandom(time(NULL) * getpid());
@@ -511,7 +512,6 @@ int OCTABBench_main(const OCTAOption *opt)
   TASession_setAfterTX(session_prototype, OCTABBench_afterTX, "OCTAB bench");
   TASession_setSelectTX(session_prototype, OCTABBench_selectTX);
   TASession_setTeardown(session_prototype, OCTABBench_teardown);
-  TASession_setPeriod(session_prototype, TASession_RAMPUP);
 
   session_manager =
     TASessionManager_initWithSessionPrototype(session_prototype,
