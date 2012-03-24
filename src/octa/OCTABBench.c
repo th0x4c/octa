@@ -412,11 +412,15 @@ static void OCTABBench_afterTeardown(TASessionManager self, void **inout)
   TATXStat summary_before_stat =
              TASessionManager_summaryStatByNameInPeriodInPhase(self,
                "OCTAB bench", TASession_MEASUREMENT, TASession_BEFORE);
-  TATXStat summary_after_stat = 
+  TATXStat summary_after_stat =
              TASessionManager_summaryStatByNameInPeriodInPhase(self,
                "OCTAB bench", TASession_MEASUREMENT, TASession_AFTER);
+  TATXStat summary_rampup_before_stat =
+             TASessionManager_summaryStatByNameInPeriodInPhase(self,
+               "OCTAB bench", TASession_RAMPUP, TASession_BEFORE);
   struct timeval min, avg, max;
   struct timeval min2, avg2, max2;
+  struct timeval rampup_first_time, rampup_time;
   struct timeval first_time, end_time, measurement_interval;
   struct timeval end_timeval;
   char end_time_str[24] = "0000-00-00 00:00:00.000";
@@ -454,13 +458,19 @@ static void OCTABBench_afterTeardown(TASessionManager self, void **inout)
          timeval2sec(avg), timeval2sec(avg2),
          timeval2sec(max), timeval2sec(max2));
   printf("\n");
-  printf("Test Duration\n");
-  printf("  - Ramp-up time %39.3f seconds\n",
-         timeval2sec(io->option.rampup_time));
+  timerclear(&rampup_time);
+  timerclear(&rampup_first_time);
   timerclear(&first_time);
   timerclear(&end_time);
   timerclear(&measurement_interval);
   first_time = TATXStat_firstTime(summary_stat);
+  if (TATXStat_count(summary_rampup_before_stat) > 0)
+  {
+    rampup_first_time = TATXStat_firstTime(summary_rampup_before_stat);
+    timersub(&first_time, &rampup_first_time, &rampup_time);
+  }
+  printf("Test Duration\n");
+  printf("  - Ramp-up time %39.3f seconds\n", timeval2sec(rampup_time));
   end_time = TATXStat_endTime(summary_stat);
   timersub(&end_time, &first_time, &measurement_interval);
   printf("  - Measurement interval %31.3f seconds\n",
