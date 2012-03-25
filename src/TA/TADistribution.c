@@ -215,15 +215,15 @@ struct timeval TADistribution_percentile(TADistribution self, int percent)
 
 void TADistribution_print(TADistribution self)
 {
-  int percent = 0;
+  double percent = 0;
   int bucket;
   int i = 0;
 
   printf("Frequency Distribution (msec.)\n");
   printf("==============================\n");
-  printf("        0%%        10%%       20%%       30%%       40%%       "
+  printf("       0%%        10%%       20%%       30%%       40%%       "
          "50%%       60%%       70%%       80%%       90%%       100%%\n");
-  printf("        +---------+---------+---------+---------+---------+"
+  printf("       +---------+---------+---------+---------+---------+"
          "---------+---------+---------+---------+---------+\n");
   for (bucket = 0; bucket < BUCKETS; bucket++)
   {
@@ -232,23 +232,23 @@ void TADistribution_print(TADistribution self)
     else
       printf(">=%3dms|", bucket);
 
-    percent = self->msec[bucket] * 100 / self->count;
+    percent = (double) self->msec[bucket] * 100 / self->count;
     for (i = 0; i < 100; i++)
     {
-      if (i  < percent)
+      if (i < percent)
         printf("*");
       else
         printf(" ");
     }
-    printf(" %3d%%(%d/%d)\n", percent, self->msec[bucket], self->count);
+    printf(" %5.1f%%(%d/%d)\n", percent, self->msec[bucket], self->count);
   }
   printf("\n");
 
   printf("Frequency Distribution (csec.)\n");
   printf("==============================\n");
-  printf("        0%%        10%%       20%%       30%%       40%%       "
+  printf("       0%%        10%%       20%%       30%%       40%%       "
          "50%%       60%%       70%%       80%%       90%%       100%%\n");
-  printf("        +---------+---------+---------+---------+---------+"
+  printf("       +---------+---------+---------+---------+---------+"
          "---------+---------+---------+---------+---------+\n");
   for (bucket = 0; bucket < BUCKETS; bucket++)
   {
@@ -257,23 +257,23 @@ void TADistribution_print(TADistribution self)
     else
       printf(">=%3dcs|", bucket);
 
-    percent = self->csec[bucket] * 100 / self->count;
+    percent = (double) self->csec[bucket] * 100 / self->count;
     for (i = 0; i < 100; i++)
     {
-      if (i  < percent)
+      if (i < percent)
         printf("*");
       else
         printf(" ");
     }
-    printf(" %3d%%(%d/%d)\n", percent, self->csec[bucket], self->count);
+    printf(" %5.1f%%(%d/%d)\n", percent, self->csec[bucket], self->count);
   }
   printf("\n");
 
   printf("Frequency Distribution (dsec.)\n");
   printf("==============================\n");
-  printf("        0%%        10%%       20%%       30%%       40%%       "
+  printf("       0%%        10%%       20%%       30%%       40%%       "
          "50%%       60%%       70%%       80%%       90%%       100%%\n");
-  printf("        +---------+---------+---------+---------+---------+"
+  printf("       +---------+---------+---------+---------+---------+"
          "---------+---------+---------+---------+---------+\n");
   for (bucket = 0; bucket < BUCKETS; bucket++)
   {
@@ -282,40 +282,40 @@ void TADistribution_print(TADistribution self)
     else
       printf(">=%3dds|", bucket);
 
-    percent = self->dsec[bucket] * 100 / self->count;
+    percent = (double) self->dsec[bucket] * 100 / self->count;
     for (i = 0; i < 100; i++)
     {
-      if (i  < percent)
+      if (i < percent)
         printf("*");
       else
         printf(" ");
     }
-    printf(" %3d%%(%d/%d)\n", percent, self->dsec[bucket], self->count);
+    printf(" %5.1f%%(%d/%d)\n", percent, self->dsec[bucket], self->count);
   }
   printf("\n");
 
   printf("Frequency Distribution (sec.)\n");
   printf("=============================\n");
-  printf("        0%%        10%%       20%%       30%%       40%%       "
+  printf("       0%%        10%%       20%%       30%%       40%%       "
          "50%%       60%%       70%%       80%%       90%%       100%%\n");
-  printf("        +---------+---------+---------+---------+---------+"
+  printf("       +---------+---------+---------+---------+---------+"
          "---------+---------+---------+---------+---------+\n");
   for (bucket = 0; bucket < BUCKETS; bucket++)
   {
     if (bucket != BUCKETS - 1)
-      printf("<%3ds |", bucket + 1);
+      printf("<%3ds  |", bucket + 1);
     else
-      printf(">=%3ds|", bucket);
+      printf(">=%3ds |", bucket);
 
-    percent = self->sec[bucket] * 100 / self->count;
+    percent = (double) self->sec[bucket] * 100 / self->count;
     for (i = 0; i < 100; i++)
     {
-      if (i  < percent)
+      if (i < percent)
         printf("*");
       else
         printf(" ");
     }
-    printf(" %3d%%(%d/%d)\n", percent, self->sec[bucket], self->count);
+    printf(" %5.1f%%(%d/%d)\n", percent, self->sec[bucket], self->count);
   }
   printf("\n");
 }
