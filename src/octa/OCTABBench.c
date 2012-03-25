@@ -527,6 +527,8 @@ static void OCTABBench_afterTeardown(TASessionManager self, void **inout)
 
   OCTABBench_monitor(self);
 
+  TADistribution_print(TATXStat_distribution(summary_stat));
+
   printf("================================================================\n");
   printf("================= Numerical Quantities Summary =================\n");
   printf("================================================================\n");
