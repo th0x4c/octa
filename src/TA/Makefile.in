@@ -73,8 +73,9 @@ AR = ar
 ARFLAGS = cru
 libTA_a_AR = $(AR) $(ARFLAGS)
 libTA_a_LIBADD =
-am_libTA_a_OBJECTS = TALog.$(OBJEXT) TATXStat.$(OBJEXT) \
-	TASession.$(OBJEXT) TASessionManager.$(OBJEXT)
+am_libTA_a_OBJECTS = TALog.$(OBJEXT) TADistribution.$(OBJEXT) \
+	TATXStat.$(OBJEXT) TASession.$(OBJEXT) \
+	TASessionManager.$(OBJEXT)
 libTA_a_OBJECTS = $(am_libTA_a_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -187,6 +188,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 lib_LIBRARIES = libTA.a
 libTA_a_SOURCES = TALog.c            \
+                  TADistribution.c   \
                   TATXStat.c         \
                   TASession.c        \
                   TASessionManager.c
@@ -196,6 +198,7 @@ TAinclude_HEADERS = TA.h               \
                     TABool.h           \
                     TATime.h           \
                     TALog.h            \
+                    TADistribution.h   \
                     TATXStat.h         \
                     TASession.h        \
                     TASessionManager.h
@@ -277,6 +280,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TADistribution.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TALog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TASession.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TASessionManager.Po@am__quote@

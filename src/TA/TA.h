@@ -12,6 +12,7 @@
 #include <TA/TABool.h>
 #include <TA/TATime.h>
 #include <TA/TALog.h>
+#include <TA/TADistribution.h>
 #include <TA/TATXStat.h>
 #include <TA/TASession.h>
 #include <TA/TASessionManager.h>

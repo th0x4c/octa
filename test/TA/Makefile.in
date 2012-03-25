@@ -34,11 +34,11 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 check_PROGRAMS = test_TABool$(EXEEXT) test_TALog$(EXEEXT) \
-	test_TATXStat$(EXEEXT) test_TASession$(EXEEXT) \
-	test_TASessionManager$(EXEEXT)
+	test_TADistribution$(EXEEXT) test_TATXStat$(EXEEXT) \
+	test_TASession$(EXEEXT) test_TASessionManager$(EXEEXT)
 TESTS = test_TABool$(EXEEXT) test_TALog$(EXEEXT) \
-	test_TATXStat$(EXEEXT) test_TASession$(EXEEXT) \
-	test_TASessionManager$(EXEEXT)
+	test_TADistribution$(EXEEXT) test_TATXStat$(EXEEXT) \
+	test_TASession$(EXEEXT) test_TASessionManager$(EXEEXT)
 subdir = test/TA
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -53,6 +53,10 @@ am_test_TABool_OBJECTS = test_TABool.$(OBJEXT)
 test_TABool_OBJECTS = $(am_test_TABool_OBJECTS)
 test_TABool_LDADD = $(LDADD)
 test_TABool_DEPENDENCIES = ../../src/TA/libTA.a
+am_test_TADistribution_OBJECTS = test_TADistribution.$(OBJEXT)
+test_TADistribution_OBJECTS = $(am_test_TADistribution_OBJECTS)
+test_TADistribution_LDADD = $(LDADD)
+test_TADistribution_DEPENDENCIES = ../../src/TA/libTA.a
 am_test_TALog_OBJECTS = test_TALog.$(OBJEXT)
 test_TALog_OBJECTS = $(am_test_TALog_OBJECTS)
 test_TALog_LDADD = $(LDADD)
@@ -77,12 +81,12 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(test_TABool_SOURCES) $(test_TALog_SOURCES) \
-	$(test_TASession_SOURCES) $(test_TASessionManager_SOURCES) \
-	$(test_TATXStat_SOURCES)
-DIST_SOURCES = $(test_TABool_SOURCES) $(test_TALog_SOURCES) \
-	$(test_TASession_SOURCES) $(test_TASessionManager_SOURCES) \
-	$(test_TATXStat_SOURCES)
+SOURCES = $(test_TABool_SOURCES) $(test_TADistribution_SOURCES) \
+	$(test_TALog_SOURCES) $(test_TASession_SOURCES) \
+	$(test_TASessionManager_SOURCES) $(test_TATXStat_SOURCES)
+DIST_SOURCES = $(test_TABool_SOURCES) $(test_TADistribution_SOURCES) \
+	$(test_TALog_SOURCES) $(test_TASession_SOURCES) \
+	$(test_TASessionManager_SOURCES) $(test_TATXStat_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 # If stdout is a non-dumb tty, use colors.  If test -t is not supported,
@@ -198,6 +202,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 test_TABool_SOURCES = ../munit.h test_TABool.c
 test_TALog_SOURCES = ../munit.h test_TALog.c
+test_TADistribution_SOURCES = ../munit.h test_TADistribution.c
 test_TATXStat_SOURCES = ../munit.h test_TATXStat.c
 test_TASession_SOURCES = ../munit.h test_TASession.c
 test_TASessionManager_SOURCES = ../munit.h test_TASessionManager.c
@@ -244,6 +249,9 @@ clean-checkPROGRAMS:
 test_TABool$(EXEEXT): $(test_TABool_OBJECTS) $(test_TABool_DEPENDENCIES) 
 	@rm -f test_TABool$(EXEEXT)
 	$(LINK) $(test_TABool_OBJECTS) $(test_TABool_LDADD) $(LIBS)
+test_TADistribution$(EXEEXT): $(test_TADistribution_OBJECTS) $(test_TADistribution_DEPENDENCIES) 
+	@rm -f test_TADistribution$(EXEEXT)
+	$(LINK) $(test_TADistribution_OBJECTS) $(test_TADistribution_LDADD) $(LIBS)
 test_TALog$(EXEEXT): $(test_TALog_OBJECTS) $(test_TALog_DEPENDENCIES) 
 	@rm -f test_TALog$(EXEEXT)
 	$(LINK) $(test_TALog_OBJECTS) $(test_TALog_LDADD) $(LIBS)
@@ -264,6 +272,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_TABool.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_TADistribution.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_TALog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_TASession.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_TASessionManager.Po@am__quote@

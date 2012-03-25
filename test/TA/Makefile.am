@@ -1,15 +1,18 @@
 check_PROGRAMS = test_TABool           \
                  test_TALog            \
+                 test_TADistribution   \
                  test_TATXStat         \
                  test_TASession        \
                  test_TASessionManager
 TESTS = test_TABool           \
         test_TALog            \
+        test_TADistribution   \
         test_TATXStat         \
         test_TASession        \
         test_TASessionManager
 test_TABool_SOURCES = ../munit.h test_TABool.c
 test_TALog_SOURCES = ../munit.h test_TALog.c
+test_TADistribution_SOURCES = ../munit.h test_TADistribution.c
 test_TATXStat_SOURCES = ../munit.h test_TATXStat.c
 test_TASession_SOURCES = ../munit.h test_TASession.c
 test_TASessionManager_SOURCES = ../munit.h test_TASessionManager.c

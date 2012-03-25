@@ -24,6 +24,16 @@
     strcat((strp), msec);                                               \
   }
 
+#define timermlt(tvp, multi, vvp)                                       \
+  do                                                                    \
+  {                                                                     \
+    (vvp)->tv_sec = (tvp)->tv_sec * (multi);                            \
+    (vvp)->tv_usec = (tvp)->tv_usec * (multi);                          \
+    (vvp)->tv_sec += (vvp)->tv_usec / 1000000;                          \
+    (vvp)->tv_usec = (vvp)->tv_usec % 1000000;                          \
+  }                                                                     \
+  while (0)
+
 /* Operations on timevals. They should be defined in <time.h> */
 #ifndef timerclear
 #define timerclear(tvp)         (tvp)->tv_sec = (tvp)->tv_usec = 0
