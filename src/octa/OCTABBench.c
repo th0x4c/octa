@@ -509,6 +509,7 @@ static void OCTABBench_afterTeardown(TASessionManager self, void **inout)
              TASessionManager_summaryStatByNameInPeriodInPhase(self,
                "OCTAB bench", TASession_RAMPUP, TASession_BEFORE);
   struct timeval min, avg, max;
+  struct timeval ptile50, ptile80, ptile90;
   struct timeval min2, avg2, max2;
   struct timeval rampup_first_time, rampup_time;
   struct timeval first_time, end_time, measurement_interval;
@@ -518,6 +519,9 @@ static void OCTABBench_afterTeardown(TASessionManager self, void **inout)
   timerclear(&min);
   timerclear(&avg);
   timerclear(&max);
+  timerclear(&ptile50);
+  timerclear(&ptile80);
+  timerclear(&ptile90);
   timerclear(&min2);
   timerclear(&avg2);
   timerclear(&max2);
@@ -538,6 +542,13 @@ static void OCTABBench_afterTeardown(TASessionManager self, void **inout)
   printf("Response Times (minimum/ Average/ maximum) in seconds\n");
   printf("  - %-29s %7.6f / %7.6f / %7.6f\n",
          "", timeval2sec(min), timeval2sec(avg), timeval2sec(max));
+  printf("\n");
+  printf("Response Times (50th/ 80th/ 90th percentile) in seconds\n");
+  ptile50 = TADistribution_percentile(TATXStat_distribution(summary_stat), 50);
+  ptile80 = TADistribution_percentile(TATXStat_distribution(summary_stat), 80);
+  ptile90 = TADistribution_percentile(TATXStat_distribution(summary_stat), 90);
+  printf("  - %-29s %-8.3f / %-8.3f / %-8.3f\n",
+         "", timeval2sec(ptile50), timeval2sec(ptile80), timeval2sec(ptile90));
   printf("\n");
   printf("Keying/Think Times (in seconds),\n");
   printf("                         Min.          Average           Max.\n");
