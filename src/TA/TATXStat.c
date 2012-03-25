@@ -24,6 +24,7 @@ struct __TATXStat
   int error_code;
 #define MAX_MSG_SIZE 256
   char error_message[MAX_MSG_SIZE];
+  TADistribution distribution;
 };
 
 TATXStat TATXStat_init()
@@ -46,23 +47,29 @@ TATXStat TATXStat_init()
   self->error_count = 0;
   self->error_code = 0;
   strcpy(self->error_message, "");
+  self->distribution = TADistribution_init();
 
   return self;
 }
 
 void TATXStat_release(TATXStat self)
 {
+  TADistribution_release(self->distribution);
   free(self);
 }
 
 size_t TATXStat_sizeof()
 {
-  return sizeof(struct __TATXStat);
+  return sizeof(struct __TATXStat) + TADistribution_sizeof();
 }
 
 TATXStat TATXStat_nextAddr(TATXStat self)
 {
-  return self + 1;
+  TATXStat ret = NULL;
+
+  ret = self + 1;
+  ret = (TATXStat) TADistribution_nextAddr((TADistribution)ret);
+  return ret;
 }
 
 void TATXStat_deepCopy(TATXStat self, TATXStat dest)
@@ -79,6 +86,8 @@ void TATXStat_deepCopy(TATXStat self, TATXStat dest)
   dest->error_count = self->error_count;
   dest->error_code = self->error_code;
   strcpy(dest->error_message, self->error_message);
+  dest->distribution = (TADistribution) (dest + 1);
+  TADistribution_deepCopy(self->distribution, dest->distribution);
 }
 
 void TATXStat_setName(TATXStat self, const char *name)
@@ -155,6 +164,11 @@ char *TATXStat_errorMessage(TATXStat self)
   return self->error_message;
 }
 
+TADistribution TATXStat_distribution(TATXStat self)
+{
+  return self->distribution;
+}
+
 void TATXStat_start(TATXStat self)
 {
   self->error_code = 0;
@@ -186,6 +200,7 @@ void TATXStat_end(TATXStat self)
     if (timercmp(&(self->elapsed_time), &(self->min_elapsed_time), <))
       self->min_elapsed_time = self-> elapsed_time;
   }
+  TADistribution_setElapsedTime(self->distribution, self->elapsed_time);
 }
 
 struct timeval TATXStat_avgElapsedTime(TATXStat self)
@@ -315,6 +330,9 @@ TATXStat TATXStat_plus(TATXStat self, TATXStat txstat)
 
   ret->error_count = self->error_count + txstat->error_count;
 
+  ret->distribution = TADistribution_plus(self->distribution,
+                                          txstat->distribution);
+
   return ret;
 }
 
@@ -352,6 +370,9 @@ TATXStat TATXStat_minus(TATXStat self, TATXStat txstat)
   ret->error_count = self->error_count - txstat->error_count;
   ret->error_code = self->error_count;
   strcpy(ret->error_message, self->error_message);
+
+  ret->distribution = TADistribution_minus(self->distribution,
+                                           txstat->distribution);
 
   return ret;
 }

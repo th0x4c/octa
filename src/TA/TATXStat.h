@@ -14,6 +14,7 @@
 #include <sys/time.h> /* gettimeofday */
 #include <stdio.h>    /* snprintf */
 #include "TATime.h"
+#include "TADistribution.h"
 
 typedef struct __TATXStat *TATXStat;
 
@@ -36,6 +37,7 @@ int TATXStat_errorCount(TATXStat self);
 void TATXStat_setError(TATXStat self, int errcode, const char *errmessage);
 int TATXStat_errorCode(TATXStat self);
 char *TATXStat_errorMessage(TATXStat self);
+TADistribution TATXStat_distribution(TATXStat self);
 void TATXStat_start(TATXStat self);
 void TATXStat_end(TATXStat self);
 struct timeval TATXStat_avgElapsedTime(TATXStat self);
