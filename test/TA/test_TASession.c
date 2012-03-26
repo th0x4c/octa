@@ -114,6 +114,25 @@ static void myteardown(TASession self, void **inout)
   TALog_info(log, TATXStat_description(stat, desc, DESC_SIZE));
 }
 
+static void test_TASession_deepCopy()
+{
+  TASession tasession = TASession_init();
+  TASession destses = NULL;
+
+  destses = malloc(TASession_sizeof());
+  if (destses == NULL)
+    exit(1);
+
+  TASession_setID(tasession, 1);
+  TASession_setSetup(tasession, mysetup);
+  TASession_setSelectTX(tasession, myselectTX);
+  TASession_setTeardown(tasession, myteardown);
+
+  TASession_deepCopy(tasession, destses);
+
+  mu_assert(TASession_ID(destses) == 1);
+}
+
 static void test_TASession_main()
 {
   TASession tasession = TASession_init();
@@ -137,6 +156,7 @@ static void test_TASession_main()
 
 int main(int argc, char *argv[])
 {
+  mu_run_test(test_TASession_deepCopy);
   mu_run_test(test_TASession_main);
   mu_show_failures();
   return mu_nfail != 0;
