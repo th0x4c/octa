@@ -17,8 +17,6 @@ struct __TADistribution
   unsigned int csec[BUCKETS]; /* centi */
   unsigned int dsec[BUCKETS]; /* deci */
   unsigned int sec[BUCKETS];
-  int alignment; /* @todo Alignment to avoid SIGBUS, Bus error on HP-UX IA64 *
-                  * with +DD64. BUS_ADRALN - Invalid address alignment.      */
 };
 typedef struct __TADistribution __TADistribution;
 
