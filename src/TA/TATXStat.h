@@ -33,7 +33,7 @@ struct timeval TATXStat_elapsedTime(TATXStat self);
 struct timeval TATXStat_totalElapsedTime(TATXStat self);
 struct timeval TATXStat_maxElapsedTime(TATXStat self);
 struct timeval TATXStat_minElapsedTime(TATXStat self);
-int TATXStat_errorCount(TATXStat self);
+unsigned int TATXStat_errorCount(TATXStat self);
 void TATXStat_setError(TATXStat self, int errcode, const char *errmessage);
 int TATXStat_errorCode(TATXStat self);
 char *TATXStat_errorMessage(TATXStat self);

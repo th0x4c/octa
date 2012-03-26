@@ -20,7 +20,7 @@ struct __TATXStat
   struct timeval total_elapsed_time;
   struct timeval max_elapsed_time;
   struct timeval min_elapsed_time;
-  int error_count;
+  unsigned int error_count;
   int error_code;
 #define MAX_MSG_SIZE 256
   char error_message[MAX_MSG_SIZE];
@@ -141,7 +141,7 @@ struct timeval TATXStat_minElapsedTime(TATXStat self)
   return self->min_elapsed_time;
 }
 
-int TATXStat_errorCount(TATXStat self)
+unsigned int TATXStat_errorCount(TATXStat self)
 {
   return self->error_count;
 }

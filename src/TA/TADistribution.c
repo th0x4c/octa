@@ -10,12 +10,14 @@
 
 struct __TADistribution
 {
-  long count;
+  unsigned int count;
 #define BUCKETS 101
-  int msec[BUCKETS]; /* milli */
-  int csec[BUCKETS]; /* centi */
-  int dsec[BUCKETS]; /* deci */
-  int sec[BUCKETS];
+  unsigned int msec[BUCKETS]; /* milli */
+  unsigned int csec[BUCKETS]; /* centi */
+  unsigned int dsec[BUCKETS]; /* deci */
+  unsigned int sec[BUCKETS];
+  int alignment; /* @todo Alignment to avoid SIGBUS, Bus error on HP-UX IA64 *
+                  * with +DD64. BUS_ADRALN - Invalid address alignment.      */
 };
 typedef struct __TADistribution __TADistribution;
 
