@@ -10,7 +10,7 @@
 
 struct __TADistribution
 {
-  int count;
+  long count;
 #define BUCKETS 101
   int msec[BUCKETS]; /* milli */
   int csec[BUCKETS]; /* centi */
