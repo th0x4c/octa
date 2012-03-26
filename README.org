@@ -7,11 +7,22 @@
 
 ** Description
 
-THIS LIBRARY IS STILL UNDER DEVELOPMENT.
-
 OCTA is a library for OCI transaction applications.
 It enables the user to generate transaction processing applications written in
 Oracle Call Interface (OCI).
+
+Executable =octa= is a simple benchmark program using OCTA library. It is
+loosely based on TPC-B.
+
+** Installation
+
+Installation is done via
+
+#+BEGIN_EXAMPLE
+$ ./configure --prefix=/path/to/directory
+$ make
+$ make install
+#+END_EXAMPLE
 
 ** License
 
