@@ -13,6 +13,7 @@
 #include <string.h>   /* memset strcpy */
 #include <stdio.h>    /* FILENAME_MAX stdout fopen fclose fprintf fflush */
 #include <sys/time.h> /* gettimeofday */
+#include "TABool.h"
 #include "TATime.h"
 
 typedef struct __TALog *TALog;

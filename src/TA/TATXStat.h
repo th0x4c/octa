@@ -13,6 +13,7 @@
 #include <string.h>   /* memset strcpy strncpy strlen */
 #include <sys/time.h> /* gettimeofday */
 #include <stdio.h>    /* snprintf */
+#include "TABool.h"
 #include "TATime.h"
 #include "TADistribution.h"
 

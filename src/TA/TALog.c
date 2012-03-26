@@ -10,6 +10,7 @@
 
 struct __TALog
 {
+  int deep_copied;
   int level;
   char filename[FILENAME_MAX];
   FILE *stream;
@@ -25,6 +26,7 @@ TALog TALog_initWithFilename(const char *filename)
 
   memset(self, 0, sizeof(*self));
 
+  self->deep_copied = FALSE;
   self->level = TALog_INFO;
   if (filename == NULL)
   {
@@ -49,7 +51,8 @@ void TALog_release(TALog self)
   if (self->stream != stdout)
     fclose(self->stream);
 
-  free(self);
+  if (self->deep_copied == FALSE)
+    free(self);
 }
 
 size_t TALog_sizeof()
@@ -64,6 +67,7 @@ TALog TALog_nextAddr(TALog self)
 
 void TALog_deepCopy(TALog self, TALog dest)
 {
+  dest->deep_copied = TRUE;
   dest->level = self->level;
   strcpy(dest->filename, self->filename);
   if (self->stream == stdout)

@@ -13,6 +13,7 @@
 #include <string.h>   /* memset */
 #include <stdio.h>    /* printf */
 #include <sys/time.h>
+#include "TABool.h"
 #include "TATime.h"
 
 typedef struct __TADistribution *TADistribution;

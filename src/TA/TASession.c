@@ -10,6 +10,7 @@
 
 struct __TASession
 {
+  int deep_copied;
   int id;
   TALog log;
   int status;
@@ -49,6 +50,7 @@ TASession TASession_init()
 
   memset(self, 0, sizeof(*self));
 
+  self->deep_copied = FALSE;
   self->id = 0;
   self->log = TALog_initWithFilename(NULL);
 
@@ -94,7 +96,8 @@ void TASession_release(TASession self)
       }
     }
   }
-  free(self);
+  if (self->deep_copied == FALSE)
+    free(self);
 }
 
 size_t TASession_sizeof()
@@ -130,6 +133,7 @@ void TASession_deepCopy(TASession self, TASession dest)
   int j = 0;
   int k = 0;
 
+  dest->deep_copied = TRUE;
   dest->id = self->id;
   dest->log = (TALog) (dest + 1);
   TALog_deepCopy(self->log, dest->log);

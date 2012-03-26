@@ -10,6 +10,7 @@
 
 struct __TADistribution
 {
+  int deep_copied;
   unsigned int count;
 #define BUCKETS 101
   unsigned int msec[BUCKETS]; /* milli */
@@ -31,6 +32,7 @@ TADistribution TADistribution_init()
 
   memset(self, 0, sizeof(*self));
 
+  self->deep_copied = FALSE;
   self->count = 0;
   for (i = 0; i < BUCKETS; i++)
   {
@@ -45,7 +47,8 @@ TADistribution TADistribution_init()
 
 void TADistribution_release(TADistribution self)
 {
-  free(self);
+  if (self->deep_copied == FALSE)
+    free(self);
 }
 
 size_t TADistribution_sizeof()
@@ -62,6 +65,7 @@ void TADistribution_deepCopy(TADistribution self, TADistribution dest)
 {
   int i = 0;
 
+  dest->deep_copied = TRUE;
   dest->count = self->count;
   for (i = 0; i < BUCKETS; i++)
   {

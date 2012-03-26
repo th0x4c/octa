@@ -10,6 +10,7 @@
 
 struct __TATXStat
 {
+  int deep_copied;
 #define MAX_NAME_SIZE 64
   char name[MAX_NAME_SIZE];
   unsigned int count;
@@ -35,6 +36,7 @@ TATXStat TATXStat_init()
 
   memset(self, 0, sizeof(*self));
 
+  self->deep_copied = FALSE;
   strcpy(self->name, "");
   self->count = 0;
   timerclear(&(self->first_time));
@@ -55,7 +57,8 @@ TATXStat TATXStat_init()
 void TATXStat_release(TATXStat self)
 {
   TADistribution_release(self->distribution);
-  free(self);
+  if (self->deep_copied == FALSE)
+    free(self);
 }
 
 size_t TATXStat_sizeof()
@@ -74,6 +77,7 @@ TATXStat TATXStat_nextAddr(TATXStat self)
 
 void TATXStat_deepCopy(TATXStat self, TATXStat dest)
 {
+  dest->deep_copied = TRUE;
   strcpy(dest->name, self->name);
   dest->count = self->count;
   dest->first_time = self->first_time;

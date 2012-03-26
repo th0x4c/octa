@@ -14,6 +14,7 @@
 #include <stdio.h>  /* snprintf fprintf */
 #include <time.h>   /* nanosleep */
 #include <signal.h> /* sigemptyset sigaction */
+#include "TABool.h"
 #include "TALog.h"
 #include "TATXStat.h"
 
