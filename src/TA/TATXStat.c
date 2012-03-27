@@ -334,6 +334,7 @@ TATXStat TATXStat_plus(TATXStat self, TATXStat txstat)
 
   ret->error_count = self->error_count + txstat->error_count;
 
+  TADistribution_release(ret->distribution);
   ret->distribution = TADistribution_plus(self->distribution,
                                           txstat->distribution);
 
@@ -375,6 +376,7 @@ TATXStat TATXStat_minus(TATXStat self, TATXStat txstat)
   ret->error_code = self->error_count;
   strcpy(ret->error_message, self->error_message);
 
+  TADistribution_release(ret->distribution);
   ret->distribution = TADistribution_minus(self->distribution,
                                            txstat->distribution);
 
