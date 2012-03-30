@@ -440,6 +440,9 @@ int TASession_main(TASession self, void **inout)
         TATXStat_end(txstat);
       }
 
+      if (self->status != TASession_RUNNING)
+        break;
+
       self->phase = TASession_TX;
       if (self->TXs[tx_idx])
       {
