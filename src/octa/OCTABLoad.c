@@ -281,9 +281,48 @@ static void OCTABLoad_teardown(TASession self, void **inout)
   TALog_info(log, TATXStat_description(stat, desc, DESC_SIZE));
 }
 
+static void OCTABLoad_monitor(TASessionManager self)
+{
+#define PROGRESS_SIZE 50
+  TATXStat summary = TASessionManager_summaryStatByNameInPeriodInPhase(self,
+                       "OCTAB load", TASession_MEASUREMENT, TASession_TX);
+  struct timespec monitor_interval;
+  int i = 0;
+
+  monitor_interval.tv_sec = 0;
+  monitor_interval.tv_nsec = 100000000; /* 100ms */
+  nanosleep(&monitor_interval, NULL);
+
+  printf("\rloading... ");
+
+  for (i = 0; i < PROGRESS_SIZE; i++)
+  {
+    if (i < *loaded_account * PROGRESS_SIZE / total_account)
+      printf("#");
+    else
+      printf(" ");
+  }
+  printf(" [%3d%%](%d/%d)", *loaded_account * 100 / total_account,
+         *loaded_account / ACCOUNTS_PER_BRANCH, option.scale_factor);
+
+  fflush(stdout);
+  TATXStat_release(summary);
+}
+
 static void OCTABLoad_afterTeardown(TASessionManager self, void **inout)
 {
   union semun sem_union;
+  TATXStat summary = TASessionManager_summaryStatByNameInPeriodInPhase(self,
+                       "OCTAB load", TASession_MEASUREMENT, TASession_TX);
+#define DESC_SIZE 512
+  char desc[DESC_SIZE] = "";
+
+  printf("\nError: %d\n", TATXStat_errorCount(summary));
+  if (TATXStat_errorCount(summary) == 0)
+    printf("All rows loaded successfully\n");
+
+  printf("%s\n", TATXStat_description(summary, desc, DESC_SIZE));
+  printf("\n");
 
   /* semaphore */
   if (semctl(semid, 0, IPC_RMID, sem_union) == -1)
@@ -320,13 +359,14 @@ int OCTABLoad_main(const OCTAOption *opt)
   TASession_setWhenErrorTX(session_prototype, OCTABLoad_errorTX, "OCTAB load");
   TASession_setSelectTX(session_prototype, OCTABLoad_selectTX);
   TASession_setTeardown(session_prototype, OCTABLoad_teardown);
+  TALog_setLevel(TASession_log(session_prototype), TALog_WARN);
 
   session_manager =
     TASessionManager_initWithSessionPrototype(session_prototype,
                                               opt->num_sessions);
   TASessionManager_setBeforeSetup(session_manager, OCTABLoad_beforeSetup);
   TASessionManager_setAfterTeardown(session_manager, OCTABLoad_afterTeardown);
-
+  TASessionManager_setMonitor(session_manager, OCTABLoad_monitor);
 
   account_id = malloc(sizeof(int));
   if (account_id == NULL)

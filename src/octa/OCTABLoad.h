@@ -11,9 +11,10 @@
 
 #include <sys/sem.h> /* semop semget semctl */
 #include <sys/shm.h> /* shmget shmat shmdt shmctl */
-#include <stdio.h>   /* fprintf snprintf */
+#include <stdio.h>   /* fprintf snprintf printf fflush */
 #include <string.h>  /* strerror */
 #include <stdlib.h>  /* exit malloc free */
+#include <time.h>    /* nanosleep */
 #include <oci.h>     /* OCIHandleAlloc OCIStmtPrepare OCIBindByPos  *
                       * OCIStmtExecute OCIHandleFree OCITransCommit */
 #include <OC/OC.h>
