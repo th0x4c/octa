@@ -9,12 +9,9 @@
 #ifndef _OCTABTEARDOWN_H_
 #define _OCTABTEARDOWN_H_
 
-#include <stdlib.h> /* malloc exit free */
-#include <stdio.h>  /* fprintf */
-#include <string.h> /* memset strncpy */
-#include <OC/OC.h>
 #include "OCTAOption.h"
 #include "OCTADDL.h"
+#include "OCTATeardown.h"
 #include "OCTABDropTable.h"
 
 int OCTABTeardown_main(const OCTAOption *option);

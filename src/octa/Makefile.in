@@ -48,7 +48,8 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_octa_OBJECTS = OCTAMain.$(OBJEXT) OCTAOption.$(OBJEXT) \
-	OCTADDL.$(OBJEXT) OCTABSetup.$(OBJEXT) OCTABLoad.$(OBJEXT) \
+	OCTADDL.$(OBJEXT) OCTASetup.$(OBJEXT) OCTATeardown.$(OBJEXT) \
+	OCTABSetup.$(OBJEXT) OCTABLoad.$(OBJEXT) \
 	OCTABTeardown.$(OBJEXT) OCTABBench.$(OBJEXT)
 octa_OBJECTS = $(am_octa_OBJECTS)
 octa_DEPENDENCIES = ../OC/libOC.a ../TA/libTA.a
@@ -166,6 +167,10 @@ octa_SOURCES = OCTAMain.h           \
                OCTAOption.c         \
                OCTADDL.h            \
                OCTADDL.c            \
+               OCTASetup.h          \
+               OCTASetup.c          \
+               OCTATeardown.h       \
+               OCTATeardown.c       \
                OCTABCreateTable.h   \
                OCTABCreateIndex.h   \
                OCTABAddConstraint.h \
@@ -273,6 +278,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTADDL.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTAMain.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTAOption.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTASetup.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTATeardown.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<

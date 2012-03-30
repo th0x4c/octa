@@ -5,6 +5,10 @@ octa_SOURCES = OCTAMain.h           \
                OCTAOption.c         \
                OCTADDL.h            \
                OCTADDL.c            \
+               OCTASetup.h          \
+               OCTASetup.c          \
+               OCTATeardown.h       \
+               OCTATeardown.c       \
                OCTABCreateTable.h   \
                OCTABCreateIndex.h   \
                OCTABAddConstraint.h \
