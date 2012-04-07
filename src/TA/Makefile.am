@@ -1,5 +1,6 @@
 lib_LIBRARIES = libTA.a
-libTA_a_SOURCES = TALog.c            \
+libTA_a_SOURCES = TARandom.c         \
+                  TALog.c            \
                   TADistribution.c   \
                   TATXStat.c         \
                   TASession.c        \
@@ -8,6 +9,7 @@ TAincludedir = $(includedir)/TA
 TAinclude_HEADERS = TA.h               \
                     TABool.h           \
                     TATime.h           \
+                    TARandom.h         \
                     TALog.h            \
                     TADistribution.h   \
                     TATXStat.h         \
