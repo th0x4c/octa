@@ -10,5 +10,6 @@
 #define _OC_H_
 
 #include <OC/OCOracle.h>
+#include <OC/OCSQL.h>
 
 #endif /* _OC_H_ */

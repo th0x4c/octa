@@ -73,7 +73,7 @@ AR = ar
 ARFLAGS = cru
 libOC_a_AR = $(AR) $(ARFLAGS)
 libOC_a_LIBADD =
-am_libOC_a_OBJECTS = OCOracle.$(OBJEXT)
+am_libOC_a_OBJECTS = OCOracle.$(OBJEXT) OCSQL.$(OBJEXT)
 libOC_a_OBJECTS = $(am_libOC_a_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -185,10 +185,13 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 lib_LIBRARIES = libOC.a
-libOC_a_SOURCES = OCOracle.c
+libOC_a_SOURCES = OCOracle.c \
+                  OCSQL.c
+
 OCincludedir = $(includedir)/OC
 OCinclude_HEADERS = OC.h       \
-                    OCOracle.h
+                    OCOracle.h \
+                    OCSQL.h
 
 AM_CPPFLAGS = -I$(ORACLE_HOME)/rdbms/public
 all: all-am
@@ -269,6 +272,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCOracle.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCSQL.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
