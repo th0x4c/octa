@@ -50,7 +50,12 @@ PROGRAMS = $(bin_PROGRAMS)
 am_octa_OBJECTS = OCTAMain.$(OBJEXT) OCTAOption.$(OBJEXT) \
 	OCTADDL.$(OBJEXT) OCTASetup.$(OBJEXT) OCTATeardown.$(OBJEXT) \
 	OCTABSetup.$(OBJEXT) OCTABLoad.$(OBJEXT) \
-	OCTABTeardown.$(OBJEXT) OCTABBench.$(OBJEXT)
+	OCTABTeardown.$(OBJEXT) OCTABBench.$(OBJEXT) \
+	OCTACSetup.$(OBJEXT) OCTACConfig.$(OBJEXT) OCTACLoad.$(OBJEXT) \
+	OCTACLoadItem.$(OBJEXT) OCTACLoadWarehouse.$(OBJEXT) \
+	OCTACLoadStock.$(OBJEXT) OCTACLoadDistrict.$(OBJEXT) \
+	OCTACLoadCustomer.$(OBJEXT) OCTACLoadOrders.$(OBJEXT) \
+	OCTACTeardown.$(OBJEXT)
 octa_OBJECTS = $(am_octa_OBJECTS)
 octa_DEPENDENCIES = ../OC/libOC.a ../TA/libTA.a
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
@@ -183,7 +188,32 @@ octa_SOURCES = OCTAMain.h           \
                OCTABTeardown.h      \
                OCTABTeardown.c      \
                OCTABBench.h         \
-               OCTABBench.c
+               OCTABBench.c         \
+               OCTACCreateTable.h   \
+               OCTACCreateIndex.h   \
+               OCTACAddConstraint.h \
+               OCTACAnalyze.h       \
+               OCTACDropTable.h     \
+               OCTACSetup.h         \
+               OCTACSetup.c         \
+               OCTACConfig.h        \
+               OCTACConfig.c        \
+               OCTACLoad.h          \
+               OCTACLoad.c          \
+               OCTACLoadItem.h      \
+               OCTACLoadItem.c      \
+               OCTACLoadWarehouse.h \
+               OCTACLoadWarehouse.c \
+               OCTACLoadStock.h     \
+               OCTACLoadStock.c     \
+               OCTACLoadDistrict.h  \
+               OCTACLoadDistrict.c  \
+               OCTACLoadCustomer.h  \
+               OCTACLoadCustomer.c  \
+               OCTACLoadOrders.h    \
+               OCTACLoadOrders.c    \
+               OCTACTeardown.h      \
+               OCTACTeardown.c
 
 octa_LDADD = ../OC/libOC.a ../TA/libTA.a 
 AM_CPPFLAGS = -I$(top_srcdir)/src -I$(ORACLE_HOME)/rdbms/public
@@ -275,6 +305,16 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTABLoad.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTABSetup.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTABTeardown.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTACConfig.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTACLoad.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTACLoadCustomer.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTACLoadDistrict.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTACLoadItem.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTACLoadOrders.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTACLoadStock.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTACLoadWarehouse.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTACSetup.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTACTeardown.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTADDL.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTAMain.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTAOption.Po@am__quote@

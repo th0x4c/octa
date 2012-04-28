@@ -10,7 +10,7 @@
 
 void OCTAOption_getOption(int argc, char * const argv[], OCTAOption *option)
 {
-  char *optstring = "u:T:I:n:s:m:U:D:t:h";
+  char *optstring = "BCu:T:I:n:s:m:U:D:t:h";
   int ch;
   char *c;
   extern char *optarg;
@@ -22,10 +22,18 @@ void OCTAOption_getOption(int argc, char * const argv[], OCTAOption *option)
   if (argc == 0)
     OCTAOption_usage();
 
+  memset(option, 0, sizeof(*option));
+
   while ((ch = getopt(argc, argv, optstring)) != -1)
   {
     switch (ch)
     {
+    case 'B':
+      option->mode = OCTA_TPCB;
+      break;
+    case 'C':
+      option->mode = OCTA_TPCC;
+      break;
     case 'u':
       c = strtok(optarg, "/");
       if (c == NULL)
@@ -88,6 +96,9 @@ void OCTAOption_getOption(int argc, char * const argv[], OCTAOption *option)
   argc -= optind;
   argv += optind;
 
+  if (option->mode != OCTA_TPCB && option->mode != OCTA_TPCC)
+    OCTAOption_usage();
+
   if (strlen(option->username) == 0 || strlen(option->password) == 0 ||
       argc == 0)
     OCTAOption_usage();
@@ -137,15 +148,17 @@ void OCTAOption_usage()
   static char* usage =
     "Usage: octa <option> <command>\n"
     "\n"
-    "       octa -u <userid> -n <sessions> -s <scale_factor> -T <table_tablespace> -I <index_tablespace> setup\n"
-    "       octa -u <userid> -n <sessions> -s <scale_factor> load\n"
-    "       octa -u <userid> -n <sessions> -s <scale_factor> -m <measurement_interval> [-U <rampup_time>] [-D <rampdown_time>] [-t <think_time>] bench\n"
-    "       octa -u <userid> teardown\n"
+    "       octa -B|-C -u <userid> -n <sessions> -s <scale_factor> -T <table_tablespace> -I <index_tablespace> setup\n"
+    "       octa -B|-C -u <userid> -n <sessions> -s <scale_factor> load\n"
+    "       octa -B|-C -u <userid> -n <sessions> -s <scale_factor> -m <measurement_interval> [-U <rampup_time>] [-D <rampdown_time>] [-t <think_time>] bench\n"
+    "       octa -B|-C -u <userid> teardown\n"
     "\n"
     "Option:\n"
+    "\t-B \tTPC-B like mode\n"
+    "\t-C \tTPC-C like mode\n"
     "\t-u \tUserID (username/password@connect_identifier)\n"
     "\t-n \tNumber of sessions\n"
-    "\t-s \tScale factor (number of branches)\n"
+    "\t-s \tScale factor (number of branches/warehouses)\n"
     "\t-m \tMeasurement interval (in sec)\n"
     "\t-U \tRamp-up time (in sec)\n"
     "\t-D \tRamp-down time (in sec)\n"
@@ -161,9 +174,12 @@ void OCTAOption_usage()
     "\tteardown \tTeardown (drop table and related objects)\n"
     "\n"
     "Example:\n"
-    "\tocta -u scott/tiger@orcl -n 5 -s 10 -T USERS -I INDX setup\n"
-    "\tocta -u scott/tiger@orcl -n 5 -s 10 -m 600 -U 60 -D 60 -t 1 bench\n"
-    "\tocta -u scott/tiger@orcl teardown\n";
+    "\tocta -u scott/tiger@orcl -B -n 5 -s 10 -T USERS -I INDX setup\n"
+    "\tocta -u scott/tiger@orcl -B -n 5 -s 10 -m 600 -U 60 -D 60 -t 1 bench\n"
+    "\tocta -u scott/tiger@orcl -B teardown\n"
+    "\tocta -u scott/tiger@orcl -C -n 5 -s 10 -T USERS -I INDX setup\n"
+    "\tocta -u scott/tiger@orcl -C -n 5 -s 10 -m 600 -U 60 -D 60 -t 1 bench\n"
+    "\tocta -u scott/tiger@orcl -C teardown\n";
 
   fprintf(stderr, "%s", usage);
   exit(1);

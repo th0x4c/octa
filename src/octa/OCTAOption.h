@@ -17,6 +17,9 @@
 
 struct OCTAOption
 {
+#define OCTA_TPCB 1
+#define OCTA_TPCC 2
+  int mode;
 #define MAX_NAME_SIZE 30
   char username[MAX_NAME_SIZE];
   char password[MAX_NAME_SIZE];

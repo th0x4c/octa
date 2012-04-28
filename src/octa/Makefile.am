@@ -21,7 +21,32 @@ octa_SOURCES = OCTAMain.h           \
                OCTABTeardown.h      \
                OCTABTeardown.c      \
                OCTABBench.h         \
-               OCTABBench.c
+               OCTABBench.c         \
+               OCTACCreateTable.h   \
+               OCTACCreateIndex.h   \
+               OCTACAddConstraint.h \
+               OCTACAnalyze.h       \
+               OCTACDropTable.h     \
+               OCTACSetup.h         \
+               OCTACSetup.c         \
+               OCTACConfig.h        \
+               OCTACConfig.c        \
+               OCTACLoad.h          \
+               OCTACLoad.c          \
+               OCTACLoadItem.h      \
+               OCTACLoadItem.c      \
+               OCTACLoadWarehouse.h \
+               OCTACLoadWarehouse.c \
+               OCTACLoadStock.h     \
+               OCTACLoadStock.c     \
+               OCTACLoadDistrict.h  \
+               OCTACLoadDistrict.c  \
+               OCTACLoadCustomer.h  \
+               OCTACLoadCustomer.c  \
+               OCTACLoadOrders.h    \
+               OCTACLoadOrders.c    \
+               OCTACTeardown.h      \
+               OCTACTeardown.c
 octa_LDADD = ../OC/libOC.a ../TA/libTA.a 
 AM_CPPFLAGS = -I$(top_srcdir)/src -I$(ORACLE_HOME)/rdbms/public
 AM_LDFLAGS = -L$(ORACLE_HOME)/lib/ -L$(ORACLE_HOME)/rdbms/lib/ \
