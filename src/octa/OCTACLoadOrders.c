@@ -24,7 +24,7 @@ struct OCTACLoadOrdersInput
 };
 typedef struct OCTACLoadOrdersInput OCTACLoadOrdersInput;
 
-void OCTACLoadOrders_beforeTX(int o_id, int o_d_id, int o_w_id, int o_c_id,
+void OCTACLoadOrders_beforeTX(long o_id, long o_d_id, long o_w_id, long o_c_id,
                               void **inout)
 {
   OCTACLoadOrdersInput *in;
@@ -36,10 +36,10 @@ void OCTACLoadOrders_beforeTX(int o_id, int o_d_id, int o_w_id, int o_c_id,
     exit(1);
   }
 
-  snprintf(in->o_id, sizeof(in->o_id), "%d", o_id);
-  snprintf(in->o_d_id, sizeof(in->o_d_id), "%d", o_d_id);
-  snprintf(in->o_w_id, sizeof(in->o_w_id), "%d", o_w_id);
-  snprintf(in->o_c_id, sizeof(in->o_c_id), "%d", o_c_id);
+  snprintf(in->o_id, sizeof(in->o_id), "%ld", o_id);
+  snprintf(in->o_d_id, sizeof(in->o_d_id), "%ld", o_d_id);
+  snprintf(in->o_w_id, sizeof(in->o_w_id), "%ld", o_w_id);
+  snprintf(in->o_c_id, sizeof(in->o_c_id), "%ld", o_c_id);
   snprintf(in->o_carrier_id, sizeof(in->o_carrier_id), "%ld",
            TARandom_number(1, 10));
   snprintf(in->o_ol_cnt, sizeof(in->o_ol_cnt), "%ld", TARandom_number(5, 15));
@@ -87,7 +87,7 @@ int OCTACLoadOrders_oracleTX(OCIEnv *envhp, OCIError *errhp, OCISvcCtx *svchp,
     "INSERT INTO order_line (ol_o_id, ol_d_id, ol_w_id, ol_number, ol_i_id, "
     "ol_supply_w_id, ol_quantity, ol_amount, ol_dist_info, ol_delivery_d) "
     "VALUES (:1, :2, :3, :4, :5, :6, :7, :8, :9, SYSDATE)";
-  static int num_inserts = 0;
+  static long num_inserts = 0;
 
   /* the last 900 orders have not been delivered */
   if (atol(in->o_id) > ORD_PER_DIST - 900)

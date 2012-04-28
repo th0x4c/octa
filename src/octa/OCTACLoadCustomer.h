@@ -16,7 +16,7 @@
 #include <OC/OC.h>
 #include "OCTACConfig.h"
 
-void OCTACLoadCustomer_beforeTX(int c_id, int c_d_id, int c_w_id,
+void OCTACLoadCustomer_beforeTX(long c_id, long c_d_id, long c_w_id,
                                 void **inout);
 int OCTACLoadCustomer_oracleTX(OCIEnv *envhp, OCIError *errhp,
                                OCISvcCtx *svchp, void **inout, char *errmsg,

@@ -24,7 +24,7 @@ struct OCTACLoadDistrictInput
 };
 typedef struct OCTACLoadDistrictInput OCTACLoadDistrictInput;
 
-void OCTACLoadDistrict_beforeTX(int d_id, int d_w_id, void **inout)
+void OCTACLoadDistrict_beforeTX(long d_id, long d_w_id, void **inout)
 {
   OCTACLoadDistrictInput *in;
 
@@ -35,8 +35,8 @@ void OCTACLoadDistrict_beforeTX(int d_id, int d_w_id, void **inout)
     exit(1);
   }
 
-  snprintf(in->d_id, sizeof(in->d_id), "%d", d_id);
-  snprintf(in->d_w_id, sizeof(in->d_w_id), "%d", d_w_id);
+  snprintf(in->d_id, sizeof(in->d_id), "%ld", d_id);
+  snprintf(in->d_w_id, sizeof(in->d_w_id), "%ld", d_w_id);
   TARandom_getAlphaString(in->d_name, 6, 10);
   OCTACConfig_makeAddress(in->d_street_1, in->d_street_2, in->d_city,
                           in->d_state, in->d_zip);
@@ -44,7 +44,7 @@ void OCTACLoadDistrict_beforeTX(int d_id, int d_w_id, void **inout)
   snprintf(in->d_tax, sizeof(in->d_tax), "%.4f",
            TARandom_number(0, 20) / 100.0);
   snprintf(in->d_ytd, sizeof(in->d_ytd), "300000.00");
-  snprintf(in->d_next_o_id, sizeof(in->d_next_o_id), "%d", 3001);
+  snprintf(in->d_next_o_id, sizeof(in->d_next_o_id), "%ld", 3001L);
 
   *inout = in;
 }
@@ -60,7 +60,7 @@ int OCTACLoadDistrict_oracleTX(OCIEnv *envhp, OCIError *errhp,
     "INSERT INTO district (d_id, d_w_id, d_name, d_street_1, d_street_2, "
     "d_city, d_state, d_zip, d_tax, d_ytd, d_next_o_id) "
     "VALUES (:1, :2, :3, :4, :5, :6, :7, :8, :9, :10, :11)";
-  static int num_inserts = 0;
+  static long num_inserts = 0;
 
   sql = OCSQL_initWithSQL(envhp, errhp, insert_district_sql);
   errcode = OCOCIERROR(errhp, errmsg, errmsgsize,

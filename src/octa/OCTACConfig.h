@@ -23,7 +23,7 @@
 void OCTACConfig_insertOriginal(char *data);
 void OCTACConfig_makeAddress(char *street_1, char *street_2, char *city,
                              char *state, char *zip);
-void OCTACConfig_lastname(int num, char *name);
-void OCTACConfig_initPermutation(int seq[], size_t seqsize);
+void OCTACConfig_lastname(long num, char *name);
+void OCTACConfig_initPermutation(long seq[], size_t seqsize);
 
 #endif /* _OCTACCONFIG_H_ */

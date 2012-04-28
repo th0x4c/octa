@@ -41,7 +41,7 @@ void OCTACConfig_makeAddress(char *street_1, char *street_2, char *city,
   snprintf(zip, 9, "%ld11111", TARandom_number(0, 9999));
 }
 
-void OCTACConfig_lastname(int num, char *name)
+void OCTACConfig_lastname(long num, char *name)
 {
   static char *n[] = {"BAR", "OUGHT", "ABLE", "PRI", "PRES", "ESE", "ANTI",
                       "CALLY", "ATION", "EING"};
@@ -57,11 +57,11 @@ long OCTACConfig_NURand(long a, long x, long y)
           (y - x + 1)) + x;
 }
 
-void OCTACConfig_initPermutation(int seq[], size_t seqsize)
+void OCTACConfig_initPermutation(long seq[], size_t seqsize)
 {
   long i = 0;
   long j = 0;
-  int tmp = 0;
+  long tmp = 0;
 
   for (i = 0; i < seqsize; i++)
   {

@@ -18,7 +18,7 @@ struct OCTACLoadItemInput
 };
 typedef struct OCTACLoadItemInput OCTACLoadItemInput;
 
-void OCTACLoadItem_beforeTX(int i_id, void **inout)
+void OCTACLoadItem_beforeTX(long i_id, void **inout)
 {
   OCTACLoadItemInput *in;
 
@@ -29,7 +29,7 @@ void OCTACLoadItem_beforeTX(int i_id, void **inout)
     exit(1);
   }
 
-  snprintf(in->i_id, sizeof(in->i_id), "%d", i_id);
+  snprintf(in->i_id, sizeof(in->i_id), "%ld", i_id);
   /* I_IM_ID random within [1 .. 10,000] */
   snprintf(in->i_im_id, sizeof(in->i_im_id), "%ld", TARandom_number(1, 10000));
   TARandom_getAlphaString(in->i_name, 14, 24);
@@ -51,7 +51,7 @@ int OCTACLoadItem_oracleTX(OCIEnv *envhp, OCIError *errhp, OCISvcCtx *svchp,
   static char *insert_item_sql =
     "INSERT INTO item (i_id, i_im_id, i_name, i_price, i_data) "
     "VALUES (:1, :2, :3, :4, :5)";
-  static int num_inserts = 0;
+  static long num_inserts = 0;
 
   sql = OCSQL_initWithSQL(envhp, errhp, insert_item_sql);
   errcode = OCOCIERROR(errhp, errmsg, errmsgsize,

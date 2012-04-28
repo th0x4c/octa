@@ -16,7 +16,7 @@
 #include <OC/OC.h>
 #include "OCTACConfig.h"
 
-void OCTACLoadWarehouse_beforeTX(int w_id, void **inout);
+void OCTACLoadWarehouse_beforeTX(long w_id, void **inout);
 int OCTACLoadWarehouse_oracleTX(OCIEnv *envhp, OCIError *errhp,
                                 OCISvcCtx *svchp, void **inout, char *errmsg,
                                 size_t errmsgsize);

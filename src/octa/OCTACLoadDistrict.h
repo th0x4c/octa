@@ -16,7 +16,7 @@
 #include <OC/OC.h>
 #include "OCTACConfig.h"
 
-void OCTACLoadDistrict_beforeTX(int d_id, int d_w_id, void **inout);
+void OCTACLoadDistrict_beforeTX(long d_id, long d_w_id, void **inout);
 int OCTACLoadDistrict_oracleTX(OCIEnv *envhp, OCIError *errhp,
                                OCISvcCtx *svchp, void **inout, char *errmsg,
                                size_t errmsgsize);

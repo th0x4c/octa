@@ -22,7 +22,7 @@ struct OCTACLoadWarehouseInput
 };
 typedef struct OCTACLoadWarehouseInput OCTACLoadWarehouseInput;
 
-void OCTACLoadWarehouse_beforeTX(int w_id, void **inout)
+void OCTACLoadWarehouse_beforeTX(long w_id, void **inout)
 {
   OCTACLoadWarehouseInput *in;
 
@@ -33,7 +33,7 @@ void OCTACLoadWarehouse_beforeTX(int w_id, void **inout)
     exit(1);
   }
 
-  snprintf(in->w_id, sizeof(in->w_id), "%d", w_id);
+  snprintf(in->w_id, sizeof(in->w_id), "%ld", w_id);
   TARandom_getAlphaString(in->w_name, 6, 10);
   OCTACConfig_makeAddress(in->w_street_1, in->w_street_2, in->w_city,
                           in->w_state, in->w_zip);
@@ -56,7 +56,7 @@ int OCTACLoadWarehouse_oracleTX(OCIEnv *envhp, OCIError *errhp,
     "INSERT INTO warehouse (w_id, w_name, w_street_1, w_street_2, w_city, "
     "w_state, w_zip, w_tax, w_ytd) "
     "VALUES (:1, :2, :3, :4, :5, :6, :7, :8, :9)";
-  static int num_inserts = 0;
+  static long num_inserts = 0;
 
   sql = OCSQL_initWithSQL(envhp, errhp, insert_warehouse_sql);
   errcode = OCOCIERROR(errhp, errmsg, errmsgsize,

@@ -16,7 +16,7 @@
 #include <OC/OC.h>
 #include "OCTACConfig.h"
 
-void OCTACLoadOrders_beforeTX(int o_id, int o_d_id, int o_w_id, int o_c_id,
+void OCTACLoadOrders_beforeTX(long o_id, long o_d_id, long o_w_id, long o_c_id,
                               void **inout);
 int OCTACLoadOrders_oracleTX(OCIEnv *envhp, OCIError *errhp, OCISvcCtx *svchp,
                              void **inout, char *errmsg, size_t errmsgsize);

@@ -16,7 +16,7 @@
 #include <OC/OC.h>
 #include "OCTACConfig.h"
 
-void OCTACLoadItem_beforeTX(int i_id, void **inout);
+void OCTACLoadItem_beforeTX(long i_id, void **inout);
 int OCTACLoadItem_oracleTX(OCIEnv *envhp, OCIError *errhp, OCISvcCtx *svchp,
                            void **inout, char *errmsg, size_t errmsgsize);
 void OCTACLoadItem_afterTX(void **inout);

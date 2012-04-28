@@ -18,12 +18,12 @@ union semun {
 
 struct OCTACLoadCount
 {
-  int item;
-  int warehouse;
-  int stock;
-  int district;
-  int customer;
-  int orders;
+  long item;
+  long warehouse;
+  long stock;
+  long district;
+  long customer;
+  long orders;
 };
 typedef struct OCTACLoadCount OCTACLoadCount;
 
@@ -33,12 +33,12 @@ static int semid;
 static int shmid;
 static OCTACLoadCount total_count;
 static OCTACLoadCount *loaded_count;
-static int *permutation;
+static long *permutation;
 
 /* Each session has its own vairable */
 static OCOracle oracle;
 static OCTACLoadCount loading_count;
-static int o_c_id;
+static long o_c_id;
 
 #define SEMAPHORE_P                                            \
   {                                                            \
@@ -98,7 +98,7 @@ static void OCTACLoad_beforeSetup(TASessionManager self, void **inout)
   loaded_count->stock = 0;
   loaded_count->district = 0;
   loaded_count->orders = 0;
-  permutation = (int *) (loaded_count + 1);
+  permutation = (long *) (loaded_count + 1);
   OCTACConfig_initPermutation(permutation, CUST_PER_DIST);
 }
 
@@ -113,7 +113,7 @@ static void OCTACLoad_setup(TASession self, void **inout)
 /* Item */
 static void OCTACLoad_beforeTXItem(TASession self, void **inout)
 {
-  int i_id = loading_count.item;
+  long i_id = loading_count.item;
 
   if (i_id == 1)
   {
@@ -143,7 +143,7 @@ static void OCTACLoad_afterTXItem(TASession self, void **inout)
 /* Warehouse */
 static void OCTACLoad_beforeTXWarehouse(TASession self, void **inout)
 {
-  int w_id = loading_count.warehouse;
+  long w_id = loading_count.warehouse;
 
   if (w_id == 1)
   {
@@ -173,12 +173,12 @@ static void OCTACLoad_afterTXWarehouse(TASession self, void **inout)
 /* Stock */
 static void OCTACLoad_beforeTXStock(TASession self, void **inout)
 {
-  int s_i_id = ((loading_count.stock - 1) % MAXITEMS) + 1;
-  int s_w_id = ((loading_count.stock - 1) / MAXITEMS) + 1;
+  long s_i_id = ((loading_count.stock - 1) % MAXITEMS) + 1;
+  long s_w_id = ((loading_count.stock - 1) / MAXITEMS) + 1;
 
   if (s_i_id == 1)
   {
-    printf("Loading Stock Wid=%d\n", s_w_id);
+    printf("Loading Stock Wid=%ld\n", s_w_id);
     fflush(stdout);
   }
 
@@ -204,8 +204,8 @@ static void OCTACLoad_afterTXStock(TASession self, void **inout)
 /* District */
 static void OCTACLoad_beforeTXDistrict(TASession self, void **inout)
 {
-  int d_id = ((loading_count.district - 1) % DIST_PER_WARE) + 1;
-  int d_w_id = ((loading_count.district - 1) / DIST_PER_WARE) + 1;
+  long d_id = ((loading_count.district - 1) % DIST_PER_WARE) + 1;
+  long d_w_id = ((loading_count.district - 1) / DIST_PER_WARE) + 1;
 
   if (loading_count.district == 1)
   {
@@ -235,15 +235,15 @@ static void OCTACLoad_afterTXDistrict(TASession self, void **inout)
 /* Customer */
 static void OCTACLoad_beforeTXCustomer(TASession self, void **inout)
 {
-  int c_id = ((loading_count.customer - 1) % CUST_PER_DIST) + 1;
-  int c_d_id = ((loading_count.customer - 1) / CUST_PER_DIST) % DIST_PER_WARE +
-               1;
-  int c_w_id = ((loading_count.customer - 1) /
-                (DIST_PER_WARE * CUST_PER_DIST)) + 1;
+  long c_id = ((loading_count.customer - 1) % CUST_PER_DIST) + 1;
+  long c_d_id = ((loading_count.customer - 1) / CUST_PER_DIST) %
+                DIST_PER_WARE + 1;
+  long c_w_id = ((loading_count.customer - 1) /
+                 (DIST_PER_WARE * CUST_PER_DIST)) + 1;
 
   if (c_id == 1)
   {
-    printf("Loading Customer for DID=%d, WID=%d\n", c_d_id, c_w_id);
+    printf("Loading Customer for DID=%ld, WID=%ld\n", c_d_id, c_w_id);
     fflush(stdout);
   }
 
@@ -269,18 +269,18 @@ static void OCTACLoad_afterTXCustomer(TASession self, void **inout)
 /* Orders */
 static void OCTACLoad_beforeTXOrders(TASession self, void **inout)
 {
-  int o_id = ((loading_count.orders - 1) % ORD_PER_DIST) + 1;
-  int o_d_id = ((loading_count.orders - 1) / ORD_PER_DIST) % DIST_PER_WARE + 1;
-  int o_w_id = ((loading_count.orders - 1) / (DIST_PER_WARE * ORD_PER_DIST)) +
-               1;
+  long o_id = ((loading_count.orders - 1) % ORD_PER_DIST) + 1;
+  long o_d_id = ((loading_count.orders - 1) / ORD_PER_DIST) % DIST_PER_WARE +
+                1;
+  long o_w_id = ((loading_count.orders - 1) / (DIST_PER_WARE * ORD_PER_DIST)) +
+                1;
 
   if (o_id == 1)
   {
-    printf("Loading Orders for D=%d, W=%d\n", o_d_id, o_w_id);
+    printf("Loading Orders for D=%ld, W=%ld\n", o_d_id, o_w_id);
     fflush(stdout);
   }
 
-  /* fprintf(stderr, "O_C_ID: %d\n", o_c_id); /\* debug *\/ */
   OCTACLoadOrders_beforeTX(o_id, o_d_id, o_w_id, o_c_id, inout);
 }
 

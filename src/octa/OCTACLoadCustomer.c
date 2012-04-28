@@ -32,7 +32,8 @@ struct OCTACLoadCustomerInput
 };
 typedef struct OCTACLoadCustomerInput OCTACLoadCustomerInput;
 
-void OCTACLoadCustomer_beforeTX(int c_id, int c_d_id, int c_w_id, void **inout)
+void OCTACLoadCustomer_beforeTX(long c_id, long c_d_id, long c_w_id,
+                                void **inout)
 {
   OCTACLoadCustomerInput *in;
 
@@ -43,9 +44,9 @@ void OCTACLoadCustomer_beforeTX(int c_id, int c_d_id, int c_w_id, void **inout)
     exit(1);
   }
 
-  snprintf(in->c_id, sizeof(in->c_id), "%d", c_id);
-  snprintf(in->c_d_id, sizeof(in->c_d_id), "%d", c_d_id);
-  snprintf(in->c_w_id, sizeof(in->c_w_id), "%d", c_w_id);
+  snprintf(in->c_id, sizeof(in->c_id), "%ld", c_id);
+  snprintf(in->c_d_id, sizeof(in->c_d_id), "%ld", c_d_id);
+  snprintf(in->c_w_id, sizeof(in->c_w_id), "%ld", c_w_id);
   TARandom_getAlphaString(in->c_first, 8, 16);
   snprintf(in->c_middle, sizeof(in->c_middle), "%s", "OE");
   if (c_id <= 1000)
@@ -92,7 +93,7 @@ int OCTACLoadCustomer_oracleTX(OCIEnv *envhp, OCIError *errhp,
     "INSERT INTO history (h_c_id, h_c_d_id, h_c_w_id, h_w_id, h_d_id, h_date, "
     "h_amount, h_data) "
     "VALUES (:1, :2, :3, :4, :5, SYSDATE, :6, :7)";
-  static int num_inserts = 0;
+  static long num_inserts = 0;
 
   /* customer */
   sql = OCSQL_initWithSQL(envhp, errhp, insert_customer_sql);

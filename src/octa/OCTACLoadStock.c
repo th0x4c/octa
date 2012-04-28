@@ -27,7 +27,7 @@ struct OCTACLoadStockInput
 };
 typedef struct OCTACLoadStockInput OCTACLoadStockInput;
 
-void OCTACLoadStock_beforeTX(int s_i_id, int s_w_id, void **inout)
+void OCTACLoadStock_beforeTX(long s_i_id, long s_w_id, void **inout)
 {
   OCTACLoadStockInput *in;
 
@@ -38,8 +38,8 @@ void OCTACLoadStock_beforeTX(int s_i_id, int s_w_id, void **inout)
     exit(1);
   }
 
-  snprintf(in->s_i_id, sizeof(in->s_i_id), "%d", s_i_id);
-  snprintf(in->s_w_id, sizeof(in->s_w_id), "%d", s_w_id);
+  snprintf(in->s_i_id, sizeof(in->s_i_id), "%ld", s_i_id);
+  snprintf(in->s_w_id, sizeof(in->s_w_id), "%ld", s_w_id);
   snprintf(in->s_quantity, sizeof(in->s_quantity), "%ld",
            TARandom_number(10, 100));
   TARandom_getAlphaString(in->s_dist_01, 24, 24);
@@ -71,7 +71,7 @@ int OCTACLoadStock_oracleTX(OCIEnv *envhp, OCIError *errhp, OCISvcCtx *svchp,
     "s_dist_09, s_dist_10, s_data, s_ytd, s_order_cnt, s_remote_cnt) "
     "VALUES (:1, :2, :3, :4, :5, :6, :7, :8, :9, :10, :11, :12, :13, :14, "
     "0, 0, 0)";
-  static int num_inserts = 0;
+  static long num_inserts = 0;
 
   sql = OCSQL_initWithSQL(envhp, errhp, insert_stock_sql);
   errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
