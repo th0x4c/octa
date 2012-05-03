@@ -9,12 +9,14 @@
 #ifndef _TASESSION_H_
 #define _TASESSION_H_
 
-#include <stdlib.h> /* malloc free */
-#include <string.h> /* memset strcpy strcmp */
-#include <stdio.h>  /* snprintf fprintf */
-#include <time.h>   /* nanosleep */
-#include <signal.h> /* sigemptyset sigaction */
+#include <stdlib.h>   /* malloc free */
+#include <string.h>   /* memset strcpy strcmp */
+#include <stdio.h>    /* snprintf fprintf */
+#include <time.h>     /* nanosleep */
+#include <sys/time.h> /* gettimeofday */
+#include <signal.h>   /* sigemptyset sigaction */
 #include "TABool.h"
+#include "TATime.h"
 #include "TALog.h"
 #include "TATXStat.h"
 
@@ -52,6 +54,9 @@ void TASession_toggleStatus(TASession self);
 void TASession_setPeriod(TASession self, int period);
 int TASession_period(TASession self);
 void TASession_movePeriod(TASession self);
+void TASession_setPeriodInterval(TASession self, struct timeval start_time,
+                                 int rampup_interval, int measurement_interval,
+                                 int rampdown_interval);
 void TASession_setSetup(TASession self,
                         void (*setup)(TASession self, void **inout));
 void TASession_setSelectTX(TASession self, char *(*selectTX)(TASession self));

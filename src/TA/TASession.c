@@ -29,6 +29,7 @@ struct __TASession
   void (*when_errorTXs[MAX_TXS])(TASession self, void **inout, int errcode,
                                  char *errmessage, size_t errmessagesize);
   int tx_count;
+  struct timeval end_target_time[NUM_PERIOD];
 };
 
 #define INVALID_INDEX -1
@@ -37,6 +38,7 @@ static volatile sig_atomic_t sigflag = 0;
 
 static int TASession_TXIndexByName(TASession self, const char *tx_name);
 static void TASession_signalHandler(int sig);
+static void TASession_movePeriodByTarget(TASession self);
 
 TASession TASession_init()
 {
@@ -75,6 +77,10 @@ TASession TASession_init()
     self->when_errorTXs[i] = NULL;
   }
   self->tx_count = 0;
+  for (i = 0; i < NUM_PERIOD; i++)
+  {
+    timerclear(&(self->end_target_time[i]));
+  }
 
   return self;
 }
@@ -163,6 +169,10 @@ void TASession_deepCopy(TASession self, TASession dest)
     dest->when_errorTXs[i] = self->when_errorTXs[i];
   }
   dest->tx_count = self->tx_count;
+  for (i = 0; i < NUM_PERIOD; i++)
+  {
+    dest->end_target_time[i] = self->end_target_time[i];
+  }
 }
 
 void TASession_setID(TASession self, int id)
@@ -268,6 +278,26 @@ void TASession_movePeriod(TASession self)
   default:
     break;
   }
+}
+
+void TASession_setPeriodInterval(TASession self, struct timeval start_time,
+                                 int rampup_interval, int measurement_interval,
+                                 int rampdown_interval)
+{
+  struct timeval interval;
+
+  timerclear(&interval);
+  interval.tv_sec = rampup_interval;
+  interval.tv_usec = 0;
+  timeradd(&start_time, &interval, &(self->end_target_time[TASession_RAMPUP]));
+  interval.tv_sec = measurement_interval;
+  interval.tv_usec = 0;
+  timeradd(&(self->end_target_time[TASession_RAMPUP]), &interval,
+           &(self->end_target_time[TASession_MEASUREMENT]));
+  interval.tv_sec = rampdown_interval;
+  interval.tv_usec = 0;
+  timeradd(&(self->end_target_time[TASession_MEASUREMENT]), &interval,
+           &(self->end_target_time[TASession_RAMPDOWN]));
 }
 
 void TASession_setSetup(TASession self,
@@ -418,6 +448,8 @@ int TASession_main(TASession self, void **inout)
       break;
     }
 
+    TASession_movePeriodByTarget(self);
+
     switch (self->status)
     {
     case TASession_STANDBY:
@@ -513,4 +545,34 @@ static int TASession_TXIndexByName(TASession self, const char *tx_name)
 static void TASession_signalHandler(int sig)
 {
   sigflag = sig;
+}
+
+static void TASession_movePeriodByTarget(TASession self)
+{
+  struct timeval current_time;
+
+  timerclear(&current_time);
+  gettimeofday(&current_time, (struct timezone *)0);
+  switch (self->period)
+  {
+  case TASession_RAMPUP:
+    if (timerisset(&(self->end_target_time[TASession_RAMPUP])) &&
+        timercmp(&(self->end_target_time[TASession_RAMPUP]),
+                 &current_time, <))
+      TASession_setPeriod(self, TASession_MEASUREMENT);
+  case TASession_MEASUREMENT:
+    if (timerisset(&(self->end_target_time[TASession_MEASUREMENT])) &&
+        timercmp(&(self->end_target_time[TASession_MEASUREMENT]),
+                 &current_time, <))
+      TASession_setPeriod(self, TASession_RAMPDOWN);
+  case TASession_RAMPDOWN:
+    if (timerisset(&(self->end_target_time[TASession_RAMPDOWN])) &&
+        timercmp(&(self->end_target_time[TASession_RAMPDOWN]),
+                 &current_time, <))
+      TASession_setStatus(self, TASession_STOP);
+    break;
+  default:
+    break;
+  }
+
 }
