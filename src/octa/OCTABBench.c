@@ -469,107 +469,23 @@ static void OCTABBench_monitor(TASessionManager self)
 static void OCTABBench_afterTeardown(TASessionManager self, void **inout)
 {
   OCTABBenchInput *io = (OCTABBenchInput *)*inout;
-  TASession *sessions = TASessionManager_sessions(self);
   TATXStat summary_stat =
              TASessionManager_summaryStatByNameInPeriodInPhase(self,
                "OCTAB bench", TASession_MEASUREMENT, TASession_TX);
-  TATXStat summary_before_stat =
-             TASessionManager_summaryStatByNameInPeriodInPhase(self,
-               "OCTAB bench", TASession_MEASUREMENT, TASession_BEFORE);
-  TATXStat summary_after_stat =
-             TASessionManager_summaryStatByNameInPeriodInPhase(self,
-               "OCTAB bench", TASession_MEASUREMENT, TASession_AFTER);
-  TATXStat summary_rampup_before_stat =
-             TASessionManager_summaryStatByNameInPeriodInPhase(self,
-               "OCTAB bench", TASession_RAMPUP, TASession_BEFORE);
-  struct timeval min, avg, max;
-  struct timeval ptile50, ptile80, ptile90;
-  struct timeval min2, avg2, max2;
-  struct timeval rampup_first_time, rampup_time;
-  struct timeval first_time, end_time, measurement_interval;
   struct timeval end_timeval;
   char end_time_str[24] = "0000-00-00 00:00:00.000";
-
-  timerclear(&min);
-  timerclear(&avg);
-  timerclear(&max);
-  timerclear(&ptile50);
-  timerclear(&ptile80);
-  timerclear(&ptile90);
-  timerclear(&min2);
-  timerclear(&avg2);
-  timerclear(&max2);
-  min = TATXStat_minElapsedTime(summary_stat);
-  avg = TATXStat_avgElapsedTime(summary_stat);
-  max = TATXStat_maxElapsedTime(summary_stat);
+  static char *tx_names[1] = {"OCTAB bench"};
 
   OCTABBench_monitor(self);
-
   TADistribution_print(TATXStat_distribution(summary_stat));
-
-  printf("================================================================\n");
-  printf("================= Numerical Quantities Summary =================\n");
-  printf("================================================================\n");
-  printf("MQTh, computed Maximum Qualified Throughput %15.2f tpmB\n",
-         TATXStat_tps(summary_stat) * 60);
-  printf("\n");
-  printf("Response Times (minimum/ Average/ maximum) in seconds\n");
-  printf("  - %-29s %7.6f / %7.6f / %7.6f\n",
-         "", timeval2sec(min), timeval2sec(avg), timeval2sec(max));
-  printf("\n");
-  printf("Response Times (50th/ 80th/ 90th percentile) in seconds\n");
-  ptile50 = TADistribution_percentile(TATXStat_distribution(summary_stat), 50);
-  ptile80 = TADistribution_percentile(TATXStat_distribution(summary_stat), 80);
-  ptile90 = TADistribution_percentile(TATXStat_distribution(summary_stat), 90);
-  printf("  - %-29s %-8.3f / %-8.3f / %-8.3f\n",
-         "", timeval2sec(ptile50), timeval2sec(ptile80), timeval2sec(ptile90));
-  printf("\n");
-  printf("Keying/Think Times (in seconds),\n");
-  printf("                         Min.          Average           Max.\n");
-  min = TATXStat_minElapsedTime(summary_before_stat);
-  avg = TATXStat_avgElapsedTime(summary_before_stat);
-  max = TATXStat_maxElapsedTime(summary_before_stat);
-  min2 = TATXStat_minElapsedTime(summary_after_stat);
-  avg2 = TATXStat_avgElapsedTime(summary_after_stat);
-  max2 = TATXStat_maxElapsedTime(summary_after_stat);
-  printf("  - %-12s %7.3f/%7.3f %7.3f/%7.3f %7.3f/%7.3f\n",
-         "", timeval2sec(min), timeval2sec(min2),
-         timeval2sec(avg), timeval2sec(avg2),
-         timeval2sec(max), timeval2sec(max2));
-  printf("\n");
-  timerclear(&rampup_time);
-  timerclear(&rampup_first_time);
-  timerclear(&first_time);
-  timerclear(&end_time);
-  timerclear(&measurement_interval);
-  first_time = TATXStat_firstTime(summary_stat);
-  if (TATXStat_count(summary_rampup_before_stat) > 0)
-  {
-    rampup_first_time = TATXStat_firstTime(summary_rampup_before_stat);
-    timersub(&first_time, &rampup_first_time, &rampup_time);
-  }
-  printf("Test Duration\n");
-  printf("  - Ramp-up time %39.3f seconds\n", timeval2sec(rampup_time));
-  end_time = TATXStat_endTime(summary_stat);
-  timersub(&end_time, &first_time, &measurement_interval);
-  printf("  - Measurement interval %31.3f seconds\n",
-         timeval2sec(measurement_interval));
-  printf("  - Number of transactions (all types)\n");
-  printf("    completed in measurement interval %26d\n",
-         TATXStat_count(summary_stat));
-  printf("================================================================\n");
+  TASessionManager_printNumericalQuantitiesSummary(self, tx_names, 1);
 
   timerclear(&end_timeval);
   gettimeofday(&end_timeval, (struct timezone *)0);
   timeval2str(end_time_str, end_timeval);
-
   printf("----------------------------------------------------------------\n");
   printf("               End Time : %s\n", end_time_str);
   printf("----------------------------------------------------------------\n");
-
-  TATXStat_release(summary_stat);
-  TATXStat_release(summary_before_stat);
-  TATXStat_release(summary_after_stat);
 }
 
 int OCTABBench_main(const OCTAOption *opt)
