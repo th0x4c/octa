@@ -140,6 +140,167 @@ TATXStat TASessionManager_summaryStatByNameInPeriodInPhase(
   return summary_stat;
 }
 
+void TASessionManager_printNumericalQuantitiesSummary(TASessionManager self,
+                                                      char *tx_names[],
+                                                      int tx_count)
+{
+  TATXStat summary_stat = NULL;
+  TATXStat before_stat = NULL;
+  TATXStat after_stat = NULL;
+  long total_count = 0;
+  struct timeval rampup_first_time, first_time, end_time;
+  struct timeval rampup_interval, measurement_interval;
+  struct timeval tmp_time;
+  int i = 0;
+
+  for (i = 0; i < tx_count; i++)
+  {
+    summary_stat = TASessionManager_summaryStatByNameInPeriodInPhase(self,
+                     tx_names[i], TASession_MEASUREMENT, TASession_TX);
+    total_count += TATXStat_count(summary_stat);
+    TATXStat_release(summary_stat);
+  }
+
+  timerclear(&rampup_first_time);
+  timerclear(&first_time);
+  timerclear(&end_time);
+  timerclear(&rampup_interval);
+  timerclear(&measurement_interval);
+  timerclear(&tmp_time);
+  for (i = 0; i < tx_count; i++)
+  {
+    summary_stat = TASessionManager_summaryStatByNameInPeriodInPhase(self,
+                     tx_names[i], TASession_RAMPUP, TASession_BEFORE);
+    tmp_time = TATXStat_firstTime(summary_stat);
+    if (i == 0)
+      rampup_first_time = tmp_time;
+    else
+    {
+      if (timercmp(&tmp_time, &rampup_first_time, <))
+        rampup_first_time = tmp_time;
+    }
+    TATXStat_release(summary_stat);
+  }
+  for (i = 0; i < tx_count; i++)
+  {
+    summary_stat = TASessionManager_summaryStatByNameInPeriodInPhase(self,
+                     tx_names[i], TASession_MEASUREMENT, TASession_BEFORE);
+    tmp_time = TATXStat_firstTime(summary_stat);
+    if (i == 0)
+      first_time = tmp_time;
+    else
+    {
+      if (timercmp(&tmp_time, &first_time, <))
+        first_time = tmp_time;
+    }
+    TATXStat_release(summary_stat);
+  }
+  for (i = 0; i < tx_count; i++)
+  {
+    summary_stat = TASessionManager_summaryStatByNameInPeriodInPhase(self,
+                     tx_names[i], TASession_MEASUREMENT, TASession_AFTER);
+    tmp_time = TATXStat_endTime(summary_stat);
+    if (i == 0)
+      end_time = tmp_time;
+    else
+    {
+      if (timercmp(&end_time, &tmp_time, <))
+        end_time = tmp_time;
+    }
+    TATXStat_release(summary_stat);
+  }
+  if (timerisset(&rampup_first_time) && timerisset(&first_time))
+    timersub(&first_time, &rampup_first_time, &rampup_interval);
+  if (timerisset(&first_time) && timerisset(&end_time))
+    timersub(&end_time, &first_time, &measurement_interval);
+
+  printf("================================================================\n");
+  printf("================= Numerical Quantities Summary =================\n");
+  printf("================================================================\n");
+
+  summary_stat = TASessionManager_summaryStatByNameInPeriodInPhase(self,
+                   tx_names[0], TASession_MEASUREMENT, TASession_TX);
+  printf("MQTh, computed Maximum Qualified Throughput %16.2f tpm\n",
+         TATXStat_tps(summary_stat) * 60);
+  printf("  - %-39s %16.2f tps\n", TATXStat_name(summary_stat),
+         TATXStat_tps(summary_stat));
+  TATXStat_release(summary_stat);
+  printf("\n");
+
+  printf("Response Times (minimum/ Average/ maximum) in seconds\n");
+  for (i = 0; i < tx_count; i++)
+  {
+    summary_stat = TASessionManager_summaryStatByNameInPeriodInPhase(self,
+                     tx_names[i], TASession_MEASUREMENT, TASession_TX);
+    printf("  - %-29s %8.6f / %8.6f / %8.6f\n",
+           tx_names[i],
+           timeval2sec(TATXStat_minElapsedTime(summary_stat)),
+           timeval2sec(TATXStat_avgElapsedTime(summary_stat)),
+           timeval2sec(TATXStat_maxElapsedTime(summary_stat)));
+    TATXStat_release(summary_stat);
+  }
+  printf("\n");
+
+  printf("Response Times (50th/ 80th/ 90th percentile) in seconds\n");
+  for (i = 0; i < tx_count; i++)
+  {
+    summary_stat = TASessionManager_summaryStatByNameInPeriodInPhase(self,
+                     tx_names[i], TASession_MEASUREMENT, TASession_TX);
+    printf("  - %-29s %-8.3f / %-8.3f / %-8.3f\n",
+           tx_names[i],
+           timeval2sec(TADistribution_percentile(
+                         TATXStat_distribution(summary_stat), 50)),
+           timeval2sec(TADistribution_percentile(
+                         TATXStat_distribution(summary_stat), 80)),
+           timeval2sec(TADistribution_percentile(
+                         TATXStat_distribution(summary_stat), 90)));
+    TATXStat_release(summary_stat);
+  }
+  printf("\n");
+
+  printf("Transaction Mix, in percent of total transactions\n");
+  for (i = 0; i < tx_count; i++)
+  {
+    summary_stat = TASessionManager_summaryStatByNameInPeriodInPhase(self,
+                     tx_names[i], TASession_MEASUREMENT, TASession_TX);
+    printf("  - %-51s %6.2f %%\n",
+           tx_names[i],
+           ((double) TATXStat_count(summary_stat)) * 100 / total_count);
+    TATXStat_release(summary_stat);
+  }
+  printf("\n");
+
+  printf("Keying/Think Times (in seconds),\n");
+  printf("                         Min.          Average           Max.\n");
+  for (i = 0; i < tx_count; i++)
+  {
+    before_stat = TASessionManager_summaryStatByNameInPeriodInPhase(self,
+                    tx_names[i], TASession_MEASUREMENT, TASession_BEFORE);
+    after_stat = TASessionManager_summaryStatByNameInPeriodInPhase(self,
+                   tx_names[i], TASession_MEASUREMENT, TASession_AFTER);
+    printf("  - %-12s %7.3f/%7.3f %7.3f/%7.3f %7.3f/%7.3f\n",
+           tx_names[i],
+           timeval2sec(TATXStat_minElapsedTime(before_stat)),
+           timeval2sec(TATXStat_minElapsedTime(after_stat)),
+           timeval2sec(TATXStat_avgElapsedTime(before_stat)),
+           timeval2sec(TATXStat_avgElapsedTime(after_stat)),
+           timeval2sec(TATXStat_maxElapsedTime(before_stat)),
+           timeval2sec(TATXStat_maxElapsedTime(after_stat)));
+    TATXStat_release(before_stat);
+    TATXStat_release(after_stat);
+  }
+  printf("\n");
+
+  printf("Test Duration\n");
+  printf("  - Ramp-up time %39.3f seconds\n", timeval2sec(rampup_interval));
+  printf("  - Measurement interval %31.3f seconds\n",
+         timeval2sec(measurement_interval));
+  printf("  - Number of transactions (all types)\n");
+  printf("    completed in measurement interval %26ld\n", total_count);
+  printf("================================================================\n");
+  fflush(stdout);
+}
+
 int TASessionManager_main(TASessionManager self, void **inout)
 {
   TASession session = NULL;
