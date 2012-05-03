@@ -12,10 +12,6 @@ struct OCTABBenchInput
 {
   OCTAOption option;
   OCOracle oracle;
-  struct timeval start_time;
-  struct timeval measurement_start_time;
-  struct timeval rampdown_start_time;
-  struct timeval stop_time;
   int session_id;
   int amount;
   int branch_id;
@@ -24,44 +20,25 @@ struct OCTABBenchInput
 };
 typedef struct OCTABBenchInput OCTABBenchInput;
 
-static void OCTABBench_setPeriod(TASession session, OCTABBenchInput *input)
-{
-  struct timeval current_time;
-
-  timerclear(&current_time);
-  gettimeofday(&current_time, (struct timezone *)0);
-  switch (TASession_period(session))
-  {
-  case TASession_RAMPUP:
-    if (timercmp(&(input->measurement_start_time), &current_time, <))
-      TASession_setPeriod(session, TASession_MEASUREMENT);
-  case TASession_MEASUREMENT:
-    if (timercmp(&(input->rampdown_start_time), &current_time, <))
-      TASession_setPeriod(session, TASession_RAMPDOWN);
-  case TASession_RAMPDOWN:
-    if (timercmp(&(input->stop_time), &current_time, <))
-      TASession_setStatus(session, TASession_STOP);
-    break;
-  default:
-    break;
-  }
-}
-
 static void OCTABBench_beforeSetup(TASessionManager self, void **inout)
 {
   OCTABBenchInput *io = (OCTABBenchInput *)*inout;
   OCTAOption option = io->option;
-  char start_time[24] = "0000-00-00 00:00:00.000";
+  struct timeval start_time;
+  char start_time_str[24] = "0000-00-00 00:00:00.000";
+  int i = 0;
 
-  gettimeofday(&(io->start_time), (struct timezone *)0);
-  timeval2str(start_time, io->start_time);
+  timerclear(&start_time);
+  gettimeofday(&start_time, (struct timezone *)0);
+  timeval2str(start_time_str, start_time);
 
-  timeradd(&(io->start_time), &(option.rampup_time),
-           &(io->measurement_start_time));
-  timeradd(&(io->measurement_start_time), &(option.measurement_interval),
-           &(io->rampdown_start_time));
-  timeradd(&(io->rampdown_start_time), &(option.rampdown_time),
-           &(io->stop_time));
+  for (i = 0; i < TASessionManager_numberOfSessions(self); i++)
+  {
+    TASession_setPeriodInterval(TASessionManager_sessions(self)[i], start_time,
+                                (int) timeval2sec(option.rampup_time),
+                                (int) timeval2sec(option.measurement_interval),
+                                (int) timeval2sec(option.rampdown_time));
+  }
 
   printf("----------------------------------------------------------------\n");
   printf("        OCTA (OCI Transaction Application) %s\n", VERSION);
@@ -80,7 +57,7 @@ static void OCTABBench_beforeSetup(TASessionManager self, void **inout)
   printf("            Think time (in sec) : %9.3f\n",
          timeval2sec(option.think_time));
   printf("----------------------------------------------------------------\n");
-  printf("              Start Time : %s\n", start_time);
+  printf("              Start Time : %s\n", start_time_str);
   printf("----------------------------------------------------------------\n");
 }
 
@@ -96,8 +73,6 @@ static void OCTABBench_setup(TASession self, void **inout)
   TASession_setStatus(self, TASession_RUNNING);
 
   srandom(time(NULL) * getpid());
-
-  OCTABBench_setPeriod(self, io);
 }
 
 static void OCTABBench_beforeTX(TASession self, void **inout)
@@ -375,7 +350,6 @@ static void OCTABBench_afterTX(TASession self, void **inout)
   think_time.tv_sec = io->option.think_time.tv_sec;
   think_time.tv_nsec = io->option.think_time.tv_usec * 1000;
   nanosleep(&think_time, NULL);
-  OCTABBench_setPeriod(self, io);
 }
 
 static char *OCTABBench_selectTX(TASession self)
@@ -614,10 +588,6 @@ int OCTABBench_main(const OCTAOption *opt)
   memset(io, 0, sizeof(*io));
   io->option = *opt;
   io->oracle = NULL;
-  timerclear(&(io->start_time));
-  timerclear(&(io->measurement_start_time));
-  timerclear(&(io->rampdown_start_time));
-  timerclear(&(io->stop_time));
 
   TASession_setSetup(session_prototype, OCTABBench_setup);
   TASession_setTX(session_prototype, OCTABBench_TX, "OCTAB bench");
