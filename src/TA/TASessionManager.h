@@ -11,12 +11,13 @@
 
 #include <stdlib.h>    /* malloc free fprintf stderr strerror */
 #include <string.h>    /* memset */
-#include <stdio.h>     /* printf fflush */
+#include <stdio.h>     /* sprintf printf fflush */
 #include <sys/shm.h>   /* shmget shmat shmdt shmctl */
 #include <stdlib.h>    /* exit */
 #include <errno.h>     /* errno */
 #include <unistd.h>    /* fork */
 #include <time.h>      /* nanosleep */
+#include <sys/time.h>  /* gettimeofday */
 #include <sys/types.h> /* wait */
 #include <sys/wait.h>  /* wait */
 #include <signal.h>    /* sigemptyset sigaction */
@@ -45,6 +46,8 @@ TATXStat TASessionManager_summaryStatByNameInPeriodInPhase(
            TASessionManager self,
            const char *tx_name,
            int period, int phase);
+void TASessionManager_printMonitoredTX(TASessionManager self,
+                                       const char *tx_name, int pagesize);
 void TASessionManager_printNumericalQuantitiesSummary(TASessionManager self,
                                                       char *tx_names[],
                                                       int tx_count);

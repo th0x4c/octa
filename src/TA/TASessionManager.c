@@ -140,6 +140,90 @@ TATXStat TASessionManager_summaryStatByNameInPeriodInPhase(
   return summary_stat;
 }
 
+void TASessionManager_printMonitoredTX(TASessionManager self,
+                                       const char *tx_name, int pagesize)
+{
+  static int monitor_count = 0;
+  static TATXStat pre_summary_rampup = NULL;
+  static TATXStat pre_summary_measurement = NULL;
+  static TATXStat pre_summary_rampdown = NULL;
+  TATXStat summary_rampup, summary_measurement, summary_rampdown;
+  TATXStat diff_rampup, diff_measurement, diff_rampdown;
+  struct timeval current_time;
+  char current_time_str[24] = "0000-00-00 00:00:00.000";
+  char short_time_str[15];
+  struct timeval avg;
+
+  if (pre_summary_rampup == NULL)
+    pre_summary_rampup = TATXStat_init();
+  if (pre_summary_measurement == NULL)
+    pre_summary_measurement = TATXStat_init();
+  if (pre_summary_rampdown == NULL)
+    pre_summary_rampdown = TATXStat_init();
+
+  timerclear(&avg);
+  timerclear(&current_time);
+  gettimeofday(&current_time, (struct timezone *)0);
+  timeval2str(current_time_str, current_time);
+  sprintf(short_time_str, "%.*s", 14, current_time_str + 5);
+
+  summary_rampup = TASessionManager_summaryStatByNameInPeriodInPhase(self,
+                     tx_name, TASession_RAMPUP, TASession_TX);
+  summary_measurement = TASessionManager_summaryStatByNameInPeriodInPhase(self,
+                          tx_name, TASession_MEASUREMENT, TASession_TX);
+  summary_rampdown = TASessionManager_summaryStatByNameInPeriodInPhase(self,
+                       tx_name, TASession_RAMPDOWN, TASession_TX);
+
+  diff_rampup = TATXStat_minus(summary_rampup, pre_summary_rampup);
+  diff_measurement = TATXStat_minus(summary_measurement,
+                                    pre_summary_measurement);
+  diff_rampdown = TATXStat_minus(summary_rampdown, pre_summary_rampdown);
+
+  if (pagesize > 0 && (monitor_count % pagesize) == 0)
+  {
+    printf("Time           Period      Count    Error    AVG      TPS\n");
+    printf("-------------- ----------- -------- -------- -------- --------\n");
+  }
+  monitor_count++;
+
+  if (TATXStat_count(diff_rampup) > 0)
+  {
+    avg = TATXStat_avgElapsedTime(diff_rampup);
+    printf("%s %-11s %8d %8d %8.6f %8.3f\n", short_time_str, "Ramp-up",
+           TATXStat_count(diff_rampup),
+           TATXStat_errorCount(diff_rampup),
+           timeval2sec(avg), TATXStat_tps(diff_rampup));
+  }
+  if (TATXStat_count(diff_measurement) > 0)
+  {
+    avg = TATXStat_avgElapsedTime(diff_measurement);
+    printf("%s %-11s %8d %8d %8.6f %8.3f\n", short_time_str, "Measurement",
+           TATXStat_count(diff_measurement),
+           TATXStat_errorCount(diff_measurement),
+           timeval2sec(avg), TATXStat_tps(diff_measurement));
+  }
+  if (TATXStat_count(diff_rampdown) > 0)
+  {
+    avg = TATXStat_avgElapsedTime(diff_rampdown);
+    printf("%s %-11s %8d %8d %8.6f %8.3f\n", short_time_str, "Ramp-down",
+           TATXStat_count(diff_rampdown),
+           TATXStat_errorCount(diff_rampdown),
+           timeval2sec(avg), TATXStat_tps(diff_rampdown));
+  }
+  fflush(stdout);
+
+  TATXStat_release(pre_summary_rampup);
+  TATXStat_release(pre_summary_measurement);
+  TATXStat_release(pre_summary_rampdown);
+  TATXStat_release(diff_rampup);
+  TATXStat_release(diff_measurement);
+  TATXStat_release(diff_rampdown);
+
+  pre_summary_rampup = summary_rampup;
+  pre_summary_measurement = summary_measurement;
+  pre_summary_rampdown = summary_rampdown;
+}
+
 void TASessionManager_printNumericalQuantitiesSummary(TASessionManager self,
                                                       char *tx_names[],
                                                       int tx_count)
