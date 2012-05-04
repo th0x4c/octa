@@ -365,91 +365,14 @@ static void OCTABBench_teardown(TASession self, void **inout)
 static void OCTABBench_monitor(TASessionManager self)
 {
 #define MONITOR_INTERVAL 4
-#define HEADER_PER_LINE 20
-  static int monitor_count = 0;
-  static TATXStat pre_summary_rampup = NULL;
-  static TATXStat pre_summary_measurement = NULL;
-  static TATXStat pre_summary_rampdown = NULL;
-  TATXStat summary_rampup, summary_measurement, summary_rampdown;
-  TATXStat diff_rampup, diff_measurement, diff_rampdown;
-  struct timeval current_time;
-  char current_time_str[24] = "0000-00-00 00:00:00.000";
-  char short_time_str[15];
-  struct timeval avg;
+#define PAGESIZE 20
   struct timespec monitor_interval;
 
   monitor_interval.tv_sec = MONITOR_INTERVAL;
   monitor_interval.tv_nsec = 0;
   nanosleep(&monitor_interval, NULL);
 
-  if (pre_summary_rampup == NULL)
-    pre_summary_rampup = TATXStat_init();
-  if (pre_summary_measurement == NULL)
-    pre_summary_measurement = TATXStat_init();
-  if (pre_summary_rampdown == NULL)
-    pre_summary_rampdown = TATXStat_init();
-
-  timerclear(&avg);
-  timerclear(&current_time);
-  gettimeofday(&current_time, (struct timezone *)0);
-  timeval2str(current_time_str, current_time);
-  sprintf(short_time_str, "%.*s", 14, current_time_str + 5);
-
-  summary_rampup = TASessionManager_summaryStatByNameInPeriodInPhase(self,
-                     "OCTAB bench", TASession_RAMPUP, TASession_TX);
-  summary_measurement = TASessionManager_summaryStatByNameInPeriodInPhase(self,
-                          "OCTAB bench", TASession_MEASUREMENT, TASession_TX);
-  summary_rampdown = TASessionManager_summaryStatByNameInPeriodInPhase(self,
-                       "OCTAB bench", TASession_RAMPDOWN, TASession_TX);
-
-  diff_rampup = TATXStat_minus(summary_rampup, pre_summary_rampup);
-  diff_measurement = TATXStat_minus(summary_measurement,
-                                    pre_summary_measurement);
-  diff_rampdown = TATXStat_minus(summary_rampdown, pre_summary_rampdown);
-
-  if ((monitor_count % HEADER_PER_LINE) == 0)
-  {
-    printf("Time           Period      Count    Error    AVG      TPS\n");
-    printf("-------------- ----------- -------- -------- -------- --------\n");
-  }
-  monitor_count++;
-
-  if (TATXStat_count(diff_rampup) > 0)
-  {
-    avg = TATXStat_avgElapsedTime(diff_rampup);
-    printf("%s %-11s %8d %8d %8.6f %8.3f\n", short_time_str, "Ramp-up",
-           TATXStat_count(diff_rampup),
-           TATXStat_errorCount(diff_rampup),
-           timeval2sec(avg), TATXStat_tps(diff_rampup));
-  }
-  if (TATXStat_count(diff_measurement) > 0)
-  {
-    avg = TATXStat_avgElapsedTime(diff_measurement);
-    printf("%s %-11s %8d %8d %8.6f %8.3f\n", short_time_str, "Measurement",
-           TATXStat_count(diff_measurement),
-           TATXStat_errorCount(diff_measurement),
-           timeval2sec(avg), TATXStat_tps(diff_measurement));
-  }
-  if (TATXStat_count(diff_rampdown) > 0)
-  {
-    avg = TATXStat_avgElapsedTime(diff_rampdown);
-    printf("%s %-11s %8d %8d %8.6f %8.3f\n", short_time_str, "Ramp-down",
-           TATXStat_count(diff_rampdown),
-           TATXStat_errorCount(diff_rampdown),
-           timeval2sec(avg), TATXStat_tps(diff_rampdown));
-  }
-  fflush(stdout);
-
-  TATXStat_release(pre_summary_rampup);
-  TATXStat_release(pre_summary_measurement);
-  TATXStat_release(pre_summary_rampdown);
-  TATXStat_release(diff_rampup);
-  TATXStat_release(diff_measurement);
-  TATXStat_release(diff_rampdown);
-
-  pre_summary_rampup = summary_rampup;
-  pre_summary_measurement = summary_measurement;
-  pre_summary_rampdown = summary_rampdown;
+  TASessionManager_printMonitoredTX(self, "OCTAB bench", PAGESIZE);
 }
 
 static void OCTABBench_afterTeardown(TASessionManager self, void **inout)
@@ -462,7 +385,7 @@ static void OCTABBench_afterTeardown(TASessionManager self, void **inout)
   char end_time_str[24] = "0000-00-00 00:00:00.000";
   static char *tx_names[1] = {"OCTAB bench"};
 
-  OCTABBench_monitor(self);
+  TASessionManager_printMonitoredTX(self, "OCTAB bench", PAGESIZE);
   TADistribution_print(TATXStat_distribution(summary_stat));
   TASessionManager_printNumericalQuantitiesSummary(self, tx_names, 1);
 
