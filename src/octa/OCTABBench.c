@@ -28,6 +28,8 @@ static void OCTABBench_beforeSetup(TASessionManager self, void **inout)
   char start_time_str[24] = "0000-00-00 00:00:00.000";
   int i = 0;
 
+  OCTAOption_print(option);
+
   timerclear(&start_time);
   gettimeofday(&start_time, (struct timezone *)0);
   timeval2str(start_time_str, start_time);
@@ -40,22 +42,6 @@ static void OCTABBench_beforeSetup(TASessionManager self, void **inout)
                                 (int) timeval2sec(option.rampdown_time));
   }
 
-  printf("----------------------------------------------------------------\n");
-  printf("        OCTA (OCI Transaction Application) %s\n", VERSION);
-  printf("----------------------------------------------------------------\n");
-  printf("              Database username : %s\n", option.username);
-  printf("              Database password : %s\n", option.password);
-  printf("  Connect identifier (tnsnames) : %s\n", option.tnsname);
-  printf("             Number of sessions : %d\n", option.num_sessions);
-  printf("                   Scale factor : %d\n", option.scale_factor);
-  printf("  Measurement interval (in sec) : %9.3f\n",
-         timeval2sec(option.measurement_interval));
-  printf("          Ramp-up time (in sec) : %9.3f\n",
-         timeval2sec(option.rampup_time));
-  printf("        Ramp-down time (in sec) : %9.3f\n",
-         timeval2sec(option.rampdown_time));
-  printf("            Think time (in sec) : %9.3f\n",
-         timeval2sec(option.think_time));
   printf("----------------------------------------------------------------\n");
   printf("              Start Time : %s\n", start_time_str);
   printf("----------------------------------------------------------------\n");

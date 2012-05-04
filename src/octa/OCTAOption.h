@@ -9,11 +9,13 @@
 #ifndef _OCTAOPTION_H_
 #define _OCTAOPTION_H_
 
-#include <unistd.h> /* getopt */
-#include <stdio.h>  /* fprintf */
-#include <string.h> /* strtok strncpy strlen strcmp */
-#include <stdlib.h> /* atoi exit */
+#include <unistd.h>   /* getopt */
+#include <stdio.h>    /* fprintf printf */
+#include <string.h>   /* strtok strncpy strlen strcmp */
+#include <stdlib.h>   /* atoi exit */
 #include <sys/time.h> /* timeval */
+#include <TA/TA.h>
+#include "config.h"
 
 struct OCTAOption
 {
@@ -42,5 +44,6 @@ typedef struct OCTAOption OCTAOption;
 
 void OCTAOption_getOption(int argc, char * const argv[], OCTAOption *option);
 void OCTAOption_usage();
+void OCTAOption_print(OCTAOption option);
 
 #endif /* _OCTAOPTION_H_ */

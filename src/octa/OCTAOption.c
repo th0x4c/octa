@@ -184,3 +184,24 @@ void OCTAOption_usage()
   fprintf(stderr, "%s", usage);
   exit(1);
 }
+
+void OCTAOption_print(OCTAOption option)
+{
+  printf("----------------------------------------------------------------\n");
+  printf("        OCTA (OCI Transaction Application) %s\n", VERSION);
+  printf("----------------------------------------------------------------\n");
+  printf("              Database username : %s\n", option.username);
+  printf("              Database password : %s\n", option.password);
+  printf("  Connect identifier (tnsnames) : %s\n", option.tnsname);
+  printf("             Number of sessions : %d\n", option.num_sessions);
+  printf("                   Scale factor : %d\n", option.scale_factor);
+  printf("  Measurement interval (in sec) : %8.3f\n",
+         timeval2sec(option.measurement_interval));
+  printf("          Ramp-up time (in sec) : %8.3f\n",
+         timeval2sec(option.rampup_time));
+  printf("        Ramp-down time (in sec) : %8.3f\n",
+         timeval2sec(option.rampdown_time));
+  printf("            Think time (in sec) : %8.3f\n",
+         timeval2sec(option.think_time));
+  printf("----------------------------------------------------------------\n");
+}
