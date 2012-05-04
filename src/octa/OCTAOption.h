@@ -16,6 +16,7 @@
 #include <sys/time.h> /* timeval */
 #include <TA/TA.h>
 #include "config.h"
+#include "OCTACConfig.h"
 
 struct OCTAOption
 {
@@ -38,7 +39,10 @@ struct OCTAOption
   struct timeval measurement_interval;
   struct timeval rampup_time;
   struct timeval rampdown_time;
-  struct timeval think_time;
+#define TXS 5
+  struct timeval keying_time[TXS];
+  struct timeval think_time[TXS];
+  int tx_percentage[TXS];
 };
 typedef struct OCTAOption OCTAOption;
 

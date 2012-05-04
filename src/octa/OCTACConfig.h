@@ -20,6 +20,48 @@
 #define ORD_PER_DIST 3000
 #define INSERTS_PER_COMMIT 100
 
+#define IDX_NEW_ORDER    0
+#define IDX_PAYMENT      1
+#define IDX_ORDER_STATUS 2
+#define IDX_DELIVERY     3
+#define IDX_STOCK_LEVEL  4
+
+#define DEFAULT_PERCENTAGE_NEW_ORDER    45
+#define DEFAULT_PERCENTAGE_PAYMENT      43
+#define DEFAULT_PERCENTAGE_ORDER_STATUS  4
+#define DEFAULT_PERCENTAGE_DELIVERY      4
+#define DEFAULT_PERCENTAGE_STOCK_LEVEL   4
+#define DEFAULT_PERCENTAGES                                             \
+ { DEFAULT_PERCENTAGE_NEW_ORDER,                                        \
+   DEFAULT_PERCENTAGE_PAYMENT,                                          \
+   DEFAULT_PERCENTAGE_ORDER_STATUS,                                     \
+   DEFAULT_PERCENTAGE_DELIVERY,                                         \
+   DEFAULT_PERCENTAGE_STOCK_LEVEL }
+
+#define DEFAULT_KEYING_TIME_NEW_ORDER    18000
+#define DEFAULT_KEYING_TIME_PAYMENT       3000
+#define DEFAULT_KEYING_TIME_ORDER_STATUS  2000
+#define DEFAULT_KEYING_TIME_DELIVERY      2000
+#define DEFAULT_KEYING_TIME_STOCK_LEVEL   2000
+#define DEFAULT_KEYING_TIMES                                            \
+  { DEFAULT_KEYING_TIME_NEW_ORDER,                                      \
+    DEFAULT_KEYING_TIME_PAYMENT,                                        \
+    DEFAULT_KEYING_TIME_ORDER_STATUS,                                   \
+    DEFAULT_KEYING_TIME_DELIVERY,                                       \
+    DEFAULT_KEYING_TIME_STOCK_LEVEL }
+
+#define DEFAULT_THINK_TIME_NEW_ORDER    12000
+#define DEFAULT_THINK_TIME_PAYMENT      12000
+#define DEFAULT_THINK_TIME_ORDER_STATUS 10000
+#define DEFAULT_THINK_TIME_DELIVERY      5000
+#define DEFAULT_THINK_TIME_STOCK_LEVEL   5000
+#define DEFAULT_THINK_TIMES                                             \
+  { DEFAULT_THINK_TIME_NEW_ORDER,                                       \
+    DEFAULT_THINK_TIME_PAYMENT,                                         \
+    DEFAULT_THINK_TIME_ORDER_STATUS,                                    \
+    DEFAULT_THINK_TIME_DELIVERY,                                        \
+    DEFAULT_THINK_TIME_STOCK_LEVEL }
+
 void OCTACConfig_insertOriginal(char *data);
 void OCTACConfig_makeAddress(char *street_1, char *street_2, char *city,
                              char *state, char *zip);
