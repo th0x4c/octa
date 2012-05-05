@@ -55,7 +55,8 @@ am_octa_OBJECTS = OCTAMain.$(OBJEXT) OCTAOption.$(OBJEXT) \
 	OCTACLoadItem.$(OBJEXT) OCTACLoadWarehouse.$(OBJEXT) \
 	OCTACLoadStock.$(OBJEXT) OCTACLoadDistrict.$(OBJEXT) \
 	OCTACLoadCustomer.$(OBJEXT) OCTACLoadOrders.$(OBJEXT) \
-	OCTACTeardown.$(OBJEXT)
+	OCTACTeardown.$(OBJEXT) OCTACBench.$(OBJEXT) \
+	OCTACBenchNewOrder.$(OBJEXT)
 octa_OBJECTS = $(am_octa_OBJECTS)
 octa_DEPENDENCIES = ../OC/libOC.a ../TA/libTA.a
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
@@ -213,7 +214,11 @@ octa_SOURCES = OCTAMain.h           \
                OCTACLoadOrders.h    \
                OCTACLoadOrders.c    \
                OCTACTeardown.h      \
-               OCTACTeardown.c
+               OCTACTeardown.c      \
+               OCTACBench.h         \
+               OCTACBench.c         \
+               OCTACBenchNewOrder.h \
+               OCTACBenchNewOrder.c
 
 octa_LDADD = ../OC/libOC.a ../TA/libTA.a 
 AM_CPPFLAGS = -I$(top_srcdir)/src -I$(ORACLE_HOME)/rdbms/public
@@ -305,6 +310,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTABLoad.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTABSetup.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTABTeardown.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTACBench.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTACBenchNewOrder.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTACConfig.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTACLoad.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTACLoadCustomer.Po@am__quote@

@@ -48,8 +48,8 @@ int main(int argc, char *argv[])
       return OCTACSetup_main(option);
     case OCTA_LOAD:
       return OCTACLoad_main(option);
-    /* case OCTA_BENCH: */
-    /*   return OCTACBench_main(option); */
+    case OCTA_BENCH:
+      return OCTACBench_main(option);
     case OCTA_TEARDOWN:
       return OCTACTeardown_main(option);
     default:

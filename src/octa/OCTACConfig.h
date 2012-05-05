@@ -18,6 +18,7 @@
 #define DIST_PER_WARE 10
 #define CUST_PER_DIST 3000
 #define ORD_PER_DIST 3000
+
 #define INSERTS_PER_COMMIT 100
 
 #define IDX_NEW_ORDER    0
@@ -62,10 +63,16 @@
     DEFAULT_THINK_TIME_DELIVERY,                                        \
     DEFAULT_THINK_TIME_STOCK_LEVEL }
 
+#define UNUSED_I_ID -1
+#define INVALID_ITEM_ERROR_CODE -1
+#define INVALID_ITEM_ERROR_MESSAGE " (Item number is not valid)"
+
 void OCTACConfig_insertOriginal(char *data);
 void OCTACConfig_makeAddress(char *street_1, char *street_2, char *city,
                              char *state, char *zip);
 void OCTACConfig_lastname(long num, char *name);
+long OCTACConfig_NURand(long a, long x, long y);
 void OCTACConfig_initPermutation(long seq[], size_t seqsize);
+long OCTACConfig_homeWID(int scale_factor, int session_id);
 
 #endif /* _OCTACCONFIG_H_ */

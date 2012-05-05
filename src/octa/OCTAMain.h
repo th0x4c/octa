@@ -15,6 +15,11 @@
 #include "OCTAOption.h"
 #include "OCTABSetup.h"
 #include "OCTABLoad.h"
+#include "OCTABBench.h"
 #include "OCTABTeardown.h"
+#include "OCTACSetup.h"
+#include "OCTACLoad.h"
+#include "OCTACBench.h"
+#include "OCTACTeardown.h"
 
 #endif /* _OCTAMAIN_H_ */

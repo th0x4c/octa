@@ -73,3 +73,8 @@ void OCTACConfig_initPermutation(long seq[], size_t seqsize)
     seq[j] = tmp;
   }
 }
+
+long OCTACConfig_homeWID(int scale_factor, int session_id)
+{
+  return ((session_id - 1) % scale_factor) + 1;
+}
