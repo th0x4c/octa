@@ -116,7 +116,7 @@ static test_OCSQL_fetch()
   OCSQL sqlemp = NULL;
 
   errcode = OCOCIERROR(errhp, errmsg, ERR_MSG_SIZE, OCSQL_fetch(sql, errhp));
-  if (errcode !=0)
+  if (errcode != 0)
     printf("%s\n", errmsg);
 
   mu_assert(errcode == 0 || errcode == 1405);
@@ -144,6 +144,7 @@ static test_OCSQL_fetch()
     printf("\n");
   }
   mu_assert(strcmp(OCSQL_valueByPos(sql, 2), "MILLER") == 0);
+  OCSQL_release(sqlemp);
 }
 
 int main(int argc, char *argv[])
