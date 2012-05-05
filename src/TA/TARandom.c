@@ -21,6 +21,17 @@ long TARandom_rand()
   return lrand48();
 }
 
+double TARandom_drand()
+{
+  if (seed == FALSE)
+  {
+    srand48(time(NULL) * getpid());
+    seed = TRUE;
+  }
+
+  return drand48();
+}
+
 long TARandom_number(long min, long max)
 {
   return min + TARandom_rand() % (max - min + 1);
@@ -53,4 +64,24 @@ int TARandom_getNumberString(char *str, int min, int max)
   char *charset = "0123456789";
 
   return TARandom_getString(str, min, max, charset);
+}
+
+int TARandom_indexInRatio(const int ratio[], int indexsize)
+{
+  long total = 0;
+  long randnum = 0;
+  long accum = 0;
+  int i = 0;
+
+  for (i = 0; i < indexsize; i++)
+    total += ratio[i];
+
+  randnum = TARandom_number(1, total);
+
+  for (i = 0; i < indexsize; i++)
+  {
+    accum += ratio[i];
+    if (randnum <= accum)
+      return i;
+  }
 }
