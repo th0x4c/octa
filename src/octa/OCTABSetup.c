@@ -7,6 +7,10 @@
  */
 
 #include "OCTABSetup.h"
+#include "OCTABCreateTable.h"
+#include "OCTABCreateIndex.h"
+#include "OCTABAddConstraint.h"
+#include "OCTABAnalyze.h"
 
 int OCTABSetup_main(const OCTAOption *option)
 {

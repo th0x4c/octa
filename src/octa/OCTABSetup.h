@@ -12,10 +12,6 @@
 #include "OCTAOption.h"
 #include "OCTADDL.h"
 #include "OCTASetup.h"
-#include "OCTABCreateTable.h"
-#include "OCTABCreateIndex.h"
-#include "OCTABAddConstraint.h"
-#include "OCTABAnalyze.h"
 #include "OCTABLoad.h"
 
 int OCTABSetup_main(const OCTAOption *option);
