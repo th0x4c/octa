@@ -301,11 +301,11 @@ void OCTAOption_print(OCTAOption option)
            timeval2sec(option.keying_time[IDX_STOCK_LEVEL]));
     printf("     Percentage of transactions : "
            "%6.2f, %6.2f, %6.2f, %6.2f, %6.2f\n",
-           (double) option.tx_percentage[IDX_NEW_ORDER] / total,
-           (double) option.tx_percentage[IDX_PAYMENT] / total,
-           (double) option.tx_percentage[IDX_ORDER_STATUS] / total,
-           (double) option.tx_percentage[IDX_DELIVERY] / total,
-           (double) option.tx_percentage[IDX_STOCK_LEVEL] / total);
+           (double) option.tx_percentage[IDX_NEW_ORDER] * 100 / total,
+           (double) option.tx_percentage[IDX_PAYMENT] * 100 / total,
+           (double) option.tx_percentage[IDX_ORDER_STATUS] * 100 / total,
+           (double) option.tx_percentage[IDX_DELIVERY] * 100 / total,
+           (double) option.tx_percentage[IDX_STOCK_LEVEL] * 100 / total);
     break;
   default:
     break;
