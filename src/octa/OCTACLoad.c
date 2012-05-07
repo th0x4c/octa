@@ -80,7 +80,7 @@ static void OCTACLoad_beforeSetup(TASessionManager self, void **inout)
   }
   /* shared memory */
   shmid = shmget(IPC_PRIVATE,
-                 sizeof(OCTACLoadCount) + (sizeof(int) * CUST_PER_DIST),
+                 sizeof(OCTACLoadCount) + (sizeof(long) * CUST_PER_DIST),
                  0666 | IPC_CREAT);
   if (shmid < 0)
   {
