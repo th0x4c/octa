@@ -43,7 +43,7 @@ void OCTACLoadDistrict_beforeTX(long d_id, long d_w_id, void **inout)
   /* D_TAX random within [0.0000 .. 0.2000] */
   snprintf(in->d_tax, sizeof(in->d_tax), "%.4f",
            TARandom_number(0, 20) / 100.0);
-  snprintf(in->d_ytd, sizeof(in->d_ytd), "300000.00");
+  snprintf(in->d_ytd, sizeof(in->d_ytd), "30000.00");
   snprintf(in->d_next_o_id, sizeof(in->d_next_o_id), "%ld", 3001L);
 
   *inout = in;
