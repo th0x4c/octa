@@ -56,7 +56,8 @@ am_octa_OBJECTS = OCTAMain.$(OBJEXT) OCTAOption.$(OBJEXT) \
 	OCTACLoadStock.$(OBJEXT) OCTACLoadDistrict.$(OBJEXT) \
 	OCTACLoadCustomer.$(OBJEXT) OCTACLoadOrders.$(OBJEXT) \
 	OCTACTeardown.$(OBJEXT) OCTACBench.$(OBJEXT) \
-	OCTACBenchNewOrder.$(OBJEXT) OCTACBenchPayment.$(OBJEXT)
+	OCTACBenchNewOrder.$(OBJEXT) OCTACBenchPayment.$(OBJEXT) \
+	OCTACBenchOrderStatus.$(OBJEXT)
 octa_OBJECTS = $(am_octa_OBJECTS)
 octa_DEPENDENCIES = ../OC/libOC.a ../TA/libTA.a
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
@@ -167,60 +168,62 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-octa_SOURCES = OCTAMain.h           \
-               OCTAMain.c           \
-               OCTAOption.h         \
-               OCTAOption.c         \
-               OCTADDL.h            \
-               OCTADDL.c            \
-               OCTASetup.h          \
-               OCTASetup.c          \
-               OCTATeardown.h       \
-               OCTATeardown.c       \
-               OCTABCreateTable.h   \
-               OCTABCreateIndex.h   \
-               OCTABAddConstraint.h \
-               OCTABAnalyze.h       \
-               OCTABDropTable.h     \
-               OCTABSetup.h         \
-               OCTABSetup.c         \
-               OCTABLoad.h          \
-               OCTABLoad.c          \
-               OCTABTeardown.h      \
-               OCTABTeardown.c      \
-               OCTABBench.h         \
-               OCTABBench.c         \
-               OCTACCreateTable.h   \
-               OCTACCreateIndex.h   \
-               OCTACAddConstraint.h \
-               OCTACAnalyze.h       \
-               OCTACDropTable.h     \
-               OCTACSetup.h         \
-               OCTACSetup.c         \
-               OCTACConfig.h        \
-               OCTACConfig.c        \
-               OCTACLoad.h          \
-               OCTACLoad.c          \
-               OCTACLoadItem.h      \
-               OCTACLoadItem.c      \
-               OCTACLoadWarehouse.h \
-               OCTACLoadWarehouse.c \
-               OCTACLoadStock.h     \
-               OCTACLoadStock.c     \
-               OCTACLoadDistrict.h  \
-               OCTACLoadDistrict.c  \
-               OCTACLoadCustomer.h  \
-               OCTACLoadCustomer.c  \
-               OCTACLoadOrders.h    \
-               OCTACLoadOrders.c    \
-               OCTACTeardown.h      \
-               OCTACTeardown.c      \
-               OCTACBench.h         \
-               OCTACBench.c         \
-               OCTACBenchNewOrder.h \
-               OCTACBenchNewOrder.c \
-               OCTACBenchPayment.h  \
-               OCTACBenchPayment.c
+octa_SOURCES = OCTAMain.h              \
+               OCTAMain.c              \
+               OCTAOption.h            \
+               OCTAOption.c            \
+               OCTADDL.h               \
+               OCTADDL.c               \
+               OCTASetup.h             \
+               OCTASetup.c             \
+               OCTATeardown.h          \
+               OCTATeardown.c          \
+               OCTABCreateTable.h      \
+               OCTABCreateIndex.h      \
+               OCTABAddConstraint.h    \
+               OCTABAnalyze.h          \
+               OCTABDropTable.h        \
+               OCTABSetup.h            \
+               OCTABSetup.c            \
+               OCTABLoad.h             \
+               OCTABLoad.c             \
+               OCTABTeardown.h         \
+               OCTABTeardown.c         \
+               OCTABBench.h            \
+               OCTABBench.c            \
+               OCTACCreateTable.h      \
+               OCTACCreateIndex.h      \
+               OCTACAddConstraint.h    \
+               OCTACAnalyze.h          \
+               OCTACDropTable.h        \
+               OCTACSetup.h            \
+               OCTACSetup.c            \
+               OCTACConfig.h           \
+               OCTACConfig.c           \
+               OCTACLoad.h             \
+               OCTACLoad.c             \
+               OCTACLoadItem.h         \
+               OCTACLoadItem.c         \
+               OCTACLoadWarehouse.h    \
+               OCTACLoadWarehouse.c    \
+               OCTACLoadStock.h        \
+               OCTACLoadStock.c        \
+               OCTACLoadDistrict.h     \
+               OCTACLoadDistrict.c     \
+               OCTACLoadCustomer.h     \
+               OCTACLoadCustomer.c     \
+               OCTACLoadOrders.h       \
+               OCTACLoadOrders.c       \
+               OCTACTeardown.h         \
+               OCTACTeardown.c         \
+               OCTACBench.h            \
+               OCTACBench.c            \
+               OCTACBenchNewOrder.h    \
+               OCTACBenchNewOrder.c    \
+               OCTACBenchPayment.h     \
+               OCTACBenchPayment.c     \
+               OCTACBenchOrderStatus.h \
+               OCTACBenchOrderStatus.c
 
 octa_LDADD = ../OC/libOC.a ../TA/libTA.a 
 AM_CPPFLAGS = -I$(top_srcdir)/src -I$(ORACLE_HOME)/rdbms/public
@@ -314,6 +317,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTABTeardown.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTACBench.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTACBenchNewOrder.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTACBenchOrderStatus.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTACBenchPayment.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTACConfig.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OCTACLoad.Po@am__quote@
