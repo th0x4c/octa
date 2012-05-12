@@ -12,6 +12,7 @@
 #include <stdlib.h> /* malloc free */
 #include <string.h> /* memset strcpy strlen */
 #include <stdarg.h> /* va_start va_arg va_end */
+#include <stdio.h>  /* sprintf */
 #include <oci.h>
 #include "OCOracle.h"
 
@@ -23,5 +24,6 @@ sword OCSQL_execute(OCSQL self, OCIError *errhp, OCISvcCtx *svchp, ...);
 int OCSQL_defineCount(OCSQL self, OCIError *errhp);
 sword OCSQL_fetch(OCSQL self, OCIError *errhp);
 char *OCSQL_valueByPos(OCSQL self, int pos);
+sword OCSQL_fetchInto(OCSQL self, OCIError *errhp, ...);
 
 #endif /* _OCSQL_H_ */

@@ -222,3 +222,26 @@ char *OCSQL_valueByPos(OCSQL self, int pos)
 {
   return self->values[pos - 1];
 }
+
+sword OCSQL_fetchInto(OCSQL self, OCIError *errhp, ...)
+{
+  va_list ap;
+  char *valuep;
+  sword status = 0;
+  int i = 0;
+
+  status = OCSQL_fetch(self, errhp);
+  if (status != 0)
+    return status;
+
+  va_start(ap, errhp);
+  for (i = 0; i < OCSQL_defineCount(self, errhp); i++)
+  {
+    valuep = va_arg(ap, char *);
+    sprintf(valuep, "%s", OCSQL_valueByPos(self, i + 1));
+  }
+  va_end(ap);
+
+  return status;
+}
+

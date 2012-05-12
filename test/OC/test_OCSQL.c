@@ -147,11 +147,34 @@ static test_OCSQL_fetch()
   OCSQL_release(sqlemp);
 }
 
+static test_OCSQL_fetchInto()
+{
+#define ERR_MSG_SIZE 512
+  char errmsg[ERR_MSG_SIZE];
+  sword errcode = 0;
+  OCSQL sqlemp = NULL;
+  char empno[5];  /* NUMBER(4) */
+  char ename[11]; /* VARCHAR2(10) */
+
+  sqlemp = OCSQL_initWithSQL(envhp, errhp,
+                             "SELECT empno, ename FROM emp "
+                             "WHERE empno = 7934");
+  errcode = OCOCIERROR(errhp, errmsg, ERR_MSG_SIZE,
+                       OCSQL_execute(sqlemp, errhp, svchp));
+  errcode = OCOCIERROR(errhp, errmsg, ERR_MSG_SIZE,
+                       OCSQL_fetchInto(sqlemp, errhp, empno, ename));
+  mu_assert(errcode == 0);
+  mu_assert(strcmp(empno, "7934") == 0);
+  mu_assert(strcmp(ename, "MILLER") == 0);
+  OCSQL_release(sqlemp);
+}
+
 int main(int argc, char *argv[])
 {
   setup();
   mu_run_test(test_OCSQL_execute);
   mu_run_test(test_OCSQL_fetch);
+  mu_run_test(test_OCSQL_fetchInto);
   teardown();
   mu_show_failures();
   return mu_nfail != 0;
