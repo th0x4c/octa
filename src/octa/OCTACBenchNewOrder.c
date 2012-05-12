@@ -93,21 +93,13 @@ int OCTACBenchNewOrder_oracleTX(OCIEnv *envhp, OCIError *errhp,
                                      in->d_id,
                                      in->c_id));
   if (errcode != 0) goto end;
-  errcode = OCOCIERROR(errhp, errmsg, errmsgsize, OCSQL_fetch(sql1, errhp));
+  errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
+                       OCSQL_fetchInto(sql1, errhp,
+                                       out.c_discount,
+                                       out.c_last,
+                                       out.c_credit,
+                                       out.w_tax));
   if (errcode != 0) goto end;
-  while (errcode == 0)
-  {
-    snprintf(out.c_discount, sizeof(out.c_discount), "%s",
-             OCSQL_valueByPos(sql1, 1));
-    snprintf(out.c_last, sizeof(out.c_last), "%s",
-             OCSQL_valueByPos(sql1, 2));
-    snprintf(out.c_credit, sizeof(out.c_credit), "%s",
-             OCSQL_valueByPos(sql1, 3));
-    snprintf(out.w_tax, sizeof(out.w_tax), "%s",
-             OCSQL_valueByPos(sql1, 4));
-    errcode = OCOCIERROR(errhp, errmsg, errmsgsize, OCSQL_fetch(sql1, errhp));
-  }
-  if (errcode != 0 && errcode != OCI_NO_DATA) goto end;
 
   if (sql2 == NULL)
     sql2 = OCSQL_initWithSQL(envhp, errhp,
@@ -121,17 +113,11 @@ int OCTACBenchNewOrder_oracleTX(OCIEnv *envhp, OCIError *errhp,
                                      in->d_id,
                                      in->w_id));
   if (errcode != 0) goto end;
-  errcode = OCOCIERROR(errhp, errmsg, errmsgsize, OCSQL_fetch(sql2, errhp));
+  errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
+                       OCSQL_fetchInto(sql2, errhp,
+                                       out.d_next_o_id,
+                                       out.d_tax));
   if (errcode != 0) goto end;
-  while (errcode == 0)
-  {
-    snprintf(out.d_next_o_id, sizeof(out.d_next_o_id), "%s",
-             OCSQL_valueByPos(sql2, 1));
-    snprintf(out.d_tax, sizeof(out.d_tax), "%s",
-             OCSQL_valueByPos(sql2, 2));
-    errcode = OCOCIERROR(errhp, errmsg, errmsgsize, OCSQL_fetch(sql2, errhp));
-  }
-  if (errcode != 0 && errcode != OCI_NO_DATA) goto end;
 
   if (sql3 == NULL)
     sql3 = OCSQL_initWithSQL(envhp, errhp,
@@ -182,6 +168,12 @@ int OCTACBenchNewOrder_oracleTX(OCIEnv *envhp, OCIError *errhp,
     errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
                          OCSQL_execute(sql6, errhp, svchp,
                                        in->itemid[ol_number]));
+    if (errcode != 0) goto end;
+    errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
+                         OCSQL_fetchInto(sql6, errhp,
+                                         out.price[ol_number],
+                                         out.iname[ol_number],
+                                         out.i_data));
     if (errcode != 0)
     {
       if (errcode == OCI_NO_DATA)
@@ -192,29 +184,6 @@ int OCTACBenchNewOrder_oracleTX(OCIEnv *envhp, OCIError *errhp,
       }
       goto end;        
     }
-    errcode = OCOCIERROR(errhp, errmsg, errmsgsize, OCSQL_fetch(sql6, errhp));
-    if (errcode != 0)
-    {
-      if (errcode == OCI_NO_DATA)
-      {
-        errcode = INVALID_ITEM_ERROR_CODE;
-        if (strlen(errmsg) + strlen(INVALID_ITEM_ERROR_MESSAGE) < errmsgsize)
-          strcat(errmsg, INVALID_ITEM_ERROR_MESSAGE);
-      }
-      goto end;        
-    }
-    while (errcode == 0)
-    {
-      snprintf(out.price[ol_number], sizeof(out.price[ol_number]), "%s",
-               OCSQL_valueByPos(sql6, 1));
-      snprintf(out.iname[ol_number], sizeof(out.iname[ol_number]), "%s",
-               OCSQL_valueByPos(sql6, 2));
-      snprintf(out.i_data, sizeof(out.i_data), "%s",
-               OCSQL_valueByPos(sql6, 3));
-      errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                           OCSQL_fetch(sql6, errhp));
-    }
-    if (errcode != 0 && errcode != OCI_NO_DATA) goto end;
 
     if (sql7 == NULL)
       sql7 = OCSQL_initWithSQL(envhp, errhp,
@@ -229,38 +198,21 @@ int OCTACBenchNewOrder_oracleTX(OCIEnv *envhp, OCIError *errhp,
                                        in->itemid[ol_number],
                                        in->supware[ol_number]));
     if (errcode != 0) goto end;
-    errcode = OCOCIERROR(errhp, errmsg, errmsgsize, OCSQL_fetch(sql7, errhp));
+    errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
+                         OCSQL_fetchInto(sql7, errhp,
+                                         out.s_quantity,
+                                         out.s_data,
+                                         out.s_dist_xx[0],
+                                         out.s_dist_xx[1],
+                                         out.s_dist_xx[2],
+                                         out.s_dist_xx[3],
+                                         out.s_dist_xx[4],
+                                         out.s_dist_xx[5],
+                                         out.s_dist_xx[6],
+                                         out.s_dist_xx[7],
+                                         out.s_dist_xx[8],
+                                         out.s_dist_xx[9]));
     if (errcode != 0) goto end;
-    while (errcode == 0)
-    {
-      snprintf(out.s_quantity, sizeof(out.s_quantity), "%s",
-               OCSQL_valueByPos(sql7, 1));
-      snprintf(out.s_data, sizeof(out.s_data), "%s",
-               OCSQL_valueByPos(sql7, 2));
-      snprintf(out.s_dist_xx[0], sizeof(out.s_dist_xx[0]), "%s",
-               OCSQL_valueByPos(sql7, 3 + 0));
-      snprintf(out.s_dist_xx[1], sizeof(out.s_dist_xx[1]), "%s",
-               OCSQL_valueByPos(sql7, 3 + 1));
-      snprintf(out.s_dist_xx[2], sizeof(out.s_dist_xx[2]), "%s",
-               OCSQL_valueByPos(sql7, 3 + 2));
-      snprintf(out.s_dist_xx[3], sizeof(out.s_dist_xx[3]), "%s",
-               OCSQL_valueByPos(sql7, 3 + 3));
-      snprintf(out.s_dist_xx[4], sizeof(out.s_dist_xx[4]), "%s",
-               OCSQL_valueByPos(sql7, 3 + 4));
-      snprintf(out.s_dist_xx[5], sizeof(out.s_dist_xx[5]), "%s",
-               OCSQL_valueByPos(sql7, 3 + 5));
-      snprintf(out.s_dist_xx[6], sizeof(out.s_dist_xx[6]), "%s",
-               OCSQL_valueByPos(sql7, 3 + 6));
-      snprintf(out.s_dist_xx[7], sizeof(out.s_dist_xx[7]), "%s",
-               OCSQL_valueByPos(sql7, 3 + 7));
-      snprintf(out.s_dist_xx[8], sizeof(out.s_dist_xx[8]), "%s",
-               OCSQL_valueByPos(sql7, 3 + 8));
-      snprintf(out.s_dist_xx[9], sizeof(out.s_dist_xx[9]), "%s",
-               OCSQL_valueByPos(sql7, 3 + 9));
-      errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                           OCSQL_fetch(sql7, errhp));
-    }
-    if (errcode != 0 && errcode != OCI_NO_DATA) goto end;
 
     snprintf(out.ol_dist_info, sizeof(out.ol_dist_info), "%s",
              out.s_dist_xx[atol(in->d_id) - 1]);
