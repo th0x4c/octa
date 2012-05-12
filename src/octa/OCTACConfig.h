@@ -12,6 +12,7 @@
 #include <string.h> /* strlen strcpy strcat */
 #include <stdio.h>  /* snpritf */
 #include <time.h>   /* nanosleep */
+#include <math.h>   /* log */
 #include <TA/TA.h>
 
 #define CNUM 1
