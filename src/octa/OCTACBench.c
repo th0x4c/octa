@@ -14,8 +14,11 @@ struct OCTACBenchInput
   OCOracle oracle;
   int session_id;
   OCTACBenchNewOrderInput input_new_order;
+  OCTACBenchPaymentInput input_payment;
 };
 typedef struct OCTACBenchInput OCTACBenchInput;
+
+static int tx_percentage[TXS];
 
 static void OCTACBench_beforeSetup(TASessionManager self, void **inout)
 {
@@ -24,6 +27,11 @@ static void OCTACBench_beforeSetup(TASessionManager self, void **inout)
   struct timeval start_time;
   char start_time_str[24] = "0000-00-00 00:00:00.000";
   int i = 0;
+
+  for (i = 0; i < TXS; i++)
+  {
+    tx_percentage[i] = option.tx_percentage[i];
+  }
 
   OCTAOption_print(option);
 
@@ -82,6 +90,32 @@ static void OCTACBench_afterTXNewOrder(TASession self, void **inout)
   OCTACBenchNewOrder_afterTX(io->option.think_time[IDX_NEW_ORDER]);
 }
 
+/* Payment */
+static void OCTACBench_beforeTXPayment(TASession self, void **inout)
+{
+  OCTACBenchInput *io = (OCTACBenchInput *)*inout;
+
+  OCTACBenchPayment_beforeTX(&(io->input_payment), TASession_ID(self),
+                             io->option.scale_factor,
+                             io->option.keying_time[IDX_PAYMENT]);
+}
+
+static int OCTACBench_TXPayment(TASession self, void **inout)
+{
+  OCTACBenchInput *io = (OCTACBenchInput *)*inout;
+  OCTACBenchPaymentInput *in = &(io->input_payment);
+
+  return OCOracle_execTX(io->oracle, (void **) &in,
+                         OCTACBenchPayment_oracleTX);
+}
+
+static void OCTACBench_afterTXPayment(TASession self, void **inout)
+{
+  OCTACBenchInput *io = (OCTACBenchInput *)*inout;
+
+  OCTACBenchPayment_afterTX(io->option.think_time[IDX_PAYMENT]);
+}
+
 static int OCTACBench_rollbackTX(OCIEnv *envhp, OCIError *errhp,
                                  OCISvcCtx *svchp, void **inout, char *errmsg,
                                  size_t errmsgsize)
@@ -101,11 +135,12 @@ static void OCTACBench_errorTX(TASession self, void **inout, int error_code,
 
 static char *OCTACBench_selectTX(TASession self)
 {
-  static char *tx_names[5] =
+  static char *tx_names[TXS] =
                 {"New-Order", "Payment", "Order-Status", "Delivery",
                  "Stock-Level"};
 
-  return tx_names[0];
+  /* return tx_names[TARandom_indexInRatio(tx_percentage, TXS)]; */
+  return tx_names[TARandom_indexInRatio(tx_percentage, 2)];
 }
 
 static void OCTACBench_teardown(TASession self, void **inout)
@@ -143,13 +178,14 @@ static void OCTACBench_afterTeardown(TASessionManager self, void **inout)
                "New-Order", TASession_MEASUREMENT, TASession_TX);
   struct timeval end_timeval;
   char end_time_str[24] = "0000-00-00 00:00:00.000";
-  static char *tx_names[5] =
+  static char *tx_names[TXS] =
                 {"New-Order", "Payment", "Order-Status", "Delivery",
                  "Stock-Level"};
 
   TASessionManager_printMonitoredTX(self, "New-Order", PAGESIZE);
   TADistribution_print(TATXStat_distribution(summary_stat));
-  TASessionManager_printNumericalQuantitiesSummary(self, tx_names, 1);
+  /* TASessionManager_printNumericalQuantitiesSummary(self, tx_names, TXS); */
+  TASessionManager_printNumericalQuantitiesSummary(self, tx_names, 2);
 
   timerclear(&end_timeval);
   gettimeofday(&end_timeval, (struct timezone *)0);
@@ -186,6 +222,15 @@ int OCTACBench_main(const OCTAOption *opt)
                            "New-Order");
   TASession_setAfterTX(session_prototype, OCTACBench_afterTXNewOrder,
                        "New-Order");
+
+  /* Payment */
+  TASession_setTX(session_prototype, OCTACBench_TXPayment, "Payment");
+  TASession_setBeforeTX(session_prototype, OCTACBench_beforeTXPayment,
+                        "Payment");
+  TASession_setWhenErrorTX(session_prototype, OCTACBench_errorTX,
+                           "Payment");
+  TASession_setAfterTX(session_prototype, OCTACBench_afterTXPayment,
+                       "Payment");
 
   TASession_setSelectTX(session_prototype, OCTACBench_selectTX);
   TASession_setTeardown(session_prototype, OCTACBench_teardown);

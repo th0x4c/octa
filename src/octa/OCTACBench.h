@@ -20,6 +20,7 @@
 #include "OCTAOption.h"
 #include "OCTACConfig.h"
 #include "OCTACBenchNewOrder.h"
+#include "OCTACBenchPayment.h"
 
 int OCTACBench_main(const OCTAOption *opt);
 

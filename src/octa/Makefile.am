@@ -50,7 +50,9 @@ octa_SOURCES = OCTAMain.h           \
                OCTACBench.h         \
                OCTACBench.c         \
                OCTACBenchNewOrder.h \
-               OCTACBenchNewOrder.c
+               OCTACBenchNewOrder.c \
+               OCTACBenchPayment.h  \
+               OCTACBenchPayment.c
 octa_LDADD = ../OC/libOC.a ../TA/libTA.a 
 AM_CPPFLAGS = -I$(top_srcdir)/src -I$(ORACLE_HOME)/rdbms/public
 AM_LDFLAGS = -L$(ORACLE_HOME)/lib/ -L$(ORACLE_HOME)/rdbms/lib/ \
