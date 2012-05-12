@@ -11,6 +11,7 @@
 
 #include <string.h> /* strlen strcpy strcat */
 #include <stdio.h>  /* snpritf */
+#include <time.h>   /* nanosleep */
 #include <TA/TA.h>
 
 #define CNUM 1
@@ -74,5 +75,7 @@ void OCTACConfig_lastname(long num, char *name);
 long OCTACConfig_NURand(long a, long x, long y);
 void OCTACConfig_initPermutation(long seq[], size_t seqsize);
 long OCTACConfig_homeWID(int scale_factor, int session_id);
+void OCTACConfig_sleepKeyingTime(struct timeval keying_timeval);
+void OCTACConfig_sleepThinkTime(struct timeval think_timeval);
 
 #endif /* _OCTACCONFIG_H_ */
