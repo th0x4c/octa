@@ -19,7 +19,6 @@ void OCTACBenchNewOrder_beforeTX(OCTACBenchNewOrderInput *input,
   long ol_i_id;
   long ol_supply_w_id;
   int i = 0;
-  struct timespec keying_timespec;
 
   snprintf(input->w_id, sizeof(input->w_id), "%ld", w_id);
   snprintf(input->d_id, sizeof(input->d_id), "%ld",
@@ -57,9 +56,7 @@ void OCTACBenchNewOrder_beforeTX(OCTACBenchNewOrderInput *input,
   snprintf(input->o_all_local, sizeof(input->o_all_local), "%d\n",
            home ? 1 : 0);
 
-  keying_timespec.tv_sec = keying_time.tv_sec;
-  keying_timespec.tv_nsec = keying_time.tv_usec * 1000;
-  nanosleep(&keying_timespec, NULL);
+  OCTACConfig_sleepKeyingTime(keying_time);
 }
 
 int OCTACBenchNewOrder_oracleTX(OCIEnv *envhp, OCIError *errhp,
@@ -367,13 +364,5 @@ int OCTACBenchNewOrder_oracleTX(OCIEnv *envhp, OCIError *errhp,
 
 void OCTACBenchNewOrder_afterTX(struct timeval think_time)
 {
-  long think_time_nsec;
-  struct timespec think_timespec;
-
-  think_time_nsec = (think_time.tv_sec * 1000000 + think_time.tv_usec) * 1000;
-  think_time_nsec = - log(TARandom_drand()) * think_time_nsec;
-
-  think_timespec.tv_sec = think_time_nsec / 1000000000;
-  think_timespec.tv_nsec = think_time_nsec % 1000000000;
-  nanosleep(&think_timespec, NULL);
+  OCTACConfig_sleepThinkTime(think_time);
 }

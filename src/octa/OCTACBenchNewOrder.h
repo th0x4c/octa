@@ -10,7 +10,6 @@
 #define _OCTACBENCHNEWORDER_H_
 
 #include <stdio.h>  /* snprintf */
-#include <time.h>   /* nanosleep */
 #include <string.h> /* memset strlen strcat strstr */
 #include <stdlib.h> /* atol atof */
 #include <math.h>   /* log */
