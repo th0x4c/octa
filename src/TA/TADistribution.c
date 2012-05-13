@@ -163,6 +163,9 @@ struct timeval TADistribution_percentile(TADistribution self, int percent)
   sec.tv_sec = 1;
   sec.tv_usec = 0;
 
+  if (self->count == 0)
+    return ret;
+
   for (i = 0, accum = 0; i < BUCKETS; i++)
   {
     accum += self->msec[i];
@@ -236,7 +239,8 @@ void TADistribution_print(TADistribution self)
     else
       printf(">=%3dms|", bucket);
 
-    percent = (double) self->msec[bucket] * 100 / self->count;
+    percent = self->count == 0 ? 0.0 :
+              (double) self->msec[bucket] * 100 / self->count;
     for (i = 0; i < 100; i++)
     {
       if (i < percent)
@@ -261,7 +265,8 @@ void TADistribution_print(TADistribution self)
     else
       printf(">=%3dcs|", bucket);
 
-    percent = (double) self->csec[bucket] * 100 / self->count;
+    percent = self->count == 0 ? 0.0 :
+              (double) self->csec[bucket] * 100 / self->count;
     for (i = 0; i < 100; i++)
     {
       if (i < percent)
@@ -286,7 +291,8 @@ void TADistribution_print(TADistribution self)
     else
       printf(">=%3dds|", bucket);
 
-    percent = (double) self->dsec[bucket] * 100 / self->count;
+    percent = self->count == 0 ? 0.0 :
+              (double) self->dsec[bucket] * 100 / self->count;
     for (i = 0; i < 100; i++)
     {
       if (i < percent)
@@ -311,7 +317,8 @@ void TADistribution_print(TADistribution self)
     else
       printf(">=%3ds |", bucket);
 
-    percent = (double) self->sec[bucket] * 100 / self->count;
+    percent = self->count == 0 ? 0.0 :
+              (double) self->sec[bucket] * 100 / self->count;
     for (i = 0; i < 100; i++)
     {
       if (i < percent)

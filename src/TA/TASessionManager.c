@@ -349,6 +349,7 @@ void TASessionManager_printNumericalQuantitiesSummary(TASessionManager self,
                      tx_names[i], TASession_MEASUREMENT, TASession_TX);
     printf("  - %-51s %6.2f %%\n",
            tx_names[i],
+           total_count == 0 ? 0.0 :
            ((double) TATXStat_count(summary_stat)) * 100 / total_count);
     TATXStat_release(summary_stat);
   }
