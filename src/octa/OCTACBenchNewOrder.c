@@ -302,15 +302,51 @@ int OCTACBenchNewOrder_oracleTX(OCIEnv *envhp, OCIError *errhp,
   OCITransCommit(svchp, errhp, (ub4) 0);
 
  end:
-  /* OCSQL_release(sql1); */
-  /* OCSQL_release(sql2); */
-  /* OCSQL_release(sql3); */
-  /* OCSQL_release(sql4); */
-  /* OCSQL_release(sql5); */
-  /* OCSQL_release(sql6); */
-  /* OCSQL_release(sql7); */
-  /* OCSQL_release(sql8); */
-  /* OCSQL_release(sql9); */
+  /* if (sql1 != NULL) */
+  /* { */
+  /*   OCSQL_release(sql1); */
+  /*   sql1 = NULL; */
+  /* } */
+  /* if (sql2 != NULL) */
+  /* { */
+  /*   OCSQL_release(sql2); */
+  /*   sql2 = NULL; */
+  /* } */
+  /* if (sql3 != NULL) */
+  /* { */
+  /*   OCSQL_release(sql3); */
+  /*   sql3 = NULL; */
+  /* } */
+  /* if (sql4 != NULL) */
+  /* { */
+  /*   OCSQL_release(sql4); */
+  /*   sql4 = NULL; */
+  /* } */
+  /* if (sql5 != NULL) */
+  /* { */
+  /*   OCSQL_release(sql5); */
+  /*   sql5 = NULL; */
+  /* } */
+  /* if (sql6 != NULL) */
+  /* { */
+  /*   OCSQL_release(sql6); */
+  /*   sql6 = NULL; */
+  /* } */
+  /* if (sql7 != NULL) */
+  /* { */
+  /*   OCSQL_release(sql7); */
+  /*   sql7 = NULL; */
+  /* } */
+  /* if (sql8 != NULL) */
+  /* { */
+  /*   OCSQL_release(sql8); */
+  /*   sql8 = NULL; */
+  /* } */
+  /* if (sql9 != NULL) */
+  /* { */
+  /*   OCSQL_release(sql9); */
+  /*   sql9 = NULL; */
+  /* } */
 
   return errcode;
 }

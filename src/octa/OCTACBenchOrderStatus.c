@@ -188,11 +188,31 @@ int OCTACBenchOrderStatus_oracleTX(OCIEnv *envhp, OCIError *errhp,
   /* OCITransCommit(svchp, errhp, (ub4) 0); */
 
  end:
-  /* OCSQL_release(sql1); */
-  /* OCSQL_release(sql2); */
-  /* OCSQL_release(sql3); */
-  /* OCSQL_release(sql4); */
-  /* OCSQL_release(sql5); */
+  /* if (sql1 != NULL) */
+  /* { */
+  /*   OCSQL_release(sql1); */
+  /*   sql1 = NULL; */
+  /* } */
+  /* if (sql2 != NULL) */
+  /* { */
+  /*   OCSQL_release(sql2); */
+  /*   sql2 = NULL; */
+  /* } */
+  /* if (sql3 != NULL) */
+  /* { */
+  /*   OCSQL_release(sql3); */
+  /*   sql3 = NULL; */
+  /* } */
+  /* if (sql4 != NULL) */
+  /* { */
+  /*   OCSQL_release(sql4); */
+  /*   sql4 = NULL; */
+  /* } */
+  /* if (sql5 != NULL) */
+  /* { */
+  /*   OCSQL_release(sql5); */
+  /*   sql5 = NULL; */
+  /* } */
 
   return errcode;
 }
