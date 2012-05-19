@@ -23,7 +23,7 @@
 #include "OCTACBenchPayment.h"
 #include "OCTACBenchOrderStatus.h"
 #include "OCTACBenchDelivery.h"
-/* #include "OCTACBenchStockLevel.h" */
+#include "OCTACBenchStockLevel.h"
 
 int OCTACBench_main(const OCTAOption *opt);
 
