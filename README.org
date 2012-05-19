@@ -12,7 +12,7 @@ It enables the user to generate transaction processing applications written in
 Oracle Call Interface (OCI).
 
 Executable =octa= is a simple benchmark program using OCTA library. It is
-loosely based on TPC-B.
+loosely based on TPC-B / TPC-C.
 
 ** Installation
 
