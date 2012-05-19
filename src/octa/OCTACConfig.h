@@ -69,6 +69,8 @@
 #define INVALID_ITEM_ERROR_CODE -1
 #define INVALID_ITEM_ERROR_MESSAGE " (Item number is not valid)"
 
+#define LOGFILE "octa_tpcc.log"
+
 void OCTACConfig_insertOriginal(char *data);
 void OCTACConfig_makeAddress(char *street_1, char *street_2, char *city,
                              char *state, char *zip);

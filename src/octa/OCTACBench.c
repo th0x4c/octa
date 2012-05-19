@@ -58,7 +58,9 @@ static void OCTACBench_beforeSetup(TASessionManager self, void **inout)
 static void OCTACBench_setup(TASession self, void **inout)
 {
   OCTACBenchInput *io = (OCTACBenchInput *)*inout;
+  TALog log = TALog_initWithFilename(LOGFILE);
 
+  TASession_setLog(self, log);
   io->session_id = TASession_ID(self);
   io->oracle = OCOracle_init();
   OCOracle_connect(io->oracle, io->option.username, io->option.password,
