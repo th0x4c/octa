@@ -16,7 +16,7 @@ struct OCTACBenchInput
   OCTACBenchNewOrderInput input_new_order;
   OCTACBenchPaymentInput input_payment;
   OCTACBenchOrderStatusInput input_order_status;
-  /* OCTACBenchDeliveryInput input_delivery; */
+  OCTACBenchDeliveryInput input_delivery;
   /* OCTACBenchStockLevel input_stock_level; */
 };
 typedef struct OCTACBenchInput OCTACBenchInput;
@@ -148,30 +148,31 @@ static void OCTACBench_afterTXOrderStatus(TASession self, void **inout)
 }
 
 /* Delivery */
-/* static void OCTACBench_beforeTXDelivery(TASession self, void **inout) */
-/* { */
-/*   OCTACBenchInput *io = (OCTACBenchInput *)*inout; */
+static void OCTACBench_beforeTXDelivery(TASession self, void **inout)
+{
+  OCTACBenchInput *io = (OCTACBenchInput *)*inout;
 
-/*   OCTACBenchDelivery_beforeTX(&(io->input_delivery), TASession_ID(self), */
-/*                               io->option.scale_factor, */
-/*                               io->option.keying_time[IDX_DELIVERY]); */
-/* } */
+  OCTACBenchDelivery_beforeTX(&(io->input_delivery), TASession_ID(self),
+                              io->option.scale_factor,
+                              io->option.keying_time[IDX_DELIVERY]);
+}
 
-/* static int OCTACBench_TXDelivery(TASession self, void **inout) */
-/* { */
-/*   OCTACBenchInput *io = (OCTACBenchInput *)*inout; */
-/*   OCTACBenchDeliveryInput *in = &(io->input_delivery); */
+static int OCTACBench_TXDelivery(TASession self, void **inout)
+{
+  OCTACBenchInput *io = (OCTACBenchInput *)*inout;
+  OCTACBenchDeliveryInput *in = &(io->input_delivery);
 
-/*   return OCOracle_execTX(io->oracle, (void **) &in, */
-/*                          OCTACBenchDelivery_oracleTX); */
-/* } */
+  in->log = TASession_log(self);
+  return OCOracle_execTX(io->oracle, (void **) &in,
+                         OCTACBenchDelivery_oracleTX);
+}
 
-/* static void OCTACBench_afterTXDelivery(TASession self, void **inout) */
-/* { */
-/*   OCTACBenchInput *io = (OCTACBenchInput *)*inout; */
+static void OCTACBench_afterTXDelivery(TASession self, void **inout)
+{
+  OCTACBenchInput *io = (OCTACBenchInput *)*inout;
 
-/*   OCTACBenchDelivery_afterTX(io->option.think_time[IDX_DELIVERY]); */
-/* } */
+  OCTACBenchDelivery_afterTX(io->option.think_time[IDX_DELIVERY]);
+}
 
 /* Stock-Level */
 /* static void OCTACBench_beforeTXStockLevel(TASession self, void **inout) */
@@ -223,7 +224,7 @@ static char *OCTACBench_selectTX(TASession self)
                  "Stock-Level"};
 
   /* return tx_names[TARandom_indexInRatio(tx_percentage, TXS)]; */
-  return tx_names[TARandom_indexInRatio(tx_percentage, 3)];
+  return tx_names[TARandom_indexInRatio(tx_percentage, 4)];
 }
 
 static void OCTACBench_teardown(TASession self, void **inout)
@@ -268,7 +269,7 @@ static void OCTACBench_afterTeardown(TASessionManager self, void **inout)
   TASessionManager_printMonitoredTX(self, "New-Order", PAGESIZE);
   TADistribution_print(TATXStat_distribution(summary_stat));
   /* TASessionManager_printNumericalQuantitiesSummary(self, tx_names, TXS); */
-  TASessionManager_printNumericalQuantitiesSummary(self, tx_names, 3);
+  TASessionManager_printNumericalQuantitiesSummary(self, tx_names, 4);
 
   timerclear(&end_timeval);
   gettimeofday(&end_timeval, (struct timezone *)0);
@@ -325,13 +326,13 @@ int OCTACBench_main(const OCTAOption *opt)
                        "Order-Status");
 
   /* Delivery */
-  /* TASession_setTX(session_prototype, OCTACBench_TXDelivery, "Delivery"); */
-  /* TASession_setBeforeTX(session_prototype, OCTACBench_beforeTXDelivery, */
-  /*                       "Delivery"); */
-  /* TASession_setWhenErrorTX(session_prototype, OCTACBench_errorTX, */
-  /*                          "Delivery"); */
-  /* TASession_setAfterTX(session_prototype, OCTACBench_afterTXDelivery, */
-  /*                      "Delivery"); */
+  TASession_setTX(session_prototype, OCTACBench_TXDelivery, "Delivery");
+  TASession_setBeforeTX(session_prototype, OCTACBench_beforeTXDelivery,
+                        "Delivery");
+  TASession_setWhenErrorTX(session_prototype, OCTACBench_errorTX,
+                           "Delivery");
+  TASession_setAfterTX(session_prototype, OCTACBench_afterTXDelivery,
+                       "Delivery");
 
   /* Stock-Level */
   /* TASession_setTX(session_prototype, OCTACBench_TXStockLevel, "Stock-Level"); */
