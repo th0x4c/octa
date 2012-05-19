@@ -37,8 +37,9 @@ int OCTACBenchOrderStatus_oracleTX(OCIEnv *envhp, OCIError *errhp,
                                    OCISvcCtx *svchp, void **inout,
                                    char *errmsg, size_t errmsgsize)
 {
-  OCTACBenchOrderStatusInput *in = (OCTACBenchOrderStatusInput *)*inout;
-  OCTACBenchOrderStatusOutput out;
+  OCTACBenchOrderStatusInOut *io = (OCTACBenchOrderStatusInOut *)*inout;
+  OCTACBenchOrderStatusInput *in = &(io->input);
+  OCTACBenchOrderStatusOutput *out = &(io->output);
   static OCSQL sql1 = NULL;
   static OCSQL sql2 = NULL;
   static OCSQL sql3 = NULL;
@@ -49,9 +50,9 @@ int OCTACBenchOrderStatus_oracleTX(OCIEnv *envhp, OCIError *errhp,
   long n = 0;
   int i = 0;
 
-  memset(&out, 0, sizeof(out));
+  memset(out, 0, sizeof(*out));
 
-  snprintf(out.c_id, sizeof(out.c_id), "%s", in->c_id);
+  snprintf(out->c_id, sizeof(out->c_id), "%s", in->c_id);
   if (in->byname)
   {
     if (sql1 == NULL)
@@ -89,10 +90,10 @@ int OCTACBenchOrderStatus_oracleTX(OCIEnv *envhp, OCIError *errhp,
     {
       errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
                            OCSQL_fetchInto(sql2, errhp,
-                                           out.c_balance,
-                                           out.c_first,
-                                           out.c_middle,
-                                           out.c_id));
+                                           out->c_balance,
+                                           out->c_first,
+                                           out->c_middle,
+                                           out->c_id));
       if (errcode != 0) goto end;
     }
   }
@@ -112,10 +113,10 @@ int OCTACBenchOrderStatus_oracleTX(OCIEnv *envhp, OCIError *errhp,
     if (errcode != 0) goto end;
     errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
                          OCSQL_fetchInto(sql3, errhp,
-                                         out.c_balance,
-                                         out.c_first,
-                                         out.c_middle,
-                                         out.c_last));
+                                         out->c_balance,
+                                         out->c_first,
+                                         out->c_middle,
+                                         out->c_last));
     if (errcode != 0) goto end;
   }
 
@@ -140,16 +141,16 @@ int OCTACBenchOrderStatus_oracleTX(OCIEnv *envhp, OCIError *errhp,
                        OCSQL_execute(sql4, errhp, svchp,
                                      in->w_id,
                                      in->d_id,
-                                     out.c_id,
+                                     out->c_id,
                                      in->w_id,
                                      in->d_id,
-                                     out.c_id));
+                                     out->c_id));
   if (errcode != 0) goto end;
   errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
                        OCSQL_fetchInto(sql4, errhp,
-                                       out.o_id,
-                                       out.o_carrier_id,
-                                       out.o_entry_d));
+                                       out->o_id,
+                                       out->o_carrier_id,
+                                       out->o_entry_d));
   if (errcode != 0 && errcode != 1405) goto end; /* o_carrier_id can be NULL */
 
   if (sql5 == NULL)
@@ -163,7 +164,7 @@ int OCTACBenchOrderStatus_oracleTX(OCIEnv *envhp, OCIError *errhp,
                              "  AND ol_w_id = :3");
   errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
                        OCSQL_execute(sql5, errhp, svchp,
-                                     out.o_id,
+                                     out->o_id,
                                      in->d_id,
                                      in->w_id));
   if (errcode != 0) goto end;
@@ -171,11 +172,11 @@ int OCTACBenchOrderStatus_oracleTX(OCIEnv *envhp, OCIError *errhp,
   {
     errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
                          OCSQL_fetchInto(sql5, errhp,
-                                         out.ol_i_id[i],
-                                         out.ol_supply_w_id[i],
-                                         out.ol_quantity[i],
-                                         out.ol_amount[i],
-                                         out.ol_delivery_d[i]));
+                                         out->ol_i_id[i],
+                                         out->ol_supply_w_id[i],
+                                         out->ol_quantity[i],
+                                         out->ol_amount[i],
+                                         out->ol_delivery_d[i]));
     if (errcode != 0 && errcode != OCI_NO_DATA) goto end;
   }
   if (errcode == OCI_NO_DATA) errcode = 0;
@@ -196,7 +197,8 @@ int OCTACBenchOrderStatus_oracleTX(OCIEnv *envhp, OCIError *errhp,
   return errcode;
 }
 
-void OCTACBenchOrderStatus_afterTX(struct timeval think_time)
+void OCTACBenchOrderStatus_afterTX(OCTACBenchOrderStatusInOut *inout,
+                                   struct timeval think_time)
 {
   OCTACConfig_sleepThinkTime(think_time);
 }

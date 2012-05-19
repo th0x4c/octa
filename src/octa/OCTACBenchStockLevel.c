@@ -27,13 +27,14 @@ int OCTACBenchStockLevel_oracleTX(OCIEnv *envhp, OCIError *errhp,
                                   OCISvcCtx *svchp, void **inout,
                                   char *errmsg, size_t errmsgsize)
 {
-  OCTACBenchStockLevelInput *in = (OCTACBenchStockLevelInput *)*inout;
-  OCTACBenchStockLevelOutput out;
+  OCTACBenchStockLevelInOut *io = (OCTACBenchStockLevelInOut *)*inout;
+  OCTACBenchStockLevelInput *in = &(io->input);
+  OCTACBenchStockLevelOutput *out = &(io->output);
   static OCSQL sql1 = NULL;
   static OCSQL sql2 = NULL;
   sword errcode = 0;
 
-  memset(&out, 0, sizeof(out));
+  memset(out, 0, sizeof(*out));
 
   if (sql1 == NULL)
     sql1 = OCSQL_initWithSQL(envhp, errhp,
@@ -46,7 +47,7 @@ int OCTACBenchStockLevel_oracleTX(OCIEnv *envhp, OCIError *errhp,
   if (errcode != 0) goto end;
   errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
                        OCSQL_fetchInto(sql1, errhp,
-                                       out.o_id));
+                                       out->o_id));
   if (errcode != 0) goto end;
 
   if (sql2 == NULL)
@@ -61,14 +62,14 @@ int OCTACBenchStockLevel_oracleTX(OCIEnv *envhp, OCIError *errhp,
                        OCSQL_execute(sql2, errhp, svchp,
                                      in->w_id,
                                      in->d_id,
-                                     out.o_id,
-                                     out.o_id,
+                                     out->o_id,
+                                     out->o_id,
                                      in->w_id,
                                      in->threshold));
   if (errcode != 0) goto end;
   errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
                        OCSQL_fetchInto(sql2, errhp,
-                                       out.stock_count));
+                                       out->stock_count));
   if (errcode != 0) goto end;
 
   OCITransCommit(svchp, errhp, (ub4) 0);
@@ -80,7 +81,8 @@ int OCTACBenchStockLevel_oracleTX(OCIEnv *envhp, OCIError *errhp,
   return errcode;
 }
 
-void OCTACBenchStockLevel_afterTX(struct timeval think_time)
+void OCTACBenchStockLevel_afterTX(OCTACBenchStockLevelInOut *inout,
+                                  struct timeval think_time)
 {
   OCTACConfig_sleepThinkTime(think_time);
 }

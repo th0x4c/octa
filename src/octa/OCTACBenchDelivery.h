@@ -34,12 +34,20 @@ struct OCTACBenchDeliveryOutput
 };
 typedef struct OCTACBenchDeliveryOutput OCTACBenchDeliveryOutput;
 
+struct OCTACBenchDeliveryInOut
+{
+  OCTACBenchDeliveryInput input;
+  OCTACBenchDeliveryOutput output;
+};
+typedef struct OCTACBenchDeliveryInOut OCTACBenchDeliveryInOut;
+
 void OCTACBenchDelivery_beforeTX(OCTACBenchDeliveryInput *input,
                                  int session_id, long scale_factor,
                                  struct timeval keying_time);
 int OCTACBenchDelivery_oracleTX(OCIEnv *envhp, OCIError *errhp,
                                 OCISvcCtx *svchp, void **inout,
                                 char *errmsg, size_t errmsgsize);
-void OCTACBenchDelivery_afterTX(struct timeval think_time);
+void OCTACBenchDelivery_afterTX(OCTACBenchDeliveryInOut *inout,
+                                struct timeval think_time);
 
 #endif /* _OCTACBENCHDELIVERY_H_ */

@@ -31,12 +31,20 @@ struct OCTACBenchStockLevelOutput
 };
 typedef struct OCTACBenchStockLevelOutput OCTACBenchStockLevelOutput;
 
+struct OCTACBenchStockLevelInOut
+{
+  OCTACBenchStockLevelInput input;
+  OCTACBenchStockLevelOutput output;
+};
+typedef struct OCTACBenchStockLevelInOut OCTACBenchStockLevelInOut;
+
 void OCTACBenchStockLevel_beforeTX(OCTACBenchStockLevelInput *input,
                                    int session_id, long scale_factor,
                                    struct timeval keying_time);
 int OCTACBenchStockLevel_oracleTX(OCIEnv *envhp, OCIError *errhp,
                                   OCISvcCtx *svchp, void **inout,
                                   char *errmsg, size_t errmsgsize);
-void OCTACBenchStockLevel_afterTX(struct timeval think_time);
+void OCTACBenchStockLevel_afterTX(OCTACBenchStockLevelInOut *inout,
+                                  struct timeval think_time);
 
 #endif /* _OCTACBENCHSTOCKLEVEL_H_ */

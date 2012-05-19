@@ -62,8 +62,9 @@ int OCTACBenchPayment_oracleTX(OCIEnv *envhp, OCIError *errhp,
                                OCISvcCtx *svchp, void **inout, char *errmsg,
                                size_t errmsgsize)
 {
-  OCTACBenchPaymentInput *in = (OCTACBenchPaymentInput *)*inout;
-  OCTACBenchPaymentOutput out;
+  OCTACBenchPaymentInOut *io = (OCTACBenchPaymentInOut *)*inout;
+  OCTACBenchPaymentInput *in = &(io->input);
+  OCTACBenchPaymentOutput *out = &(io->output);
   static OCSQL sql1 = NULL;
   static OCSQL sql2 = NULL;
   static OCSQL sql3 = NULL;
@@ -79,7 +80,7 @@ int OCTACBenchPayment_oracleTX(OCIEnv *envhp, OCIError *errhp,
   long namecnt = 0;
   long n = 0;
 
-  memset(&out, 0, sizeof(out));
+  memset(out, 0, sizeof(*out));
 
   if (sql1 == NULL)
     sql1 = OCSQL_initWithSQL(envhp, errhp,
@@ -103,12 +104,12 @@ int OCTACBenchPayment_oracleTX(OCIEnv *envhp, OCIError *errhp,
   if (errcode != 0) goto end;
   errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
                        OCSQL_fetchInto(sql2, errhp,
-                                       out.w_street_1,
-                                       out.w_street_2,
-                                       out.w_city,
-                                       out.w_state,
-                                       out.w_zip,
-                                       out.w_name));
+                                       out->w_street_1,
+                                       out->w_street_2,
+                                       out->w_city,
+                                       out->w_state,
+                                       out->w_zip,
+                                       out->w_name));
   if (errcode != 0) goto end;
 
   if (sql3 == NULL)
@@ -135,15 +136,15 @@ int OCTACBenchPayment_oracleTX(OCIEnv *envhp, OCIError *errhp,
   if (errcode != 0) goto end;
   errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
                        OCSQL_fetchInto(sql4, errhp,
-                                       out.d_street_1,
-                                       out.d_street_2,
-                                       out.d_city,
-                                       out.d_state,
-                                       out.d_zip,
-                                       out.d_name));
+                                       out->d_street_1,
+                                       out->d_street_2,
+                                       out->d_city,
+                                       out->d_state,
+                                       out->d_zip,
+                                       out->d_name));
   if (errcode != 0) goto end;
 
-  snprintf(out.c_id, sizeof(out.c_id), "%s", in->c_id);
+  snprintf(out->c_id, sizeof(out->c_id), "%s", in->c_id);
   if (in->byname)
   {
     if (sql5 == NULL)
@@ -186,20 +187,20 @@ int OCTACBenchPayment_oracleTX(OCIEnv *envhp, OCIError *errhp,
     {
       errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
                            OCSQL_fetchInto(sql6, errhp,
-                                           out.c_first,
-                                           out.c_middle,
-                                           out.c_id,
-                                           out.c_street_1,
-                                           out.c_street_2,
-                                           out.c_city,
-                                           out.c_state,
-                                           out.c_zip,
-                                           out.c_phone,
-                                           out.c_credit,
-                                           out.c_credit_lim,
-                                           out.c_discount,
-                                           out.c_balance,
-                                           out.c_since));
+                                           out->c_first,
+                                           out->c_middle,
+                                           out->c_id,
+                                           out->c_street_1,
+                                           out->c_street_2,
+                                           out->c_city,
+                                           out->c_state,
+                                           out->c_zip,
+                                           out->c_phone,
+                                           out->c_credit,
+                                           out->c_credit_lim,
+                                           out->c_discount,
+                                           out->c_balance,
+                                           out->c_since));
       if (errcode != 0) goto end;
     }
   }
@@ -224,24 +225,24 @@ int OCTACBenchPayment_oracleTX(OCIEnv *envhp, OCIError *errhp,
     if (errcode != 0) goto end;
     errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
                          OCSQL_fetchInto(sql7, errhp,
-                                         out.c_first,
-                                         out.c_middle,
-                                         out.c_last,
-                                         out.c_street_1,
-                                         out.c_street_2,
-                                         out.c_city,
-                                         out.c_state,
-                                         out.c_zip,
-                                         out.c_phone,
-                                         out.c_credit,
-                                         out.c_credit_lim,
-                                         out.c_discount,
-                                         out.c_balance,
-                                         out.c_since));
+                                         out->c_first,
+                                         out->c_middle,
+                                         out->c_last,
+                                         out->c_street_1,
+                                         out->c_street_2,
+                                         out->c_city,
+                                         out->c_state,
+                                         out->c_zip,
+                                         out->c_phone,
+                                         out->c_credit,
+                                         out->c_credit_lim,
+                                         out->c_discount,
+                                         out->c_balance,
+                                         out->c_since));
     if (errcode != 0) goto end;
   }
 
-  if (strstr(out.c_credit, "BC") != NULL)
+  if (strstr(out->c_credit, "BC") != NULL)
   {
     if (sql8 == NULL)
       sql8 = OCSQL_initWithSQL(envhp, errhp,
@@ -253,11 +254,11 @@ int OCTACBenchPayment_oracleTX(OCIEnv *envhp, OCIError *errhp,
                          OCSQL_execute(sql8, errhp, svchp,
                                        in->c_w_id,
                                        in->c_d_id,
-                                       out.c_id));
+                                       out->c_id));
     if (errcode != 0) goto end;
     errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
                          OCSQL_fetchInto(sql8, errhp,
-                                         out.c_data));
+                                         out->c_data));
     if (errcode != 0) goto end;
 
     /*
@@ -272,10 +273,10 @@ int OCTACBenchPayment_oracleTX(OCIEnv *envhp, OCIError *errhp,
      * If C_DATA is implemented as two fields (see Clause 1.4.9), they must
      * be treated and operated on as one single field.
      */
-    snprintf(out.c_new_data, sizeof(out.c_new_data), "| %s %s %s %s %s %s",
-             out.c_id, in->c_d_id, in->c_w_id, in->d_id, in->w_id,
+    snprintf(out->c_new_data, sizeof(out->c_new_data), "| %s %s %s %s %s %s",
+             out->c_id, in->c_d_id, in->c_w_id, in->d_id, in->w_id,
              in->h_amount);
-    strncat(out.c_new_data, out.c_data, 500 - strlen(out.c_new_data));
+    strncat(out->c_new_data, out->c_data, 500 - strlen(out->c_new_data));
 
     /*
      * C_BALANCE is decreased by H_AMOUNT. C_YTD_PAYMENT is increased by
@@ -292,11 +293,11 @@ int OCTACBenchPayment_oracleTX(OCIEnv *envhp, OCIError *errhp,
     errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
                          OCSQL_execute(sql9, errhp, svchp,
                                        in->h_amount,
-                                       out.c_new_data,
+                                       out->c_new_data,
                                        in->h_amount,
                                        in->c_w_id,
                                        in->c_d_id,
-                                       out.c_id));
+                                       out->c_id));
     if (errcode != 0) goto end;
   }
   else
@@ -319,14 +320,15 @@ int OCTACBenchPayment_oracleTX(OCIEnv *envhp, OCIError *errhp,
                                        in->h_amount,
                                        in->c_w_id,
                                        in->c_d_id,
-                                       out.c_id));
+                                       out->c_id));
     if (errcode != 0) goto end;
   }
 
   /*
    * H_DATA is built by concatenating W_NAME and D_NAME separated by 4 spaces. 
    */
-  snprintf(out.h_data, sizeof(out.h_data), "%s    %s", out.w_name, out.d_name);
+  snprintf(out->h_data, sizeof(out->h_data), "%s    %s",
+           out->w_name, out->d_name);
 
   if (sql11 == NULL)
     sql11 = OCSQL_initWithSQL(envhp, errhp,
@@ -338,11 +340,11 @@ int OCTACBenchPayment_oracleTX(OCIEnv *envhp, OCIError *errhp,
                        OCSQL_execute(sql11, errhp, svchp,
                                      in->c_d_id,
                                      in->c_w_id,
-                                     out.c_id,
+                                     out->c_id,
                                      in->d_id,
                                      in->w_id,
                                      in->h_amount,
-                                     out.h_data));
+                                     out->h_data));
   if (errcode != 0) goto end;
 
   OCITransCommit(svchp, errhp, (ub4) 0);
@@ -363,7 +365,8 @@ int OCTACBenchPayment_oracleTX(OCIEnv *envhp, OCIError *errhp,
   return errcode;
 }
 
-void OCTACBenchPayment_afterTX(struct timeval think_time)
+void OCTACBenchPayment_afterTX(OCTACBenchPaymentInOut *inout,
+                               struct timeval think_time)
 {
   OCTACConfig_sleepThinkTime(think_time);
 }

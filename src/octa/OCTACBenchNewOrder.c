@@ -63,8 +63,9 @@ int OCTACBenchNewOrder_oracleTX(OCIEnv *envhp, OCIError *errhp,
                                 OCISvcCtx *svchp, void **inout, char *errmsg,
                                 size_t errmsgsize)
 {
-  OCTACBenchNewOrderInput *in = (OCTACBenchNewOrderInput *)*inout;
-  OCTACBenchNewOrderOutput out;
+  OCTACBenchNewOrderInOut *io = (OCTACBenchNewOrderInOut *)*inout;
+  OCTACBenchNewOrderInput *in = &(io->input);
+  OCTACBenchNewOrderOutput *out = &(io->output);
   static OCSQL sql1 = NULL;
   static OCSQL sql2 = NULL;
   static OCSQL sql3 = NULL;
@@ -79,7 +80,7 @@ int OCTACBenchNewOrder_oracleTX(OCIEnv *envhp, OCIError *errhp,
   char ol_number_str[3];
   double total = 0;
 
-  memset(&out, 0, sizeof(out));
+  memset(out, 0, sizeof(*out));
 
   if (sql1 == NULL)
     sql1 = OCSQL_initWithSQL(envhp, errhp,
@@ -95,10 +96,10 @@ int OCTACBenchNewOrder_oracleTX(OCIEnv *envhp, OCIError *errhp,
   if (errcode != 0) goto end;
   errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
                        OCSQL_fetchInto(sql1, errhp,
-                                       out.c_discount,
-                                       out.c_last,
-                                       out.c_credit,
-                                       out.w_tax));
+                                       out->c_discount,
+                                       out->c_last,
+                                       out->c_credit,
+                                       out->w_tax));
   if (errcode != 0) goto end;
 
   if (sql2 == NULL)
@@ -115,8 +116,8 @@ int OCTACBenchNewOrder_oracleTX(OCIEnv *envhp, OCIError *errhp,
   if (errcode != 0) goto end;
   errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
                        OCSQL_fetchInto(sql2, errhp,
-                                       out.d_next_o_id,
-                                       out.d_tax));
+                                       out->d_next_o_id,
+                                       out->d_tax));
   if (errcode != 0) goto end;
 
   if (sql3 == NULL)
@@ -125,7 +126,7 @@ int OCTACBenchNewOrder_oracleTX(OCIEnv *envhp, OCIError *errhp,
                              "WHERE d_id = :2 AND d_w_id = :3");
   errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
                        OCSQL_execute(sql3, errhp, svchp,
-                                     out.d_next_o_id,
+                                     out->d_next_o_id,
                                      in->d_id,
                                      in->w_id));
   if (errcode != 0) goto end;
@@ -138,7 +139,7 @@ int OCTACBenchNewOrder_oracleTX(OCIEnv *envhp, OCIError *errhp,
                              "VALUES (:1, :2, :3, :4, SYSDATE, NULL, :5, :6)");
   errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
                        OCSQL_execute(sql4, errhp, svchp,
-                                     out.d_next_o_id,
+                                     out->d_next_o_id,
                                      in->d_id,
                                      in->w_id,
                                      in->c_id,
@@ -153,7 +154,7 @@ int OCTACBenchNewOrder_oracleTX(OCIEnv *envhp, OCIError *errhp,
                              "VALUES (:1, :2, :3)");
   errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
                        OCSQL_execute(sql5, errhp, svchp,
-                                     out.d_next_o_id,
+                                     out->d_next_o_id,
                                      in->d_id,
                                      in->w_id));
   if (errcode != 0) goto end;
@@ -171,9 +172,9 @@ int OCTACBenchNewOrder_oracleTX(OCIEnv *envhp, OCIError *errhp,
     if (errcode != 0) goto end;
     errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
                          OCSQL_fetchInto(sql6, errhp,
-                                         out.price[ol_number],
-                                         out.iname[ol_number],
-                                         out.i_data));
+                                         out->price[ol_number],
+                                         out->iname[ol_number],
+                                         out->i_data));
     if (errcode != 0)
     {
       if (errcode == OCI_NO_DATA)
@@ -200,42 +201,42 @@ int OCTACBenchNewOrder_oracleTX(OCIEnv *envhp, OCIError *errhp,
     if (errcode != 0) goto end;
     errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
                          OCSQL_fetchInto(sql7, errhp,
-                                         out.s_quantity,
-                                         out.s_data,
-                                         out.s_dist_xx[0],
-                                         out.s_dist_xx[1],
-                                         out.s_dist_xx[2],
-                                         out.s_dist_xx[3],
-                                         out.s_dist_xx[4],
-                                         out.s_dist_xx[5],
-                                         out.s_dist_xx[6],
-                                         out.s_dist_xx[7],
-                                         out.s_dist_xx[8],
-                                         out.s_dist_xx[9]));
+                                         out->s_quantity,
+                                         out->s_data,
+                                         out->s_dist_xx[0],
+                                         out->s_dist_xx[1],
+                                         out->s_dist_xx[2],
+                                         out->s_dist_xx[3],
+                                         out->s_dist_xx[4],
+                                         out->s_dist_xx[5],
+                                         out->s_dist_xx[6],
+                                         out->s_dist_xx[7],
+                                         out->s_dist_xx[8],
+                                         out->s_dist_xx[9]));
     if (errcode != 0) goto end;
 
-    snprintf(out.ol_dist_info, sizeof(out.ol_dist_info), "%s",
-             out.s_dist_xx[atol(in->d_id) - 1]);
-    snprintf(out.stock[ol_number], sizeof(out.stock[ol_number]), "%s",
-             out.s_quantity);
+    snprintf(out->ol_dist_info, sizeof(out->ol_dist_info), "%s",
+             out->s_dist_xx[atol(in->d_id) - 1]);
+    snprintf(out->stock[ol_number], sizeof(out->stock[ol_number]), "%s",
+             out->s_quantity);
 
-    if ((strstr(out.i_data, "original") != NULL) &&
-        (strstr(out.s_data, "original") != NULL))
-      out.bg[ol_number] = 'B';
+    if ((strstr(out->i_data, "original") != NULL) &&
+        (strstr(out->s_data, "original") != NULL))
+      out->bg[ol_number] = 'B';
     else
-      out.bg[ol_number] = 'G';
+      out->bg[ol_number] = 'G';
 
     /*
      * If the retrieved value for S_QUANTITY exceeds OL_QUANTITY by 10 or more,
      * then S_QUANTITY is decreased by OL_QUANTITY; otherwise S_QUANTITY is
      * updated to (S_QUANTITY - OL_QUANTITY)+91.
      */
-    if (atol(out.s_quantity) >= atol(in->qty[ol_number]) + 10)
-      snprintf(out.s_quantity, sizeof(out.s_quantity), "%ld",
-               atol(out.s_quantity) - atol(in->qty[ol_number]));
+    if (atol(out->s_quantity) >= atol(in->qty[ol_number]) + 10)
+      snprintf(out->s_quantity, sizeof(out->s_quantity), "%ld",
+               atol(out->s_quantity) - atol(in->qty[ol_number]));
     else
-      snprintf(out.s_quantity, sizeof(out.s_quantity), "%ld",
-               atol(out.s_quantity) - atol(in->qty[ol_number]) + 91);
+      snprintf(out->s_quantity, sizeof(out->s_quantity), "%ld",
+               atol(out->s_quantity) - atol(in->qty[ol_number]) + 91);
     
     /*
      * S_YTD is increased by OL_QUANTITY and S_ORDER_CNT is incremented by 1.
@@ -251,7 +252,7 @@ int OCTACBenchNewOrder_oracleTX(OCIEnv *envhp, OCIError *errhp,
                                "AND s_w_id = :5");
     errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
                          OCSQL_execute(sql8, errhp, svchp,
-                                       out.s_quantity,
+                                       out->s_quantity,
                                        in->qty[ol_number],
                                        atol(in->w_id) !=
                                        atol(in->supware[ol_number]) ?
@@ -264,16 +265,16 @@ int OCTACBenchNewOrder_oracleTX(OCIEnv *envhp, OCIError *errhp,
      * The amount for the item in the order (OL_AMOUNT) is computed as:
      *   OL_QUANTITY*I_PRICE
      */
-    snprintf(out.ol_amount, sizeof(out.ol_amount), "%f",
-             atol(in->qty[ol_number]) * atof(out.price[ol_number]));
-    snprintf(out.amt[ol_number], sizeof(out.amt[ol_number]), "%s",
-             out.ol_amount);
+    snprintf(out->ol_amount, sizeof(out->ol_amount), "%f",
+             atol(in->qty[ol_number]) * atof(out->price[ol_number]));
+    snprintf(out->amt[ol_number], sizeof(out->amt[ol_number]), "%s",
+             out->ol_amount);
     /*
      * The total-amount for the complete order is computed as:
      *   sum(OL_AMOUNT) *(1 - C_DISCOUNT) *(1 + W_TAX + D_TAX)
      */
-    total += atof(out.ol_amount) * (1 + atof(out.w_tax) + atof(out.d_tax)) *
-             (1 - atof(out.c_discount));
+    total += atof(out->ol_amount) * (1 + atof(out->w_tax) + atof(out->d_tax)) *
+             (1 - atof(out->c_discount));
 
     snprintf(ol_number_str, sizeof(ol_number_str), "%ld", ol_number + 1);
     if (sql9 == NULL)
@@ -285,19 +286,19 @@ int OCTACBenchNewOrder_oracleTX(OCIEnv *envhp, OCIError *errhp,
                                "VALUES (:1, :2, :3, :4, :5, :6, :7, :8, :9)");
     errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
                          OCSQL_execute(sql9, errhp, svchp,
-                                       out.d_next_o_id,
+                                       out->d_next_o_id,
                                        in->d_id,
                                        in->w_id,
                                        ol_number_str,
                                        in->itemid[ol_number],
                                        in->supware[ol_number],
                                        in->qty[ol_number],
-                                       out.ol_amount,
-                                       out.ol_dist_info));
+                                       out->ol_amount,
+                                       out->ol_dist_info));
     if (errcode != 0) goto end;
   }
 
-  snprintf(out.total, sizeof(out.total), "%f", total);
+  snprintf(out->total, sizeof(out->total), "%f", total);
   OCITransCommit(svchp, errhp, (ub4) 0);
 
  end:
@@ -314,7 +315,8 @@ int OCTACBenchNewOrder_oracleTX(OCIEnv *envhp, OCIError *errhp,
   return errcode;
 }
 
-void OCTACBenchNewOrder_afterTX(struct timeval think_time)
+void OCTACBenchNewOrder_afterTX(OCTACBenchNewOrderInOut *inout,
+                                struct timeval think_time)
 {
   OCTACConfig_sleepThinkTime(think_time);
 }

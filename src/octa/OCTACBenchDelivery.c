@@ -25,8 +25,9 @@ int OCTACBenchDelivery_oracleTX(OCIEnv *envhp, OCIError *errhp,
                                 OCISvcCtx *svchp, void **inout,
                                 char *errmsg, size_t errmsgsize)
 {
-  OCTACBenchDeliveryInput *in = (OCTACBenchDeliveryInput *)*inout;
-  OCTACBenchDeliveryOutput out;
+  OCTACBenchDeliveryInOut *io = (OCTACBenchDeliveryInOut *)*inout;
+  OCTACBenchDeliveryInput *in = &(io->input);
+  OCTACBenchDeliveryOutput *out = &(io->output);
   static OCSQL sql1 = NULL;
   static OCSQL sql2 = NULL;
   static OCSQL sql3 = NULL;
@@ -41,7 +42,7 @@ int OCTACBenchDelivery_oracleTX(OCIEnv *envhp, OCIError *errhp,
   char logstr[128];
   long d_id;
 
-  memset(&out, 0, sizeof(out));
+  memset(out, 0, sizeof(*out));
 
   timerclear(&datetime);
   gettimeofday(&datetime, (struct timezone *)0);
@@ -62,7 +63,7 @@ int OCTACBenchDelivery_oracleTX(OCIEnv *envhp, OCIError *errhp,
 
   for (d_id = 1; d_id <= DIST_PER_WARE; d_id++)
   {
-    snprintf(out.d_id, sizeof(out.d_id), "%ld", d_id);
+    snprintf(out->d_id, sizeof(out->d_id), "%ld", d_id);
 
     /*
      * The row in the NEW-ORDER table with matching NO_W_ID (equals W_ID) and
@@ -78,12 +79,12 @@ int OCTACBenchDelivery_oracleTX(OCIEnv *envhp, OCIError *errhp,
                                "WHERE no_d_id = :1 AND no_w_id = :2");
     errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
                          OCSQL_execute(sql1, errhp, svchp,
-                                       out.d_id,
+                                       out->d_id,
                                        in->w_id));
     if (errcode != 0) goto end;
     errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
                          OCSQL_fetchInto(sql1, errhp,
-                                         out.no_o_id));
+                                         out->no_o_id));
     if (errcode != 0)
     {
       if (errcode == OCI_NO_DATA || errcode == 1405) /* NULL value returned */
@@ -100,8 +101,8 @@ int OCTACBenchDelivery_oracleTX(OCIEnv *envhp, OCIError *errhp,
     errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
                          OCSQL_execute(sql2, errhp, svchp,
                                        in->w_id,
-                                       out.d_id,
-                                       out.no_o_id));
+                                       out->d_id,
+                                       out->no_o_id));
     if (errcode != 0) goto end;
 
     if (sql3 == NULL)
@@ -112,13 +113,13 @@ int OCTACBenchDelivery_oracleTX(OCIEnv *envhp, OCIError *errhp,
                                "  AND  o_w_id = :3");
     errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
                          OCSQL_execute(sql3, errhp, svchp,
-                                       out.no_o_id,
-                                       out.d_id,
+                                       out->no_o_id,
+                                       out->d_id,
                                        in->w_id));
     if (errcode != 0) goto end;
     errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
                          OCSQL_fetchInto(sql3, errhp,
-                                         out.c_id));
+                                         out->c_id));
     if (errcode != 0) goto end;
 
     if (sql4 == NULL)
@@ -129,8 +130,8 @@ int OCTACBenchDelivery_oracleTX(OCIEnv *envhp, OCIError *errhp,
     errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
                          OCSQL_execute(sql4, errhp, svchp,
                                        in->o_carrier_id,
-                                       out.no_o_id,
-                                       out.d_id,
+                                       out->no_o_id,
+                                       out->d_id,
                                        in->w_id));
     if (errcode != 0) goto end;
 
@@ -141,8 +142,8 @@ int OCTACBenchDelivery_oracleTX(OCIEnv *envhp, OCIError *errhp,
                                "  AND ol_w_id = :3");
     errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
                          OCSQL_execute(sql5, errhp, svchp,
-                                       out.no_o_id,
-                                       out.d_id,
+                                       out->no_o_id,
+                                       out->d_id,
                                        in->w_id));
     if (errcode != 0) goto end;
 
@@ -154,13 +155,13 @@ int OCTACBenchDelivery_oracleTX(OCIEnv *envhp, OCIError *errhp,
                                "  AND ol_w_id = :3");
     errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
                          OCSQL_execute(sql6, errhp, svchp,
-                                       out.no_o_id,
-                                       out.d_id,
+                                       out->no_o_id,
+                                       out->d_id,
                                        in->w_id));
     if (errcode != 0) goto end;
     errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
                          OCSQL_fetchInto(sql6, errhp,
-                                         out.ol_total));
+                                         out->ol_total));
     if (errcode != 0) goto end;
 
     /*
@@ -178,16 +179,16 @@ int OCTACBenchDelivery_oracleTX(OCIEnv *envhp, OCIError *errhp,
                                "  AND c_w_id = :4");
     errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
                          OCSQL_execute(sql7, errhp, svchp,
-                                       out.ol_total,
-                                       out.c_id,
-                                       out.d_id,
+                                       out->ol_total,
+                                       out->c_id,
+                                       out->d_id,
                                        in->w_id));
     if (errcode != 0) goto end;
 
     OCITransCommit(svchp, errhp, (ub4) 0);
 
     snprintf(logstr, sizeof(logstr), "D: %s, O: %s, time: %s",
-             out.d_id, out.no_o_id, datetime_str);
+             out->d_id, out->no_o_id, datetime_str);
     TALog_info(log, logstr);
   }
 
@@ -205,7 +206,8 @@ int OCTACBenchDelivery_oracleTX(OCIEnv *envhp, OCIError *errhp,
   return errcode;
 }
 
-void OCTACBenchDelivery_afterTX(struct timeval think_time)
+void OCTACBenchDelivery_afterTX(OCTACBenchDeliveryInOut *inout,
+                                struct timeval think_time)
 {
   OCTACConfig_sleepThinkTime(think_time);
 }

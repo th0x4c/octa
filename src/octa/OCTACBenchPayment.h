@@ -65,12 +65,20 @@ struct OCTACBenchPaymentOutput
 };
 typedef struct OCTACBenchPaymentOutput OCTACBenchPaymentOutput;
 
+struct OCTACBenchPaymentInOut
+{
+  OCTACBenchPaymentInput input;
+  OCTACBenchPaymentOutput output;
+};
+typedef struct OCTACBenchPaymentInOut OCTACBenchPaymentInOut;
+
 void OCTACBenchPayment_beforeTX(OCTACBenchPaymentInput *input,
                                 int session_id, long scale_factor,
                                 struct timeval keying_time);
 int OCTACBenchPayment_oracleTX(OCIEnv *envhp, OCIError *errhp,
                                OCISvcCtx *svchp, void **inout, char *errmsg,
                                size_t errmsgsize);
-void OCTACBenchPayment_afterTX(struct timeval think_time);
+void OCTACBenchPayment_afterTX(OCTACBenchPaymentInOut *inout,
+                               struct timeval think_time);
 
 #endif /* _OCTACBENCHPAYMENT_H_ */

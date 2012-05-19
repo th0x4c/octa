@@ -54,12 +54,21 @@ struct OCTACBenchNewOrderOutput
 };
 typedef struct OCTACBenchNewOrderOutput OCTACBenchNewOrderOutput;
 
+struct OCTACBenchNewOrderInOut
+{
+  OCTACBenchNewOrderInput input;
+  OCTACBenchNewOrderOutput output;
+};
+typedef struct OCTACBenchNewOrderInOut OCTACBenchNewOrderInOut;
+
+
 void OCTACBenchNewOrder_beforeTX(OCTACBenchNewOrderInput *input,
                                  int session_id, long scale_factor,
                                  struct timeval keying_time);
 int OCTACBenchNewOrder_oracleTX(OCIEnv *envhp, OCIError *errhp,
                                 OCISvcCtx *svchp, void **inout, char *errmsg,
                                 size_t errmsgsize);
-void OCTACBenchNewOrder_afterTX(struct timeval think_time);
+void OCTACBenchNewOrder_afterTX(OCTACBenchNewOrderInOut *inout,
+                                struct timeval think_time);
 
 #endif /* _OCTACBENCHNEWORDER_H_ */

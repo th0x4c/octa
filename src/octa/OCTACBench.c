@@ -8,24 +8,24 @@
 
 #include "OCTACBench.h"
 
-struct OCTACBenchInput
+struct OCTACBenchInOut
 {
   OCTAOption option;
   OCOracle oracle;
   int session_id;
-  OCTACBenchNewOrderInput input_new_order;
-  OCTACBenchPaymentInput input_payment;
-  OCTACBenchOrderStatusInput input_order_status;
-  OCTACBenchDeliveryInput input_delivery;
-  OCTACBenchStockLevelInput input_stock_level;
+  OCTACBenchNewOrderInOut inout_new_order;
+  OCTACBenchPaymentInOut inout_payment;
+  OCTACBenchOrderStatusInOut inout_order_status;
+  OCTACBenchDeliveryInOut inout_delivery;
+  OCTACBenchStockLevelInOut inout_stock_level;
 };
-typedef struct OCTACBenchInput OCTACBenchInput;
+typedef struct OCTACBenchInOut OCTACBenchInOut;
 
 static int tx_percentage[TXS];
 
 static void OCTACBench_beforeSetup(TASessionManager self, void **inout)
 {
-  OCTACBenchInput *io = (OCTACBenchInput *)*inout;
+  OCTACBenchInOut *io = (OCTACBenchInOut *)*inout;
   OCTAOption option = io->option;
   struct timeval start_time;
   char start_time_str[24] = "0000-00-00 00:00:00.000";
@@ -57,7 +57,7 @@ static void OCTACBench_beforeSetup(TASessionManager self, void **inout)
 
 static void OCTACBench_setup(TASession self, void **inout)
 {
-  OCTACBenchInput *io = (OCTACBenchInput *)*inout;
+  OCTACBenchInOut *io = (OCTACBenchInOut *)*inout;
   TALog log = TALog_initWithFilename(LOGFILE);
 
   TASession_setLog(self, log);
@@ -72,132 +72,137 @@ static void OCTACBench_setup(TASession self, void **inout)
 /* New-Order */
 static void OCTACBench_beforeTXNewOrder(TASession self, void **inout)
 {
-  OCTACBenchInput *io = (OCTACBenchInput *)*inout;
+  OCTACBenchInOut *io = (OCTACBenchInOut *)*inout;
 
-  OCTACBenchNewOrder_beforeTX(&(io->input_new_order), TASession_ID(self),
+  OCTACBenchNewOrder_beforeTX(&(io->inout_new_order.input), TASession_ID(self),
                               io->option.scale_factor,
                               io->option.keying_time[IDX_NEW_ORDER]);
 }
 
 static int OCTACBench_TXNewOrder(TASession self, void **inout)
 {
-  OCTACBenchInput *io = (OCTACBenchInput *)*inout;
-  OCTACBenchNewOrderInput *in = &(io->input_new_order);
+  OCTACBenchInOut *io = (OCTACBenchInOut *)*inout;
+  OCTACBenchNewOrderInOut *io_new_order = &(io->inout_new_order);
 
-  return OCOracle_execTX(io->oracle, (void **) &in,
+  return OCOracle_execTX(io->oracle, (void **) &io_new_order,
                          OCTACBenchNewOrder_oracleTX);
 }
 
 static void OCTACBench_afterTXNewOrder(TASession self, void **inout)
 {
-  OCTACBenchInput *io = (OCTACBenchInput *)*inout;
+  OCTACBenchInOut *io = (OCTACBenchInOut *)*inout;
 
-  OCTACBenchNewOrder_afterTX(io->option.think_time[IDX_NEW_ORDER]);
+  OCTACBenchNewOrder_afterTX(&(io->inout_new_order),
+                             io->option.think_time[IDX_NEW_ORDER]);
 }
 
 /* Payment */
 static void OCTACBench_beforeTXPayment(TASession self, void **inout)
 {
-  OCTACBenchInput *io = (OCTACBenchInput *)*inout;
+  OCTACBenchInOut *io = (OCTACBenchInOut *)*inout;
 
-  OCTACBenchPayment_beforeTX(&(io->input_payment), TASession_ID(self),
+  OCTACBenchPayment_beforeTX(&(io->inout_payment.input), TASession_ID(self),
                              io->option.scale_factor,
                              io->option.keying_time[IDX_PAYMENT]);
 }
 
 static int OCTACBench_TXPayment(TASession self, void **inout)
 {
-  OCTACBenchInput *io = (OCTACBenchInput *)*inout;
-  OCTACBenchPaymentInput *in = &(io->input_payment);
+  OCTACBenchInOut *io = (OCTACBenchInOut *)*inout;
+  OCTACBenchPaymentInOut *io_payment = &(io->inout_payment);
 
-  return OCOracle_execTX(io->oracle, (void **) &in,
+  return OCOracle_execTX(io->oracle, (void **) &io_payment,
                          OCTACBenchPayment_oracleTX);
 }
 
 static void OCTACBench_afterTXPayment(TASession self, void **inout)
 {
-  OCTACBenchInput *io = (OCTACBenchInput *)*inout;
+  OCTACBenchInOut *io = (OCTACBenchInOut *)*inout;
 
-  OCTACBenchPayment_afterTX(io->option.think_time[IDX_PAYMENT]);
+  OCTACBenchPayment_afterTX(&(io->inout_payment),
+                            io->option.think_time[IDX_PAYMENT]);
 }
 
 /* Order-Status */
 static void OCTACBench_beforeTXOrderStatus(TASession self, void **inout)
 {
-  OCTACBenchInput *io = (OCTACBenchInput *)*inout;
+  OCTACBenchInOut *io = (OCTACBenchInOut *)*inout;
 
-  OCTACBenchOrderStatus_beforeTX(&(io->input_order_status), TASession_ID(self),
-                                 io->option.scale_factor,
+  OCTACBenchOrderStatus_beforeTX(&(io->inout_order_status.input),
+                                 TASession_ID(self), io->option.scale_factor,
                                  io->option.keying_time[IDX_ORDER_STATUS]);
 }
 
 static int OCTACBench_TXOrderStatus(TASession self, void **inout)
 {
-  OCTACBenchInput *io = (OCTACBenchInput *)*inout;
-  OCTACBenchOrderStatusInput *in = &(io->input_order_status);
+  OCTACBenchInOut *io = (OCTACBenchInOut *)*inout;
+  OCTACBenchOrderStatusInOut *io_order_status = &(io->inout_order_status);
 
-  return OCOracle_execTX(io->oracle, (void **) &in,
+  return OCOracle_execTX(io->oracle, (void **) &io_order_status,
                          OCTACBenchOrderStatus_oracleTX);
 }
 
 static void OCTACBench_afterTXOrderStatus(TASession self, void **inout)
 {
-  OCTACBenchInput *io = (OCTACBenchInput *)*inout;
+  OCTACBenchInOut *io = (OCTACBenchInOut *)*inout;
 
-  OCTACBenchOrderStatus_afterTX(io->option.think_time[IDX_ORDER_STATUS]);
+  OCTACBenchOrderStatus_afterTX(&(io->inout_order_status),
+                                io->option.think_time[IDX_ORDER_STATUS]);
 }
 
 /* Delivery */
 static void OCTACBench_beforeTXDelivery(TASession self, void **inout)
 {
-  OCTACBenchInput *io = (OCTACBenchInput *)*inout;
+  OCTACBenchInOut *io = (OCTACBenchInOut *)*inout;
 
-  OCTACBenchDelivery_beforeTX(&(io->input_delivery), TASession_ID(self),
+  OCTACBenchDelivery_beforeTX(&(io->inout_delivery.input), TASession_ID(self),
                               io->option.scale_factor,
                               io->option.keying_time[IDX_DELIVERY]);
 }
 
 static int OCTACBench_TXDelivery(TASession self, void **inout)
 {
-  OCTACBenchInput *io = (OCTACBenchInput *)*inout;
-  OCTACBenchDeliveryInput *in = &(io->input_delivery);
+  OCTACBenchInOut *io = (OCTACBenchInOut *)*inout;
+  OCTACBenchDeliveryInOut *io_delivery = &(io->inout_delivery);
 
-  in->log = TASession_log(self);
-  return OCOracle_execTX(io->oracle, (void **) &in,
+  io_delivery->input.log = TASession_log(self);
+  return OCOracle_execTX(io->oracle, (void **) &io_delivery,
                          OCTACBenchDelivery_oracleTX);
 }
 
 static void OCTACBench_afterTXDelivery(TASession self, void **inout)
 {
-  OCTACBenchInput *io = (OCTACBenchInput *)*inout;
+  OCTACBenchInOut *io = (OCTACBenchInOut *)*inout;
 
-  OCTACBenchDelivery_afterTX(io->option.think_time[IDX_DELIVERY]);
+  OCTACBenchDelivery_afterTX(&(io->inout_delivery),
+                             io->option.think_time[IDX_DELIVERY]);
 }
 
 /* Stock-Level */
 static void OCTACBench_beforeTXStockLevel(TASession self, void **inout)
 {
-  OCTACBenchInput *io = (OCTACBenchInput *)*inout;
+  OCTACBenchInOut *io = (OCTACBenchInOut *)*inout;
 
-  OCTACBenchStockLevel_beforeTX(&(io->input_stock_level), TASession_ID(self),
-                                io->option.scale_factor,
+  OCTACBenchStockLevel_beforeTX(&(io->inout_stock_level.input),
+                                TASession_ID(self), io->option.scale_factor,
                                 io->option.keying_time[IDX_STOCK_LEVEL]);
 }
 
 static int OCTACBench_TXStockLevel(TASession self, void **inout)
 {
-  OCTACBenchInput *io = (OCTACBenchInput *)*inout;
-  OCTACBenchStockLevelInput *in = &(io->input_stock_level);
+  OCTACBenchInOut *io = (OCTACBenchInOut *)*inout;
+  OCTACBenchStockLevelInOut *io_stock_level = &(io->inout_stock_level);
 
-  return OCOracle_execTX(io->oracle, (void **) &in,
+  return OCOracle_execTX(io->oracle, (void **) &io_stock_level,
                          OCTACBenchStockLevel_oracleTX);
 }
 
 static void OCTACBench_afterTXStockLevel(TASession self, void **inout)
 {
-  OCTACBenchInput *io = (OCTACBenchInput *)*inout;
+  OCTACBenchInOut *io = (OCTACBenchInOut *)*inout;
 
-  OCTACBenchStockLevel_afterTX(io->option.think_time[IDX_STOCK_LEVEL]);
+  OCTACBenchStockLevel_afterTX(&(io->inout_stock_level),
+                               io->option.think_time[IDX_STOCK_LEVEL]);
 }
 
 static int OCTACBench_rollbackTX(OCIEnv *envhp, OCIError *errhp,
@@ -210,7 +215,7 @@ static int OCTACBench_rollbackTX(OCIEnv *envhp, OCIError *errhp,
 static void OCTACBench_errorTX(TASession self, void **inout, int error_code,
                                char *error_message, size_t error_message_size)
 {
-  OCTACBenchInput *io = (OCTACBenchInput *)*inout;
+  OCTACBenchInOut *io = (OCTACBenchInOut *)*inout;
 
   OCOracle_execTX(io->oracle, inout, OCTACBench_rollbackTX);
   snprintf(error_message, error_message_size, "err: %d, msg: %s", 
@@ -228,7 +233,7 @@ static char *OCTACBench_selectTX(TASession self)
 
 static void OCTACBench_teardown(TASession self, void **inout)
 {
-  OCTACBenchInput *io = (OCTACBenchInput *)*inout;
+  OCTACBenchInOut *io = (OCTACBenchInOut *)*inout;
   TATXStat stat = TASession_statByNameInPeriodInPhase(self, "New-Order",
                                                       TASession_MEASUREMENT,
                                                       TASession_TX);
@@ -255,7 +260,7 @@ static void OCTACBench_monitor(TASessionManager self)
 
 static void OCTACBench_afterTeardown(TASessionManager self, void **inout)
 {
-  OCTACBenchInput *io = (OCTACBenchInput *)*inout;
+  OCTACBenchInOut *io = (OCTACBenchInOut *)*inout;
   TATXStat summary_stat =
              TASessionManager_summaryStatByNameInPeriodInPhase(self,
                "New-Order", TASession_MEASUREMENT, TASession_TX);
@@ -281,13 +286,13 @@ int OCTACBench_main(const OCTAOption *opt)
 {
   TASession session_prototype = TASession_init();
   TASessionManager session_manager = NULL;
-  OCTACBenchInput *io = NULL;
+  OCTACBenchInOut *io = NULL;
   int ret = 0;
 
-  io = malloc(sizeof(OCTACBenchInput));
+  io = malloc(sizeof(OCTACBenchInOut));
   if (io == NULL)
   {
-    fprintf(stdout, "Cannot malloc OCTACBenchInput\n");
+    fprintf(stdout, "Cannot malloc OCTACBenchInOut\n");
     exit(1);
   }
   memset(io, 0, sizeof(*io));
