@@ -355,6 +355,21 @@ void TASessionManager_printNumericalQuantitiesSummary(TASessionManager self,
   }
   printf("\n");
 
+  printf("Errors (number of errors/ percentage)\n");
+  for (i = 0; i < tx_count; i++)
+  {
+    summary_stat = TASessionManager_summaryStatByNameInPeriodInPhase(self,
+                     tx_names[i], TASession_MEASUREMENT, TASession_TX);
+    printf("  - %-33s %15ld / %6.2f %%\n",
+           tx_names[i],
+           TATXStat_errorCount(summary_stat),
+           TATXStat_count(summary_stat) == 0 ? 0.0 :
+           ((double) TATXStat_errorCount(summary_stat)) * 100 /
+           TATXStat_count(summary_stat));
+    TATXStat_release(summary_stat);
+  }
+  printf("\n");
+
   printf("Keying/Think Times (in seconds),\n");
   printf("                         Min.          Average           Max.\n");
   for (i = 0; i < tx_count; i++)
