@@ -37,8 +37,15 @@ int OCTASetup_main(const OCTAOption *option, OCTADDLInput create_table,
   ret = OCOracle_execTX(oracle, (void **)&ddlinput, OCTADDL_TX);
   if (ret != 0) goto end;
 
+  OCOracle_release(oracle);
+
   /* Load data */
   ret = load(option);
+
+  oracle = OCOracle_init();
+  ret = OCOracle_connect(oracle, option->username, option->password,
+                         option->tnsname);
+  if (ret != 0) goto end;
 
   /* Create indexes */
   *ddlinput = create_index;
