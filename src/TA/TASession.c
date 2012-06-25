@@ -187,10 +187,12 @@ int TASession_ID(TASession self)
 
 void TASession_setLog(TASession self, TALog log)
 {
-  /* comment out next line to avoid "pointer being freed was not allocated" */
-  /* TALog_release(self->log); */
+  TALog_release(self->log);
 
-  self->log = log;
+  if (self->deep_copied == TRUE)
+    TALog_deepCopy(log, self->log);
+  else
+    self->log = log;
 }
 
 TALog TASession_log(TASession self)
