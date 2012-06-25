@@ -20,7 +20,7 @@
 #include <sys/time.h>  /* gettimeofday */
 #include <sys/types.h> /* wait */
 #include <sys/wait.h>  /* wait */
-#include <signal.h>    /* sigemptyset sigaction */
+#include <signal.h>    /* sigemptyset sigaction kill */
 #include "TABool.h"
 #include "TATime.h"
 #include "TATXStat.h"

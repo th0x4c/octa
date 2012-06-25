@@ -21,9 +21,6 @@ struct __TASessionManager
 static volatile sig_atomic_t sigflag = 0;
 
 static TABool TASessionManager_isAllStatus(TASessionManager self, int status);
-static void TASessionManager_setAllStatus(TASessionManager self, int status);
-static void TASessionManager_toggleAllStatus(TASessionManager self);
-static void TASessionManager_moveAllPeriod(TASessionManager self);
 static void TASessionManager_signalHandler(int sig);
 
 TASessionManager TASessionManager_initWithSessionPrototype(TASession prototype,
@@ -469,19 +466,19 @@ int TASessionManager_main(TASessionManager self, void **inout)
     switch (sigflag)
     {
     case SIGINT:
-      TASessionManager_setAllStatus(self, TASession_STOP);
+      /* ignore SIGINT */
       sigflag = 0;
       break;
     case SIGTERM:
-      TASessionManager_setAllStatus(self, TASession_STOP);
+      kill(0, SIGTERM);
       sigflag = 0;
       break;
     case SIGUSR1:
-      TASessionManager_toggleAllStatus(self);
+      kill(0, SIGUSR1);
       sigflag = 0;
       break;
     case SIGUSR2:
-      TASessionManager_moveAllPeriod(self);
+      kill(0, SIGUSR2);
       sigflag = 0;
       break;
     default:
@@ -510,36 +507,6 @@ static TABool TASessionManager_isAllStatus(TASessionManager self, int status)
   }
 
   return TRUE;
-}
-
-static void TASessionManager_setAllStatus(TASessionManager self, int status)
-{
-  int i = 0;
-  
-  for (i = 0; i < self->num_sessions; i++)
-  {
-    TASession_setStatus(self->sessions[i], status);
-  }
-}
-
-static void TASessionManager_toggleAllStatus(TASessionManager self)
-{
-  int i = 0;
-  
-  for (i = 0; i < self->num_sessions; i++)
-  {
-    TASession_toggleStatus(self->sessions[i]);
-  }
-}
-
-static void TASessionManager_moveAllPeriod(TASessionManager self)
-{
-  int i = 0;
-  
-  for (i = 0; i < self->num_sessions; i++)
-  {
-    TASession_movePeriod(self->sessions[i]);
-  }
 }
 
 static void TASessionManager_signalHandler(int sig)

@@ -431,7 +431,7 @@ int TASession_main(TASession self, void **inout)
     switch (sigflag)
     {
     case SIGINT:
-      /* ignore SIGINT */
+      TASession_setStatus(self, TASession_STOP);
       sigflag = 0;
       break;
     case SIGTERM:
