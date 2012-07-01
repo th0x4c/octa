@@ -74,11 +74,18 @@ int OCTACBenchDelivery_oracleTX(OCIEnv *envhp, OCIError *errhp,
      */
     if (sql1 == NULL)
       sql1 = OCSQL_initWithSQL(envhp, errhp,
-                               "SELECT MIN(no_o_id) "
+                               "SELECT no_o_id "
                                "FROM new_order "
-                               "WHERE no_d_id = :1 AND no_w_id = :2");
+                               "WHERE no_d_id = :1 AND no_w_id = :2 "
+                               "  AND no_o_id = (SELECT MIN(no_o_id) "
+                               "                 FROM new_order "
+                               "                 WHERE no_d_id = :3 "
+                               "                   AND no_w_id = :4) "
+                               "FOR UPDATE");
     errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
                          OCSQL_execute(sql1, errhp, svchp,
+                                       out->d_id,
+                                       in->w_id,
                                        out->d_id,
                                        in->w_id));
     if (errcode != 0) goto end;
