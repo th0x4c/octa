@@ -95,7 +95,10 @@ int OCTACBenchDelivery_oracleTX(OCIEnv *envhp, OCIError *errhp,
     if (errcode != 0)
     {
       if (errcode == OCI_NO_DATA || errcode == 1405) /* NULL value returned */
+      {
+        errcode = 0;
         continue;
+      }
       else
         goto end;
     }
