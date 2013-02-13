@@ -17,6 +17,7 @@ void OCTAOption_getOption(int argc, char * const argv[], OCTAOption *option)
   int tpcc_default_keying_times[TXS] = DEFAULT_KEYING_TIMES;
   int tpcc_default_think_times[TXS] = DEFAULT_THINK_TIMES;
   int t_option = FALSE;
+  int p_option = FALSE;
   int i = 0;
   extern char *optarg;
   extern int optind;
@@ -135,6 +136,7 @@ void OCTAOption_getOption(int argc, char * const argv[], OCTAOption *option)
       }
       break;
     case 'p':
+      p_option = TRUE;
       c = strtok(optarg, ",");
       if (c == NULL)
         option->tx_percentage[0] = atoi(optarg);
@@ -189,10 +191,19 @@ void OCTAOption_getOption(int argc, char * const argv[], OCTAOption *option)
         !timerisset(&(option->measurement_interval)))
       OCTAOption_usage();
 
-    if (option->mode == OCTA_TPCB && t_option == FALSE)
+    if (option->mode == OCTA_TPCB)
     {
-      option->think_time[0].tv_sec = 0;
-      option->think_time[0].tv_usec = 0;
+      if (t_option == FALSE)
+      {
+        option->think_time[0].tv_sec = 0;
+        option->think_time[0].tv_usec = 0;
+      }
+
+      if (p_option == FALSE)
+      {
+        for (i = 0; i < TXS; i++)
+          option->tx_percentage[i] = 1;
+      }
     }
 
     return;
@@ -257,10 +268,17 @@ void OCTAOption_print(OCTAOption option)
 {
   int total = 0;
   int i = 0;
+  int p_option = FALSE;
 
   for (i = 0; i < TXS; i++)
   {
     total += option.tx_percentage[i];
+  }
+
+  for (i = 0; i < TXS; i++)
+  {
+    if (option.tx_percentage[i] != 1)
+      p_option = TRUE;
   }
 
   printf("----------------------------------------------------------------\n");
@@ -284,6 +302,16 @@ void OCTAOption_print(OCTAOption option)
   {
   case OCTA_TPCB:
     printf("%8.3f\n", timeval2sec(option.think_time[0]));
+
+    if (p_option == TRUE)
+      printf("      SQL executions per commit : "
+             "%d, %d, %d, %d, %d\n",
+             option.tx_percentage[0],
+             option.tx_percentage[1],
+             option.tx_percentage[2],
+             option.tx_percentage[3],
+             option.tx_percentage[4]);
+
     break;
   case OCTA_TPCC:
     printf("%8.3f, %8.3f, %8.3f, %8.3f, %8.3f\n",

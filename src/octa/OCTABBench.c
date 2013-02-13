@@ -89,6 +89,7 @@ static int OCTABBench_oracleTX(OCIEnv *envhp, OCIError *errhp, OCISvcCtx *svchp,
                               void **inout, char *errmsg, size_t errmsgsize)
 {
   OCTABBenchInput *io = (OCTABBenchInput *)*inout;
+  int *sql_per_commit = io->option.tx_percentage;
   static OCIStmt   *stmt1p = (OCIStmt *)NULL;
   static OCIStmt   *stmt2p = (OCIStmt *)NULL;
   static OCIStmt   *stmt3p = (OCIStmt *)NULL;
@@ -108,239 +109,261 @@ static int OCTABBench_oracleTX(OCIEnv *envhp, OCIError *errhp, OCISvcCtx *svchp,
   static char *insert_history_sql = INSERT_HISTORY_SQL;
   int account_balance;
   char info[20] = "00000 12345678901";
+  static unsigned int count = 0;
+
+  count += 1;
 
   /* UPDATE account */
-  if (stmt1p == NULL)
+  if (sql_per_commit[0] > 0)
   {
+    if (stmt1p == NULL)
+    {
+      errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
+                           OCIHandleAlloc((dvoid *) envhp, (dvoid **) &stmt1p,
+                                          OCI_HTYPE_STMT, (size_t) 0,
+                                          (dvoid **) 0));
+      if (errcode != 0) goto end;
+
+      errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
+                           OCIStmtPrepare(stmt1p, errhp,
+                                          (text *)update_account_sql,
+                                          (ub4) strlen(update_account_sql),
+                                          (ub4) OCI_NTV_SYNTAX,
+                                          (ub4) OCI_DEFAULT));
+      if (errcode != 0) goto end;
+    }
+
     errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                         OCIHandleAlloc((dvoid *) envhp, (dvoid **) &stmt1p,
-                                        OCI_HTYPE_STMT, (size_t) 0,
-                                        (dvoid **) 0));
+                         OCIBindByPos(stmt1p, &bnd1p, errhp, 1,
+                                      (dvoid *) &(io->amount),
+                                      (sword) sizeof(io->amount), SQLT_INT,
+                                      (dvoid *) 0, (ub2 *) 0, (ub2 *) 0,
+                                      (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
     if (errcode != 0) goto end;
 
     errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                         OCIStmtPrepare(stmt1p, errhp,
-                                        (text *)update_account_sql,
-                                        (ub4) strlen(update_account_sql),
-                                        (ub4) OCI_NTV_SYNTAX,
-                                        (ub4) OCI_DEFAULT));
+                         OCIBindByPos(stmt1p, &bnd2p, errhp, 2,
+                                      (dvoid *) &(io->account_id),
+                                      (sword) sizeof(io->account_id), SQLT_INT,
+                                      (dvoid *) 0, (ub2 *) 0, (ub2 *) 0,
+                                      (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
+    if (errcode != 0) goto end;
+
+    errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
+                         OCIStmtExecute(svchp, stmt1p, errhp, (ub4) 1,
+                                        (ub4) 0, (CONST OCISnapshot *) NULL,
+                                        (OCISnapshot *) NULL, OCI_DEFAULT));
     if (errcode != 0) goto end;
   }
-
-  errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                       OCIBindByPos(stmt1p, &bnd1p, errhp, 1,
-                                    (dvoid *) &(io->amount),
-                                    (sword) sizeof(io->amount), SQLT_INT,
-                                    (dvoid *) 0, (ub2 *) 0, (ub2 *) 0,
-                                    (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
-  if (errcode != 0) goto end;
-
-  errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                       OCIBindByPos(stmt1p, &bnd2p, errhp, 2,
-                                    (dvoid *) &(io->account_id),
-                                    (sword) sizeof(io->account_id), SQLT_INT,
-                                    (dvoid *) 0, (ub2 *) 0, (ub2 *) 0,
-                                    (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
-  if (errcode != 0) goto end;
-
-  errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                       OCIStmtExecute(svchp, stmt1p, errhp, (ub4) 1,
-                                      (ub4) 0, (CONST OCISnapshot *) NULL,
-                                      (OCISnapshot *) NULL, OCI_DEFAULT));
-  if (errcode != 0) goto end;
 
   /* SELECT account */
-  if (stmt2p == NULL)
+  if (sql_per_commit[1] > 0)
   {
+    if (stmt2p == NULL)
+    {
+      errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
+                           OCIHandleAlloc((dvoid *) envhp, (dvoid **) &stmt2p,
+                                          OCI_HTYPE_STMT, (size_t) 0,
+                                          (dvoid **) 0));
+      if (errcode != 0) goto end;
+
+      errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
+                           OCIStmtPrepare(stmt2p, errhp,
+                                          (text *)select_account_sql,
+                                          (ub4) strlen(select_account_sql),
+                                          (ub4) OCI_NTV_SYNTAX,
+                                          (ub4) OCI_DEFAULT));
+      if (errcode != 0) goto end;
+    }
+
     errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                         OCIHandleAlloc((dvoid *) envhp, (dvoid **) &stmt2p,
-                                        OCI_HTYPE_STMT, (size_t) 0,
-                                        (dvoid **) 0));
+                         OCIBindByPos(stmt2p, &bnd1p, errhp, 1,
+                                      (dvoid *) &(io->account_id),
+                                      (sword) sizeof(io->account_id), SQLT_INT,
+                                      (dvoid *) 0, (ub2 *) 0, (ub2 *) 0,
+                                      (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
     if (errcode != 0) goto end;
 
     errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                         OCIStmtPrepare(stmt2p, errhp,
-                                        (text *)select_account_sql,
-                                        (ub4) strlen(select_account_sql),
-                                        (ub4) OCI_NTV_SYNTAX,
-                                        (ub4) OCI_DEFAULT));
+                         OCIDefineByPos(stmt2p, &defnp, errhp, 1,
+                                        (dvoid *) &account_balance,
+                                        (sword) sizeof(account_balance),
+                                        SQLT_INT, (dvoid *) 0, (ub2 *) 0,
+                                        (ub2 *) 0, OCI_DEFAULT));
     if (errcode != 0) goto end;
+
+    errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
+                         OCIStmtExecute(svchp, stmt2p, errhp, (ub4) 1,
+                                        (ub4) 0, (CONST OCISnapshot *) NULL,
+                                        (OCISnapshot *) NULL, OCI_DEFAULT));
+    if (errcode != 0) goto end;
+
+    while (OCOCIERROR(errhp, errmsg, errmsgsize,
+                      OCIStmtFetch2(stmt2p, errhp, (ub4) 1, OCI_FETCH_NEXT,
+                                    (sb4) 0, OCI_DEFAULT)) != OCI_NO_DATA)
+    {}
   }
-
-  errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                       OCIBindByPos(stmt2p, &bnd1p, errhp, 1,
-                                    (dvoid *) &(io->account_id),
-                                    (sword) sizeof(io->account_id), SQLT_INT,
-                                    (dvoid *) 0, (ub2 *) 0, (ub2 *) 0,
-                                    (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
-  if (errcode != 0) goto end;
-
-  errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                       OCIDefineByPos(stmt2p, &defnp, errhp, 1,
-                                      (dvoid *) &account_balance,
-                                      (sword) sizeof(account_balance),
-                                      SQLT_INT, (dvoid *) 0, (ub2 *) 0,
-                                      (ub2 *) 0, OCI_DEFAULT));
-  if (errcode != 0) goto end;
-
-  errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                       OCIStmtExecute(svchp, stmt2p, errhp, (ub4) 1,
-                                      (ub4) 0, (CONST OCISnapshot *) NULL,
-                                      (OCISnapshot *) NULL, OCI_DEFAULT));
-  if (errcode != 0) goto end;
-
-  while (OCOCIERROR(errhp, errmsg, errmsgsize,
-                    OCIStmtFetch2(stmt2p, errhp, (ub4) 1, OCI_FETCH_NEXT,
-                                  (sb4) 0, OCI_DEFAULT)) != OCI_NO_DATA)
-  {}
 
   /* UPDATE teller */
-  if (stmt3p == NULL)
+  if (sql_per_commit[2] > 0)
   {
+    if (stmt3p == NULL)
+    {
+      errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
+                           OCIHandleAlloc((dvoid *) envhp, (dvoid **) &stmt3p,
+                                          OCI_HTYPE_STMT, (size_t) 0,
+                                          (dvoid **) 0));
+      if (errcode != 0) goto end;
+
+      errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
+                           OCIStmtPrepare(stmt3p, errhp,
+                                          (text *)update_teller_sql,
+                                          (ub4) strlen(update_teller_sql),
+                                          (ub4) OCI_NTV_SYNTAX,
+                                          (ub4) OCI_DEFAULT));
+      if (errcode != 0) goto end;
+    }
+
     errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                         OCIHandleAlloc((dvoid *) envhp, (dvoid **) &stmt3p,
-                                        OCI_HTYPE_STMT, (size_t) 0,
-                                        (dvoid **) 0));
+                         OCIBindByPos(stmt3p, &bnd1p, errhp, 1,
+                                      (dvoid *) &(io->amount),
+                                      (sword) sizeof(io->amount), SQLT_INT,
+                                      (dvoid *) 0, (ub2 *) 0, (ub2 *) 0,
+                                      (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
     if (errcode != 0) goto end;
 
     errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                         OCIStmtPrepare(stmt3p, errhp,
-                                        (text *)update_teller_sql,
-                                        (ub4) strlen(update_teller_sql),
-                                        (ub4) OCI_NTV_SYNTAX,
-                                        (ub4) OCI_DEFAULT));
+                         OCIBindByPos(stmt3p, &bnd2p, errhp, 2,
+                                      (dvoid *) &(io->teller_id),
+                                      (sword) sizeof(io->teller_id), SQLT_INT,
+                                      (dvoid *) 0, (ub2 *) 0, (ub2 *) 0,
+                                      (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
+    if (errcode != 0) goto end;
+
+    errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
+                         OCIStmtExecute(svchp, stmt3p, errhp, (ub4) 1,
+                                        (ub4) 0, (CONST OCISnapshot *) NULL,
+                                        (OCISnapshot *) NULL, OCI_DEFAULT));
     if (errcode != 0) goto end;
   }
-
-  errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                       OCIBindByPos(stmt3p, &bnd1p, errhp, 1,
-                                    (dvoid *) &(io->amount),
-                                    (sword) sizeof(io->amount), SQLT_INT,
-                                    (dvoid *) 0, (ub2 *) 0, (ub2 *) 0,
-                                    (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
-  if (errcode != 0) goto end;
-
-  errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                       OCIBindByPos(stmt3p, &bnd2p, errhp, 2,
-                                    (dvoid *) &(io->teller_id),
-                                    (sword) sizeof(io->teller_id), SQLT_INT,
-                                    (dvoid *) 0, (ub2 *) 0, (ub2 *) 0,
-                                    (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
-  if (errcode != 0) goto end;
-
-  errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                       OCIStmtExecute(svchp, stmt3p, errhp, (ub4) 1,
-                                      (ub4) 0, (CONST OCISnapshot *) NULL,
-                                      (OCISnapshot *) NULL, OCI_DEFAULT));
-  if (errcode != 0) goto end;
 
   /* UPDATE branch */
-  if (stmt4p == NULL)
+  if (sql_per_commit[3] > 0)
   {
+    if (stmt4p == NULL)
+    {
+      errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
+                           OCIHandleAlloc((dvoid *) envhp, (dvoid **) &stmt4p,
+                                          OCI_HTYPE_STMT, (size_t) 0,
+                                          (dvoid **) 0));
+      if (errcode != 0) goto end;
+
+      errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
+                           OCIStmtPrepare(stmt4p, errhp,
+                                          (text *)update_branch_sql,
+                                          (ub4) strlen(update_branch_sql),
+                                          (ub4) OCI_NTV_SYNTAX,
+                                          (ub4) OCI_DEFAULT));
+      if (errcode != 0) goto end;
+    }
+
     errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                         OCIHandleAlloc((dvoid *) envhp, (dvoid **) &stmt4p,
-                                        OCI_HTYPE_STMT, (size_t) 0,
-                                        (dvoid **) 0));
+                         OCIBindByPos(stmt4p, &bnd1p, errhp, 1,
+                                      (dvoid *) &(io->amount),
+                                      (sword) sizeof(io->amount), SQLT_INT,
+                                      (dvoid *) 0, (ub2 *) 0, (ub2 *) 0,
+                                      (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
     if (errcode != 0) goto end;
 
     errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                         OCIStmtPrepare(stmt4p, errhp,
-                                        (text *)update_branch_sql,
-                                        (ub4) strlen(update_branch_sql),
-                                        (ub4) OCI_NTV_SYNTAX,
-                                        (ub4) OCI_DEFAULT));
+                         OCIBindByPos(stmt4p, &bnd2p, errhp, 2,
+                                      (dvoid *) &(io->branch_id),
+                                      (sword) sizeof(io->branch_id), SQLT_INT,
+                                      (dvoid *) 0, (ub2 *) 0, (ub2 *) 0,
+                                      (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
+    if (errcode != 0) goto end;
+
+    errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
+                         OCIStmtExecute(svchp, stmt4p, errhp, (ub4) 1,
+                                        (ub4) 0, (CONST OCISnapshot *) NULL,
+                                        (OCISnapshot *) NULL, OCI_DEFAULT));
     if (errcode != 0) goto end;
   }
-
-  errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                       OCIBindByPos(stmt4p, &bnd1p, errhp, 1,
-                                    (dvoid *) &(io->amount),
-                                    (sword) sizeof(io->amount), SQLT_INT,
-                                    (dvoid *) 0, (ub2 *) 0, (ub2 *) 0,
-                                    (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
-  if (errcode != 0) goto end;
-
-  errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                       OCIBindByPos(stmt4p, &bnd2p, errhp, 2,
-                                    (dvoid *) &(io->branch_id),
-                                    (sword) sizeof(io->branch_id), SQLT_INT,
-                                    (dvoid *) 0, (ub2 *) 0, (ub2 *) 0,
-                                    (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
-  if (errcode != 0) goto end;
-
-  errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                       OCIStmtExecute(svchp, stmt4p, errhp, (ub4) 1,
-                                      (ub4) 0, (CONST OCISnapshot *) NULL,
-                                      (OCISnapshot *) NULL, OCI_DEFAULT));
-  if (errcode != 0) goto end;
 
   /* INSERT history */
-  snprintf(info, sizeof(info), "%5d 12345678901", io->session_id);
-
-  if (stmt5p == NULL)
+  if (sql_per_commit[4] > 0)
   {
+    snprintf(info, sizeof(info), "%5d 12345678901", io->session_id);
+
+    if (stmt5p == NULL)
+    {
+      errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
+                           OCIHandleAlloc((dvoid *) envhp, (dvoid **) &stmt5p,
+                                          OCI_HTYPE_STMT, (size_t) 0,
+                                          (dvoid **) 0));
+      if (errcode != 0) goto end;
+
+      errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
+                           OCIStmtPrepare(stmt5p, errhp,
+                                          (text *)insert_history_sql,
+                                          (ub4) strlen(insert_history_sql),
+                                          (ub4) OCI_NTV_SYNTAX,
+                                          (ub4) OCI_DEFAULT));
+      if (errcode != 0) goto end;
+    }
+
     errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                         OCIHandleAlloc((dvoid *) envhp, (dvoid **) &stmt5p,
-                                        OCI_HTYPE_STMT, (size_t) 0,
-                                        (dvoid **) 0));
+                         OCIBindByPos(stmt5p, &bnd1p, errhp, 1,
+                                      (dvoid *) &(io->teller_id),
+                                      (sword) sizeof(io->teller_id), SQLT_INT,
+                                      (dvoid *) 0, (ub2 *) 0, (ub2 *) 0,
+                                      (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
     if (errcode != 0) goto end;
 
     errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                         OCIStmtPrepare(stmt5p, errhp,
-                                        (text *)insert_history_sql,
-                                        (ub4) strlen(insert_history_sql),
-                                        (ub4) OCI_NTV_SYNTAX,
-                                        (ub4) OCI_DEFAULT));
+                         OCIBindByPos(stmt5p, &bnd2p, errhp, 2,
+                                      (dvoid *) &(io->branch_id),
+                                      (sword) sizeof(io->branch_id), SQLT_INT,
+                                      (dvoid *) 0, (ub2 *) 0, (ub2 *) 0,
+                                      (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
+    if (errcode != 0) goto end;
+
+    errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
+                         OCIBindByPos(stmt5p, &bnd3p, errhp, 3,
+                                      (dvoid *) &(io->account_id),
+                                      (sword) sizeof(io->account_id), SQLT_INT,
+                                      (dvoid *) 0, (ub2 *) 0, (ub2 *) 0,
+                                      (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
+    if (errcode != 0) goto end;
+
+    errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
+                         OCIBindByPos(stmt5p, &bnd4p, errhp, 4,
+                                      (dvoid *) &(io->amount),
+                                      (sword) sizeof(io->amount), SQLT_INT,
+                                      (dvoid *) 0, (ub2 *) 0, (ub2 *) 0,
+                                      (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
+    if (errcode != 0) goto end;
+
+    errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
+                         OCIBindByPos(stmt5p, &bnd5p, errhp, 5,
+                                      (dvoid *) info,
+                                      (sword) strlen(info) + 1, SQLT_STR,
+                                      (dvoid *) 0, (ub2 *) 0, (ub2 *) 0,
+                                      (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
+    if (errcode != 0) goto end;
+
+    errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
+                         OCIStmtExecute(svchp, stmt5p, errhp, (ub4) 1,
+                                        (ub4) 0, (CONST OCISnapshot *) NULL,
+                                        (OCISnapshot *) NULL, OCI_DEFAULT));
     if (errcode != 0) goto end;
   }
 
-  errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                       OCIBindByPos(stmt5p, &bnd1p, errhp, 1,
-                                    (dvoid *) &(io->teller_id),
-                                    (sword) sizeof(io->teller_id), SQLT_INT,
-                                    (dvoid *) 0, (ub2 *) 0, (ub2 *) 0,
-                                    (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
-  if (errcode != 0) goto end;
-
-  errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                       OCIBindByPos(stmt5p, &bnd2p, errhp, 2,
-                                    (dvoid *) &(io->branch_id),
-                                    (sword) sizeof(io->branch_id), SQLT_INT,
-                                    (dvoid *) 0, (ub2 *) 0, (ub2 *) 0,
-                                    (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
-  if (errcode != 0) goto end;
-
-  errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                       OCIBindByPos(stmt5p, &bnd3p, errhp, 3,
-                                    (dvoid *) &(io->account_id),
-                                    (sword) sizeof(io->account_id), SQLT_INT,
-                                    (dvoid *) 0, (ub2 *) 0, (ub2 *) 0,
-                                    (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
-  if (errcode != 0) goto end;
-
-  errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                       OCIBindByPos(stmt5p, &bnd4p, errhp, 4,
-                                    (dvoid *) &(io->amount),
-                                    (sword) sizeof(io->amount), SQLT_INT,
-                                    (dvoid *) 0, (ub2 *) 0, (ub2 *) 0,
-                                    (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
-  if (errcode != 0) goto end;
-
-  errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                       OCIBindByPos(stmt5p, &bnd5p, errhp, 5,
-                                    (dvoid *) info,
-                                    (sword) strlen(info) + 1, SQLT_STR,
-                                    (dvoid *) 0, (ub2 *) 0, (ub2 *) 0,
-                                    (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
-  if (errcode != 0) goto end;
-
-  errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                       OCIStmtExecute(svchp, stmt5p, errhp, (ub4) 1,
-                                      (ub4) 0, (CONST OCISnapshot *) NULL,
-                                      (OCISnapshot *) NULL, OCI_DEFAULT));
-  if (errcode != 0) goto end;
-
-  OCITransCommit(svchp, errhp, (ub4) 0);
+  if ((sql_per_commit[0] > 0 && (count % sql_per_commit[0]) == 0) ||
+      (sql_per_commit[2] > 0 && (count % sql_per_commit[2]) == 0) ||
+      (sql_per_commit[3] > 0 && (count % sql_per_commit[3]) == 0) ||
+      (sql_per_commit[4] > 0 && (count % sql_per_commit[4]) == 0))
+    OCITransCommit(svchp, errhp, (ub4) 0);
 
  end:
   /* if (stmt1p != NULL) */
