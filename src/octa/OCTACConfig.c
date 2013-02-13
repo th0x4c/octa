@@ -83,9 +83,12 @@ void OCTACConfig_sleepKeyingTime(struct timeval keying_timeval)
 {
   struct timespec keying_timespec;
 
-  keying_timespec.tv_sec = keying_timeval.tv_sec;
-  keying_timespec.tv_nsec = keying_timeval.tv_usec * 1000;
-  nanosleep(&keying_timespec, NULL);
+  if (timerisset(&keying_timeval))
+  {
+    keying_timespec.tv_sec = keying_timeval.tv_sec;
+    keying_timespec.tv_nsec = keying_timeval.tv_usec * 1000;
+    nanosleep(&keying_timespec, NULL);
+  }
 }
 
 void OCTACConfig_sleepThinkTime(struct timeval think_timeval)
@@ -93,11 +96,14 @@ void OCTACConfig_sleepThinkTime(struct timeval think_timeval)
   long think_time_nsec;
   struct timespec think_timespec;
 
-  think_time_nsec = (think_timeval.tv_sec * 1000000 + think_timeval.tv_usec) *
-                    1000;
-  think_time_nsec = - log(TARandom_drand()) * think_time_nsec;
+  if (timerisset(&think_timeval))
+  {
+    think_time_nsec = (think_timeval.tv_sec * 1000000 +
+                       think_timeval.tv_usec) * 1000;
+    think_time_nsec = - log(TARandom_drand()) * think_time_nsec;
 
-  think_timespec.tv_sec = think_time_nsec / 1000000000;
-  think_timespec.tv_nsec = think_time_nsec % 1000000000;
-  nanosleep(&think_timespec, NULL);
+    think_timespec.tv_sec = think_time_nsec / 1000000000;
+    think_timespec.tv_nsec = think_time_nsec % 1000000000;
+    nanosleep(&think_timespec, NULL);
+  }
 }

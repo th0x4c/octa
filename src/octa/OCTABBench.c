@@ -333,9 +333,12 @@ static void OCTABBench_afterTX(TASession self, void **inout)
   OCTABBenchInput *io = (OCTABBenchInput *)*inout;
   struct timespec think_time;
 
-  think_time.tv_sec = io->option.think_time[0].tv_sec;
-  think_time.tv_nsec = io->option.think_time[0].tv_usec * 1000;
-  nanosleep(&think_time, NULL);
+  if (timerisset(&(io->option.think_time[0])))
+  {
+    think_time.tv_sec = io->option.think_time[0].tv_sec;
+    think_time.tv_nsec = io->option.think_time[0].tv_usec * 1000;
+    nanosleep(&think_time, NULL);
+  }
 }
 
 static char *OCTABBench_selectTX(TASession self)
