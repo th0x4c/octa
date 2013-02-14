@@ -61,23 +61,73 @@ static void OCTABBench_setup(TASession self, void **inout)
   srandom(time(NULL) * getpid());
 }
 
+static int OCTABBench_lastBranchID(int session_id, int scale_factor,
+                                   int num_sessions)
+{
+  int delta = 0;
+
+  if (session_id == 0)
+    return 0;
+
+  if (scale_factor < num_sessions)
+    delta = 1;
+  else
+  {
+    delta = scale_factor / num_sessions;
+    if (session_id <= (scale_factor % num_sessions))
+      delta += 1;
+  }
+
+  return (OCTABBench_lastBranchID(session_id - 1, scale_factor, num_sessions) +
+          delta - 1) % scale_factor + 1;
+}
+
 static void OCTABBench_beforeTX(TASession self, void **inout)
 {
   OCTABBenchInput *io = (OCTABBenchInput *)*inout;
-  int last_branch_id = io->option.scale_factor;
+  int *sql_per_commit = io->option.tx_percentage;
+  static int first_branch_id = 0;
+  static int last_branch_id = 0;
   int account_branch;
+  int i = 0;
+
+  if (first_branch_id == 0 || last_branch_id == 0)
+  {
+    first_branch_id = 1;
+    last_branch_id = io->option.scale_factor;
+    for (i = 0; i < TXS; i++)
+    {
+      if (sql_per_commit[i] > 1)
+      {
+        last_branch_id = OCTABBench_lastBranchID(io->session_id,
+                                                 io->option.scale_factor,
+                                               io->option.num_sessions);
+        first_branch_id = 1 + OCTABBench_lastBranchID(io->session_id - 1,
+                                                      io->option.scale_factor,
+                                                      io->option.num_sessions);
+        if (first_branch_id > io->option.scale_factor)
+          first_branch_id %= io->option.scale_factor;
+
+        break;
+      }
+    }
+  }
 
   io->amount = (int) random() % 1999999 - 999999;
-  io->teller_id = (int) random() % (last_branch_id * TELLERS_PER_BRANCH) + 1;
+  io->teller_id = (first_branch_id - 1) * TELLERS_PER_BRANCH + 1 +
+                  ((int) random() % ((last_branch_id - first_branch_id + 1) *
+                   TELLERS_PER_BRANCH));
   io->branch_id = (io->teller_id - 1) / TELLERS_PER_BRANCH + 1;
 
   account_branch = io->branch_id;
-  if (last_branch_id > 1)
+  if ((last_branch_id - first_branch_id) > 0)
   {
     if (random() % 100 >= LOCAL_BRANCH_PERCENT)
     {
       while (account_branch == io->branch_id)
-        account_branch = (int) random() % last_branch_id + 1;
+        account_branch =
+          (int) random() % (last_branch_id - first_branch_id + 1) +
+          first_branch_id;
     }
   }
 
