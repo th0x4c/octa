@@ -106,7 +106,7 @@ static void OCTABBench_beforeTX(TASession self, void **inout)
                                                       io->option.scale_factor,
                                                       io->option.num_sessions);
         if (first_branch_id > io->option.scale_factor)
-          first_branch_id %= io->option.scale_factor;
+          first_branch_id -= io->option.scale_factor;
 
         break;
       }
