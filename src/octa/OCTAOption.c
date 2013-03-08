@@ -257,7 +257,7 @@ void OCTAOption_usage()
     "\tocta -u scott/tiger@orcl -B -n 5 -s 10 -m 600 -U 60 -D 60 -t 1 bench\n"
     "\tocta -u scott/tiger@orcl -B teardown\n"
     "\tocta -u scott/tiger@orcl -C -n 5 -s 10 -T USERS -I INDX setup\n"
-    "\tocta -u scott/tiger@orcl -C -n 5 -s 10 -m 7200 -U 1200 -D 600 -t 18000,3000,2000,2000,2000 -k 12000,12000,10000,5000,5000 -p 45,43,4,4,4 bench\n"
+    "\tocta -u scott/tiger@orcl -C -n 5 -s 10 -m 7200 -U 1200 -D 600 -t 12000,12000,10000,5000,5000 -k 18000,3000,2000,2000,2000 -p 45,43,4,4,4 bench\n"
     "\tocta -u scott/tiger@orcl -C teardown\n";
 
   fprintf(stderr, "%s", usage);
