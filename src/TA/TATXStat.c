@@ -367,7 +367,7 @@ TATXStat TATXStat_minus(TATXStat self, TATXStat txstat)
 
   /**
    * @warning
-   * ret->min_elapsed_time is not correct min elapswd time between
+   * ret->min_elapsed_time is not correct min elapsed time between
    * ret->first_time and ret->end_time.
    */
   ret->min_elapsed_time = self->min_elapsed_time;
