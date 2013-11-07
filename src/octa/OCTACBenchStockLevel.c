@@ -13,7 +13,7 @@ void OCTACBenchStockLevel_beforeTX(OCTACBenchStockLevelInput *input,
                                    struct timeval keying_time)
 {
   long w_id = OCTACConfig_homeWID(scale_factor, session_id);
-  long d_id = (session_id - 1) / scale_factor + 1;
+  long d_id = (session_id - 1) / scale_factor % DIST_PER_WARE + 1;
 
   snprintf(input->w_id, sizeof(input->w_id), "%ld", w_id);
   snprintf(input->d_id, sizeof(input->d_id), "%ld", d_id);
