@@ -30,14 +30,14 @@ typedef struct __TASession *TASession;
 #define TASession_TERM    5
 
 /* period */
-#define TASession_RAMPUP      1
-#define TASession_MEASUREMENT 2
-#define TASession_RAMPDOWN    3
+#define TASession_RAMPUP      0
+#define TASession_MEASUREMENT 1
+#define TASession_RAMPDOWN    2
 
 /* phase */
-#define TASession_BEFORE 1
-#define TASession_TX     2
-#define TASession_AFTER  3
+#define TASession_BEFORE 0
+#define TASession_TX     1
+#define TASession_AFTER  2
 
 TASession TASession_init();
 void TASession_release(TASession self);

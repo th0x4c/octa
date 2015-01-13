@@ -19,8 +19,8 @@ struct __TASession
   void (*setup)(TASession self, void **inout);
   char *(*selectTX)(TASession self);
   void (*teardown)(TASession self, void **inout);
-#define NUM_PERIOD 4
-#define NUM_PHASE 4
+#define NUM_PERIOD 3
+#define NUM_PHASE 3
 #define MAX_TXS 16
   TATXStat tx_stats[MAX_TXS][NUM_PERIOD][NUM_PHASE];
   void (*beforeTXs[MAX_TXS])(TASession self, void **inout);
@@ -244,7 +244,7 @@ void TASession_toggleStatus(TASession self)
 
 void TASession_setPeriod(TASession self, int period)
 {
-  char *period_strs[NUM_PERIOD] = { "", "RAMPUP", "MEASUREMENT", "RAMPDOWN" };
+  char *period_strs[NUM_PERIOD] = { "RAMPUP", "MEASUREMENT", "RAMPDOWN" };
 #define MSG_SIZE 64
   char msg[MSG_SIZE] = "";
 
