@@ -7,6 +7,7 @@
  */
 
 #include "OCTABLoad.h"
+#include "config.h"
 
 #ifndef HAVE_UNION_SEMUN
 union semun {

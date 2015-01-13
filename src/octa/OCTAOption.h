@@ -15,7 +15,6 @@
 #include <stdlib.h>   /* atoi exit */
 #include <sys/time.h> /* timeval */
 #include <TA/TA.h>
-#include "config.h"
 #include "OCTACConfig.h"
 
 struct OCTAOption

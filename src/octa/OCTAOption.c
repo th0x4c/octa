@@ -7,6 +7,7 @@
  */
 
 #include "OCTAOption.h"
+#include "config.h"
 
 void OCTAOption_getOption(int argc, char * const argv[], OCTAOption *option)
 {
