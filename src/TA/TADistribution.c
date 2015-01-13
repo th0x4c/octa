@@ -105,43 +105,35 @@ void TADistribution_setElapsedTime(TADistribution self, struct timeval elaps)
   sec.tv_usec = 0;
 
   timermlt(&msec, BUCKETS - 1, &max_msec);
-  timermlt(&csec, BUCKETS -1, &max_csec);
-  timermlt(&dsec, BUCKETS -1, &max_dsec);
+  timermlt(&csec, BUCKETS - 1, &max_csec);
+  timermlt(&dsec, BUCKETS - 1, &max_dsec);
   timermlt(&sec, BUCKETS - 1, &max_sec);
 
   if (timercmp(&elaps, &msec, <))
     self->msec[0]++;
   else if (timercmp(&elaps, &max_msec, <))
-  {
     self->msec[(elaps.tv_sec * 1000000 + elaps.tv_usec) / 1000]++;
-  }
   else
     self->msec[BUCKETS - 1]++;
 
   if (timercmp(&elaps, &csec, <))
     self->csec[0]++;
   else if (timercmp(&elaps, &max_csec, <))
-  {
     self->csec[(elaps.tv_sec * 1000000 + elaps.tv_usec) / 10000]++;
-  }
   else
     self->csec[BUCKETS - 1]++;
 
   if (timercmp(&elaps, &dsec, <))
     self->dsec[0]++;
   else if (timercmp(&elaps, &max_dsec, <))
-  {
     self->dsec[(elaps.tv_sec * 1000000 + elaps.tv_usec) / 100000]++;
-  }
   else
     self->dsec[BUCKETS - 1]++;
 
   if (timercmp(&elaps, &sec, <))
     self->sec[0]++;
   else if (timercmp(&elaps, &max_sec, <))
-  {
     self->sec[(elaps.tv_sec * 1000000 + elaps.tv_usec) / 1000000]++;
-  }
   else
     self->sec[BUCKETS - 1]++;
 }
