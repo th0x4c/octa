@@ -9,6 +9,7 @@
 #include <TA/TADistribution.h>
 #include "../munit.h"
 #include <TA/TATime.h>
+#include "config.h"
 
 int mu_nfail=0;
 int mu_ntest=0;
@@ -69,9 +70,14 @@ static void test_TADistribution_percentile()
     TADistribution_setElapsedTime(tadist, elaps);
   }
   percentile = TADistribution_percentile(tadist, 90);
+#ifdef DISABLE_HIGH_PRECISION_DISTRIBUTION
   /* TADistribution_percentile returns 9999sec if exact percentile >= 100sec */
   expectedtv.tv_sec = 9999;
   expectedtv.tv_usec = 0;
+#else
+  expectedtv.tv_sec = 900;
+  expectedtv.tv_usec = 0; /* 900sec */
+#endif
   printf("90%% percentile: %f\n", timeval2sec(percentile));
   mu_assert(timercmp(&percentile, &expectedtv, ==));
   TADistribution_release(tadist);

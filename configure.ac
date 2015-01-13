@@ -45,6 +45,14 @@ fi
 AC_FUNC_MALLOC
 AC_CHECK_FUNCS([gettimeofday memset])
 
+AC_ARG_ENABLE([high-precision-distribution],
+              [AS_HELP_STRING([--disable-high-precision-distribution],
+                              [disable high-precision distribution])],
+              [if test x$enableval != xyes; then
+                 AC_DEFINE(DISABLE_HIGH_PRECISION_DISTRIBUTION, 1,
+                           [Disable high-precision distribution])
+               fi])
+
 AC_CONFIG_FILES([Makefile
                  src/Makefile
                  src/TA/Makefile

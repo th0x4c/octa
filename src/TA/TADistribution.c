@@ -7,12 +7,17 @@
  */
 
 #include "TADistribution.h"
+#include "config.h"
 
 struct __TADistribution
 {
   int deep_copied;
   unsigned int count;
+#ifdef DISABLE_HIGH_PRECISION_DISTRIBUTION
 #define BUCKETS 101
+#else
+#define BUCKETS 1001
+#endif
   unsigned int msec[BUCKETS]; /* milli */
   unsigned int csec[BUCKETS]; /* centi */
   unsigned int dsec[BUCKETS]; /* deci */
@@ -222,25 +227,34 @@ struct timeval TADistribution_percentile(TADistribution self, int percent)
 
 void TADistribution_print(TADistribution self)
 {
+  unsigned int count = 0;
+  unsigned int accum = 0;
   double percent = 0;
   int bucket;
   int i = 0;
 
+#define PRINTED_BUCKETS 101
   printf("Frequency Distribution (msec.)\n");
   printf("==============================\n");
   printf("       0%%        10%%       20%%       30%%       40%%       "
          "50%%       60%%       70%%       80%%       90%%       100%%\n");
   printf("       +---------+---------+---------+---------+---------+"
          "---------+---------+---------+---------+---------+\n");
-  for (bucket = 0; bucket < BUCKETS; bucket++)
+  for (bucket = 0, accum = 0; bucket < PRINTED_BUCKETS; bucket++)
   {
-    if (bucket != BUCKETS - 1)
+    if (bucket != PRINTED_BUCKETS - 1)
+    {
       printf("<%3dms |", bucket + 1);
+      count = self->msec[bucket];
+      accum += self->msec[bucket];
+    }
     else
+    {
       printf(">=%3dms|", bucket);
+      count = self->count - accum;
+    }
 
-    percent = self->count == 0 ? 0.0 :
-              (double) self->msec[bucket] * 100 / self->count;
+    percent = self->count == 0 ? 0.0 : (double) count * 100 / self->count;
     for (i = 0; i < 100; i++)
     {
       if (i < percent)
@@ -248,7 +262,7 @@ void TADistribution_print(TADistribution self)
       else
         printf(" ");
     }
-    printf(" %5.1f%%(%d/%d)\n", percent, self->msec[bucket], self->count);
+    printf(" %5.1f%%(%d/%d)\n", percent, count, self->count);
   }
   printf("\n");
 
@@ -258,15 +272,21 @@ void TADistribution_print(TADistribution self)
          "50%%       60%%       70%%       80%%       90%%       100%%\n");
   printf("       +---------+---------+---------+---------+---------+"
          "---------+---------+---------+---------+---------+\n");
-  for (bucket = 0; bucket < BUCKETS; bucket++)
+  for (bucket = 0, accum = 0; bucket < PRINTED_BUCKETS; bucket++)
   {
-    if (bucket != BUCKETS - 1)
+    if (bucket != PRINTED_BUCKETS - 1)
+    {
       printf("<%3dcs |", bucket + 1);
+      count = self->csec[bucket];
+      accum += self->csec[bucket];
+    }
     else
+    {
       printf(">=%3dcs|", bucket);
+      count = self->count - accum;
+    }
 
-    percent = self->count == 0 ? 0.0 :
-              (double) self->csec[bucket] * 100 / self->count;
+    percent = self->count == 0 ? 0.0 : (double) count * 100 / self->count;
     for (i = 0; i < 100; i++)
     {
       if (i < percent)
@@ -274,7 +294,7 @@ void TADistribution_print(TADistribution self)
       else
         printf(" ");
     }
-    printf(" %5.1f%%(%d/%d)\n", percent, self->csec[bucket], self->count);
+    printf(" %5.1f%%(%d/%d)\n", percent, count, self->count);
   }
   printf("\n");
 
@@ -284,15 +304,21 @@ void TADistribution_print(TADistribution self)
          "50%%       60%%       70%%       80%%       90%%       100%%\n");
   printf("       +---------+---------+---------+---------+---------+"
          "---------+---------+---------+---------+---------+\n");
-  for (bucket = 0; bucket < BUCKETS; bucket++)
+  for (bucket = 0, accum = 0; bucket < PRINTED_BUCKETS; bucket++)
   {
-    if (bucket != BUCKETS - 1)
+    if (bucket != PRINTED_BUCKETS - 1)
+    {
       printf("<%3dds |", bucket + 1);
+      count = self->dsec[bucket];
+      accum += self->dsec[bucket];
+    }
     else
+    {
       printf(">=%3dds|", bucket);
+      count = self->count - accum;
+    }
 
-    percent = self->count == 0 ? 0.0 :
-              (double) self->dsec[bucket] * 100 / self->count;
+    percent = self->count == 0 ? 0.0 : (double) count * 100 / self->count;
     for (i = 0; i < 100; i++)
     {
       if (i < percent)
@@ -300,7 +326,7 @@ void TADistribution_print(TADistribution self)
       else
         printf(" ");
     }
-    printf(" %5.1f%%(%d/%d)\n", percent, self->dsec[bucket], self->count);
+    printf(" %5.1f%%(%d/%d)\n", percent, count, self->count);
   }
   printf("\n");
 
@@ -310,15 +336,21 @@ void TADistribution_print(TADistribution self)
          "50%%       60%%       70%%       80%%       90%%       100%%\n");
   printf("       +---------+---------+---------+---------+---------+"
          "---------+---------+---------+---------+---------+\n");
-  for (bucket = 0; bucket < BUCKETS; bucket++)
+  for (bucket = 0, accum = 0; bucket < PRINTED_BUCKETS; bucket++)
   {
-    if (bucket != BUCKETS - 1)
+    if (bucket != PRINTED_BUCKETS - 1)
+    {
       printf("<%3ds  |", bucket + 1);
+      count = self->sec[bucket];
+      accum += self->sec[bucket];
+    }
     else
+    {
       printf(">=%3ds |", bucket);
+      count = self->count - accum;
+    }
 
-    percent = self->count == 0 ? 0.0 :
-              (double) self->sec[bucket] * 100 / self->count;
+    percent = self->count == 0 ? 0.0 : (double) count * 100 / self->count;
     for (i = 0; i < 100; i++)
     {
       if (i < percent)
@@ -326,7 +358,7 @@ void TADistribution_print(TADistribution self)
       else
         printf(" ");
     }
-    printf(" %5.1f%%(%d/%d)\n", percent, self->sec[bucket], self->count);
+    printf(" %5.1f%%(%d/%d)\n", percent, count, self->count);
   }
   printf("\n");
 }
