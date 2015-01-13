@@ -21,7 +21,7 @@ struct __TASession
   void (*teardown)(TASession self, void **inout);
 #define NUM_PERIOD 3
 #define NUM_PHASE 3
-#define MAX_TXS 16
+#define MAX_TXS 8
   TATXStat tx_stats[MAX_TXS][NUM_PERIOD][NUM_PHASE];
   void (*beforeTXs[MAX_TXS])(TASession self, void **inout);
   int (*TXs[MAX_TXS])(TASession self, void **inout);
