@@ -202,8 +202,8 @@ TALog TASession_log(TASession self)
 
 void TASession_setStatus(TASession self, int status)
 {
-#define NUM_STATUS 6
-  char *status_strs[NUM_STATUS] = { "", "INIT", "STANDBY", "RUNNING",
+#define NUM_STATUS 5
+  char *status_strs[NUM_STATUS] = { "INIT", "STANDBY", "RUNNING",
                                     "STOP", "TERM" };
 #define MSG_SIZE 64
   char msg[MSG_SIZE] = "";

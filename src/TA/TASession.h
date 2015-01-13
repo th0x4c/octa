@@ -23,11 +23,11 @@
 typedef struct __TASession *TASession;
 
 /* status */
-#define TASession_INIT    1
-#define TASession_STANDBY 2
-#define TASession_RUNNING 3
-#define TASession_STOP    4
-#define TASession_TERM    5
+#define TASession_INIT    0
+#define TASession_STANDBY 1
+#define TASession_RUNNING 2
+#define TASession_STOP    3
+#define TASession_TERM    4
 
 /* period */
 #define TASession_RAMPUP      0
