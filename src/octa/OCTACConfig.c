@@ -98,8 +98,7 @@ void OCTACConfig_sleepThinkTime(struct timeval think_timeval)
 
   if (timerisset(&think_timeval))
   {
-    think_time_nsec = (think_timeval.tv_sec * 1000000 +
-                       think_timeval.tv_usec) * 1000;
+    think_time_nsec = timeval2usec(think_timeval) * 1000;
     think_time_nsec = - log(TARandom_drand()) * think_time_nsec;
 
     think_timespec.tv_sec = think_time_nsec / 1000000000;
