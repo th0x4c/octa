@@ -327,7 +327,7 @@ void TASessionManager_printNumericalQuantitiesSummary(TASessionManager self,
   {
     summary_stat = TASessionManager_summaryStatByNameInPeriodInPhase(self,
                      tx_names[i], TASession_MEASUREMENT, TASession_TX);
-    printf("  - %-29s %-8.3f / %-8.3f / %-8.3f\n",
+    printf("  - %-29s %-8.6f / %-8.6f / %-8.6f\n",
            tx_names[i],
            timeval2sec(TADistribution_percentile(
                          TATXStat_distribution(summary_stat), 50)),

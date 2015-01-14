@@ -20,12 +20,15 @@ struct __TADistribution
 #define NUM_BUCKETS 1001
 #endif
 
-#define SCALE 4
+#define SCALE 7
   /*
    * buckets[0][] seconds,
    * buckets[1][] deci seconds,
    * buckets[2][] centi seconds,
    * buckets[3][] milli seconds
+   * buckets[4][] decimilli seconds
+   * buckets[5][] centimilli seconds
+   * buckets[6][] micro seconds
    */
   unsigned int buckets[SCALE][NUM_BUCKETS];
 };
@@ -34,10 +37,10 @@ typedef struct __TADistribution __TADistribution;
 #define minbucket(tvp)                                                  \
   {                                                                     \
     (tvp)->tv_sec = 0;                                                  \
-    (tvp)->tv_usec = 1000; /* 1 / (10 ** (SCALE - 1)) sec */            \
+    (tvp)->tv_usec = 1; /* 1 / (10 ** (SCALE - 1)) sec */               \
   }
 
-#define METRIC_PREFIX_SYMBOLS { "", "d", "c", "m" }
+#define METRIC_PREFIX_SYMBOLS { "", "d", "c", "m", "dm", "cm", "u" }
 
 TADistribution TADistribution_init()
 {
@@ -119,7 +122,7 @@ void TADistribution_setElapsedTime(TADistribution self, struct timeval elaps)
     if (timercmp(&elaps, &min_tv, <))
       self->buckets[i][0]++;
     else if (timercmp(&elaps, &max_tv, <))
-      self->buckets[i][(elaps.tv_sec * 1000000 + elaps.tv_usec) / (1000 * decimal)]++;
+      self->buckets[i][timeval2usec(elaps) / (timeval2usec(min_bucket_tv) * decimal)]++;
     else
       self->buckets[i][NUM_BUCKETS - 1]++;
   }

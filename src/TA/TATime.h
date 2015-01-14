@@ -15,6 +15,8 @@
 
 #define timeval2sec(tv) ((double)((tv).tv_sec + (tv).tv_usec*1e-6))
 
+#define timeval2usec(tv) ((tv).tv_sec * 1000000 + (tv).tv_usec)
+
 #define timeval2str(strp, tv)                                           \
   {                                                                     \
     char msec[4] = "000";                                               \
