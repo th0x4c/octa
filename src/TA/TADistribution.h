@@ -11,7 +11,7 @@
 
 #include <stdlib.h>   /* malloc free */
 #include <string.h>   /* memset */
-#include <stdio.h>    /* printf */
+#include <stdio.h>    /* printf snprintf */
 #include <sys/time.h>
 #include "TABool.h"
 #include "TATime.h"
