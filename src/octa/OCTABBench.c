@@ -20,6 +20,8 @@ struct OCTABBenchInput
 };
 typedef struct OCTABBenchInput OCTABBenchInput;
 
+static TABool long_format;
+
 static void OCTABBench_beforeSetup(TASessionManager self, void **inout)
 {
   OCTABBenchInput *io = (OCTABBenchInput *)*inout;
@@ -27,6 +29,8 @@ static void OCTABBench_beforeSetup(TASessionManager self, void **inout)
   struct timeval start_time;
   char start_time_str[24] = "0000-00-00 00:00:00.000";
   int i = 0;
+
+  long_format = option.long_format;
 
   OCTAOption_print(option);
 
@@ -515,7 +519,7 @@ static void OCTABBench_monitor(TASessionManager self)
   monitor_interval.tv_nsec = 0;
   nanosleep(&monitor_interval, NULL);
 
-  TASessionManager_printMonitoredTX(self, "OCTAB bench", PAGESIZE, FALSE);
+  TASessionManager_printMonitoredTX(self, "OCTAB bench", PAGESIZE, long_format);
 }
 
 static void OCTABBench_afterTeardown(TASessionManager self, void **inout)
@@ -528,7 +532,7 @@ static void OCTABBench_afterTeardown(TASessionManager self, void **inout)
   char end_time_str[24] = "0000-00-00 00:00:00.000";
   static char *tx_names[1] = {"OCTAB bench"};
 
-  TASessionManager_printMonitoredTX(self, "OCTAB bench", PAGESIZE, FALSE);
+  TASessionManager_printMonitoredTX(self, "OCTAB bench", PAGESIZE, long_format);
   TADistribution_print(TATXStat_distribution(summary_stat));
   TASessionManager_printNumericalQuantitiesSummary(self, tx_names, 1);
 

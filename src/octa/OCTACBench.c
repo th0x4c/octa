@@ -22,6 +22,7 @@ struct OCTACBenchInOut
 typedef struct OCTACBenchInOut OCTACBenchInOut;
 
 static int tx_percentage[TXS];
+static TABool long_format;
 
 static void OCTACBench_beforeSetup(TASessionManager self, void **inout)
 {
@@ -35,6 +36,7 @@ static void OCTACBench_beforeSetup(TASessionManager self, void **inout)
   {
     tx_percentage[i] = option.tx_percentage[i];
   }
+  long_format = option.long_format;
 
   OCTAOption_print(option);
 
@@ -255,7 +257,7 @@ static void OCTACBench_monitor(TASessionManager self)
   monitor_interval.tv_nsec = 0;
   nanosleep(&monitor_interval, NULL);
 
-  TASessionManager_printMonitoredTX(self, "New-Order", PAGESIZE, FALSE);
+  TASessionManager_printMonitoredTX(self, "New-Order", PAGESIZE, long_format);
 }
 
 static void OCTACBench_afterTeardown(TASessionManager self, void **inout)
@@ -270,7 +272,7 @@ static void OCTACBench_afterTeardown(TASessionManager self, void **inout)
                 {"New-Order", "Payment", "Order-Status", "Delivery",
                  "Stock-Level"};
 
-  TASessionManager_printMonitoredTX(self, "New-Order", PAGESIZE, FALSE);
+  TASessionManager_printMonitoredTX(self, "New-Order", PAGESIZE, long_format);
   TADistribution_print(TATXStat_distribution(summary_stat));
   TASessionManager_printNumericalQuantitiesSummary(self, tx_names, TXS);
 
