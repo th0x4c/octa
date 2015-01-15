@@ -171,6 +171,9 @@ struct timeval TADistribution_percentile(TADistribution self, int percent)
 
 void TADistribution_print(TADistribution self)
 {
+  struct timeval min_bucket_tv;
+  struct timeval min_tv, deca_tv, max_tv;
+  struct timeval zeroth_percentile, hundredth_percentile;
   char *metric_prefix_symbols[SCALE] = METRIC_PREFIX_SYMBOLS;
 #define STR_SIZE 4
   char str[STR_SIZE];
@@ -182,9 +185,27 @@ void TADistribution_print(TADistribution self)
   int i = 0;
   int j = 0;
 
+  timerclear(&min_bucket_tv);
+  timerclear(&min_tv);
+  timerclear(&deca_tv);
+  timerclear(&max_tv);
+  timerclear(&zeroth_percentile);
+  timerclear(&hundredth_percentile);
+
+  minbucket(&min_bucket_tv);
+  zeroth_percentile = TADistribution_percentile(self, 0);
+  hundredth_percentile = TADistribution_percentile(self, 100);
+
 #define PRINTED_BUCKETS 101
   for (i = SCALE - 1, decimal = 1; i >= 0; i--, decimal = decimal * 10)
   {
+    timermlt(&min_bucket_tv, decimal, &min_tv);
+    timermlt(&min_tv, 10, &deca_tv);
+    timermlt(&min_tv, PRINTED_BUCKETS - 1, &max_tv);
+    if (timercmp(&deca_tv, &hundredth_percentile, >) ||
+        timercmp(&max_tv, &zeroth_percentile, <))
+      continue;
+
     printf("Frequency Distribution (%ssec.)\n", metric_prefix_symbols[i]);
     printf("==============================\n");
     printf("        0%%        10%%       20%%       30%%       40%%       "
