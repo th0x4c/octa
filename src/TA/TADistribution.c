@@ -154,7 +154,8 @@ struct timeval TADistribution_percentile(TADistribution self, int percent)
     for (j = 0, accum = 0; j < NUM_BUCKETS - 1; j++)
     {
       accum += self->buckets[i][j];
-      if (accum * 100 / self->count >= percent)
+      if ((percent == 0 && accum > 0) ||
+          (percent > 0 && accum * 100 / self->count >= percent))
       {
         timermlt(&min_tv, j, &ret);
         return ret;
