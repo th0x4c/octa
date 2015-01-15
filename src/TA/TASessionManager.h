@@ -47,7 +47,8 @@ TATXStat TASessionManager_summaryStatByNameInPeriodInPhase(
            const char *tx_name,
            int period, int phase);
 void TASessionManager_printMonitoredTX(TASessionManager self,
-                                       const char *tx_name, int pagesize);
+                                       const char *tx_name, int pagesize,
+                                       TABool long_format);
 void TASessionManager_printNumericalQuantitiesSummary(TASessionManager self,
                                                       char *tx_names[],
                                                       int tx_count);

@@ -255,7 +255,7 @@ static void OCTACBench_monitor(TASessionManager self)
   monitor_interval.tv_nsec = 0;
   nanosleep(&monitor_interval, NULL);
 
-  TASessionManager_printMonitoredTX(self, "New-Order", PAGESIZE);
+  TASessionManager_printMonitoredTX(self, "New-Order", PAGESIZE, FALSE);
 }
 
 static void OCTACBench_afterTeardown(TASessionManager self, void **inout)
@@ -270,7 +270,7 @@ static void OCTACBench_afterTeardown(TASessionManager self, void **inout)
                 {"New-Order", "Payment", "Order-Status", "Delivery",
                  "Stock-Level"};
 
-  TASessionManager_printMonitoredTX(self, "New-Order", PAGESIZE);
+  TASessionManager_printMonitoredTX(self, "New-Order", PAGESIZE, FALSE);
   TADistribution_print(TATXStat_distribution(summary_stat));
   TASessionManager_printNumericalQuantitiesSummary(self, tx_names, TXS);
 

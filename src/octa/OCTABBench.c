@@ -515,7 +515,7 @@ static void OCTABBench_monitor(TASessionManager self)
   monitor_interval.tv_nsec = 0;
   nanosleep(&monitor_interval, NULL);
 
-  TASessionManager_printMonitoredTX(self, "OCTAB bench", PAGESIZE);
+  TASessionManager_printMonitoredTX(self, "OCTAB bench", PAGESIZE, FALSE);
 }
 
 static void OCTABBench_afterTeardown(TASessionManager self, void **inout)
@@ -528,7 +528,7 @@ static void OCTABBench_afterTeardown(TASessionManager self, void **inout)
   char end_time_str[24] = "0000-00-00 00:00:00.000";
   static char *tx_names[1] = {"OCTAB bench"};
 
-  TASessionManager_printMonitoredTX(self, "OCTAB bench", PAGESIZE);
+  TASessionManager_printMonitoredTX(self, "OCTAB bench", PAGESIZE, FALSE);
   TADistribution_print(TATXStat_distribution(summary_stat));
   TASessionManager_printNumericalQuantitiesSummary(self, tx_names, 1);
 
