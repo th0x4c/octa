@@ -19,7 +19,7 @@ usage()
 Description:
     Setup octa (create table, index, ... and load data)
 
-Usage: setup-octa.sh [options]
+Usage: octa-setup.sh [options]
 
 Option:
     -B  TPC-B like mode
@@ -33,7 +33,8 @@ Option:
     -h  Print Help (this message) and exit
 
 Example:
-    setup-octa.sh -B -u scott/tiger@orcl -n 5 -s 10 -T USERS -I INDX
+    octa-setup.sh -B -u scott/tiger@orcl -n 5 -s 10 -T USERS -I INDX
+    octa-setup.sh -C -u scott/tiger@orcl -n 5 -s 100 -p 10 -T USERS -I INDX
 EOF
 }
 
