@@ -30,11 +30,11 @@ int main(int argc, char *argv[])
     case OCTA_SETUP:
       return OCTABSetup_main(option);
     case OCTA_LOAD:
-      return OCTABLoad_main(option);  
+      return OCTABLoad_main(option);
     case OCTA_BENCH:
-      return OCTABBench_main(option);  
+      return OCTABBench_main(option);
     case OCTA_TEARDOWN:
-      return OCTABTeardown_main(option);  
+      return OCTABTeardown_main(option);
     default:
       break;
     }

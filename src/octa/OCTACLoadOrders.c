@@ -46,7 +46,7 @@ void OCTACLoadOrders_beforeTX(long o_id, long o_d_id, long o_w_id, long o_c_id,
   snprintf(in->ol_i_id, sizeof(in->ol_i_id), "%ld",
            TARandom_number(1, MAXITEMS));
   snprintf(in->ol_quantity, sizeof(in->ol_quantity), "%d", 5);
-  /* 
+  /*
    * OL_AMOUNT = 0.00 if OL_O_ID < 2,101, random within [0.01 .. 9,999.99]
    * otherwise
    */

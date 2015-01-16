@@ -220,7 +220,7 @@ static void OCTACBench_errorTX(TASession self, void **inout, int error_code,
   OCTACBenchInOut *io = (OCTACBenchInOut *)*inout;
 
   OCOracle_execTX(io->oracle, inout, OCTACBench_rollbackTX);
-  snprintf(error_message, error_message_size, "err: %d, msg: %s", 
+  snprintf(error_message, error_message_size, "err: %d, msg: %s",
            error_code, OCOracle_errorMessage(io->oracle));
 }
 

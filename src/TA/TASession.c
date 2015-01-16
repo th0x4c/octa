@@ -68,7 +68,7 @@ TASession TASession_init()
     {
       for (k = 0; k < NUM_PHASE; k++)
       {
-        self->tx_stats[i][j][k] = TATXStat_init();        
+        self->tx_stats[i][j][k] = TATXStat_init();
       }
     }
     self->beforeTXs[i] = NULL;
@@ -378,7 +378,7 @@ TATXStat TASession_statByNameInPeriodInPhase(TASession self,
        phase == TASession_TX ||
        phase == TASession_AFTER))
   {
-    ret = self->tx_stats[tx_idx][period][phase]; 
+    ret = self->tx_stats[tx_idx][period][phase];
   }
   return ret;
 }

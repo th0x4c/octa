@@ -546,7 +546,7 @@ int TASessionManager_main(TASessionManager self, void **inout)
 static TABool TASessionManager_isAllStatus(TASessionManager self, int status)
 {
   int i = 0;
-  
+
   for (i = 0; i < self->num_sessions; i++)
   {
     if (TASession_status(self->sessions[i]) != status)

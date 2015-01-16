@@ -317,7 +317,7 @@ static void OCTACLoad_errorTX(TASession self, void **inout, int error_code,
                               char *error_message, size_t error_message_size)
 {
   OCOracle_execTX(oracle, inout, OCTACLoad_rollbackTX);
-  snprintf(error_message, error_message_size, "err: %d, msg: %s", 
+  snprintf(error_message, error_message_size, "err: %d, msg: %s",
            error_code, OCOracle_errorMessage(oracle));
 }
 
@@ -428,7 +428,7 @@ static void OCTACLoad_afterTeardown(TASessionManager self, void **inout)
                 TATXStat_errorCount(summary_orders);
 
   printf("\nError: %d\n", error_count);
-         
+
   if (error_count == 0)
     printf("...DATA LOADING COMPLETED SUCCESSFULLY.\n");
 

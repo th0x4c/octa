@@ -204,7 +204,7 @@ sword OCSQL_fetch(OCSQL self, OCIError *errhp)
       }
 
       self->values[i] = malloc(sizeof(char) * (col_width + 1));
-      
+
       status = OCIDefineByPos(self->stmthp, &self->defineps[i], errhp, i + 1,
                               (void *) self->values[i], (sb4) col_width + 1,
                               SQLT_STR, (void *) 0, (ub2 *) 0, (ub2 *) 0,

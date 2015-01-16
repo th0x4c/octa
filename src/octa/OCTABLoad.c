@@ -240,7 +240,7 @@ static int OCTABLoad_TX(TASession self, void **inout)
 static void OCTABLoad_errorTX(TASession self, void **inout, int error_code,
                               char *error_message, size_t error_message_size)
 {
-  snprintf(error_message, error_message_size, "err: %d, msg: %s", 
+  snprintf(error_message, error_message_size, "err: %d, msg: %s",
            error_code, OCOracle_errorMessage(oracle));
 }
 

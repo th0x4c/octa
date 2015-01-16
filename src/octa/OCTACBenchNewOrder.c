@@ -183,7 +183,7 @@ int OCTACBenchNewOrder_oracleTX(OCIEnv *envhp, OCIError *errhp,
         if (strlen(errmsg) + strlen(INVALID_ITEM_ERROR_MESSAGE) < errmsgsize)
           strcat(errmsg, INVALID_ITEM_ERROR_MESSAGE);
       }
-      goto end;        
+      goto end;
     }
 
     if (sql7 == NULL)
@@ -237,7 +237,7 @@ int OCTACBenchNewOrder_oracleTX(OCIEnv *envhp, OCIError *errhp,
     else
       snprintf(out->s_quantity, sizeof(out->s_quantity), "%ld",
                atol(out->s_quantity) - atol(in->qty[ol_number]) + 91);
-    
+
     /*
      * S_YTD is increased by OL_QUANTITY and S_ORDER_CNT is incremented by 1.
      * If the order-line is remote, then S_REMOTE_CNT is incremented by 1.

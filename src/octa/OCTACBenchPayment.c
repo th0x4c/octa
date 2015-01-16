@@ -325,7 +325,7 @@ int OCTACBenchPayment_oracleTX(OCIEnv *envhp, OCIError *errhp,
   }
 
   /*
-   * H_DATA is built by concatenating W_NAME and D_NAME separated by 4 spaces. 
+   * H_DATA is built by concatenating W_NAME and D_NAME separated by 4 spaces.
    */
   snprintf(out->h_data, sizeof(out->h_data), "%s    %s",
            out->w_name, out->d_name);
