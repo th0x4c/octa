@@ -1,3 +1,4 @@
+dist_bin_SCRIPTS = octa-setup.sh
 bin_PROGRAMS = octa
 octa_SOURCES = OCTAMain.h              \
                OCTAMain.c              \
