@@ -86,6 +86,7 @@ static int OCTACBench_TXNewOrder(TASession self, void **inout)
   OCTACBenchInOut *io = (OCTACBenchInOut *)*inout;
   OCTACBenchNewOrderInOut *io_new_order = &(io->inout_new_order);
 
+  io_new_order->input.select_only = io->option.select_only;
   return OCOracle_execTX(io->oracle, (void **) &io_new_order,
                          OCTACBenchNewOrder_oracleTX);
 }
@@ -113,6 +114,7 @@ static int OCTACBench_TXPayment(TASession self, void **inout)
   OCTACBenchInOut *io = (OCTACBenchInOut *)*inout;
   OCTACBenchPaymentInOut *io_payment = &(io->inout_payment);
 
+  io_payment->input.select_only = io->option.select_only;
   return OCOracle_execTX(io->oracle, (void **) &io_payment,
                          OCTACBenchPayment_oracleTX);
 }
@@ -168,6 +170,7 @@ static int OCTACBench_TXDelivery(TASession self, void **inout)
   OCTACBenchDeliveryInOut *io_delivery = &(io->inout_delivery);
 
   io_delivery->input.log = TASession_log(self);
+  io_delivery->input.select_only = io->option.select_only;
   return OCOracle_execTX(io->oracle, (void **) &io_delivery,
                          OCTACBenchDelivery_oracleTX);
 }

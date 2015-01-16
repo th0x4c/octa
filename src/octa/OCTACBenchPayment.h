@@ -27,6 +27,7 @@ struct OCTACBenchPaymentInput
   char c_id[6];     /* NUMBER(5, 0) */
   TABool byname;
   char h_amount[8]; /* NUMBER(6, 2) */
+  TABool select_only;
 };
 typedef struct OCTACBenchPaymentInput OCTACBenchPaymentInput;
 

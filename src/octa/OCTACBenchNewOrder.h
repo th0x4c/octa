@@ -28,6 +28,7 @@ struct OCTACBenchNewOrderInput
   char supware[15][40]; /* NUMBER * [5 .. 15] */
   char itemid[15][7];   /* NUMBER(6, 0) * [5 .. 15] */
   char qty[15][3];      /* NUMBER(2, 0) * [5 .. 15] */
+  TABool select_only;
 };
 typedef struct OCTACBenchNewOrderInput OCTACBenchNewOrderInput;
 

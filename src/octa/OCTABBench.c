@@ -144,6 +144,7 @@ static int OCTABBench_oracleTX(OCIEnv *envhp, OCIError *errhp, OCISvcCtx *svchp,
 {
   OCTABBenchInput *io = (OCTABBenchInput *)*inout;
   int *sql_per_commit = io->option.tx_percentage;
+  TABool select_only = io->option.select_only;
   static OCIStmt   *stmt1p = (OCIStmt *)NULL;
   static OCIStmt   *stmt2p = (OCIStmt *)NULL;
   static OCIStmt   *stmt3p = (OCIStmt *)NULL;
@@ -168,7 +169,7 @@ static int OCTABBench_oracleTX(OCIEnv *envhp, OCIError *errhp, OCISvcCtx *svchp,
   count += 1;
 
   /* UPDATE account */
-  if (sql_per_commit[0] > 0)
+  if (sql_per_commit[0] > 0 && (! select_only))
   {
     if (stmt1p == NULL)
     {
@@ -259,7 +260,7 @@ static int OCTABBench_oracleTX(OCIEnv *envhp, OCIError *errhp, OCISvcCtx *svchp,
   }
 
   /* UPDATE teller */
-  if (sql_per_commit[2] > 0)
+  if (sql_per_commit[2] > 0 && (! select_only))
   {
     if (stmt3p == NULL)
     {
@@ -302,7 +303,7 @@ static int OCTABBench_oracleTX(OCIEnv *envhp, OCIError *errhp, OCISvcCtx *svchp,
   }
 
   /* UPDATE branch */
-  if (sql_per_commit[3] > 0)
+  if (sql_per_commit[3] > 0 && (! select_only))
   {
     if (stmt4p == NULL)
     {
@@ -345,7 +346,7 @@ static int OCTABBench_oracleTX(OCIEnv *envhp, OCIError *errhp, OCISvcCtx *svchp,
   }
 
   /* INSERT history */
-  if (sql_per_commit[4] > 0)
+  if (sql_per_commit[4] > 0 && (! select_only))
   {
     snprintf(info, sizeof(info), "%5d 12345678901", io->session_id);
 
@@ -413,10 +414,11 @@ static int OCTABBench_oracleTX(OCIEnv *envhp, OCIError *errhp, OCISvcCtx *svchp,
     if (errcode != 0) goto end;
   }
 
-  if ((sql_per_commit[0] > 0 && (count % sql_per_commit[0]) == 0) ||
-      (sql_per_commit[2] > 0 && (count % sql_per_commit[2]) == 0) ||
-      (sql_per_commit[3] > 0 && (count % sql_per_commit[3]) == 0) ||
-      (sql_per_commit[4] > 0 && (count % sql_per_commit[4]) == 0))
+  if (((sql_per_commit[0] > 0 && (count % sql_per_commit[0]) == 0) ||
+       (sql_per_commit[2] > 0 && (count % sql_per_commit[2]) == 0) ||
+       (sql_per_commit[3] > 0 && (count % sql_per_commit[3]) == 0) ||
+       (sql_per_commit[4] > 0 && (count % sql_per_commit[4]) == 0)) &&
+      (! select_only))
     OCITransCommit(svchp, errhp, (ub4) 0);
 
  end:

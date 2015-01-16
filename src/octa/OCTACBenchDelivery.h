@@ -22,6 +22,7 @@ struct OCTACBenchDeliveryInput
   char w_id[40];        /* NUMBER */
   char o_carrier_id[3]; /* NUMBER(2, 0) */
   TALog log;
+  TABool select_only;
 };
 typedef struct OCTACBenchDeliveryInput OCTACBenchDeliveryInput;
 

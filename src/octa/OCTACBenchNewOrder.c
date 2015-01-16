@@ -120,44 +120,47 @@ int OCTACBenchNewOrder_oracleTX(OCIEnv *envhp, OCIError *errhp,
                                        out->d_tax));
   if (errcode != 0) goto end;
 
-  if (sql3 == NULL)
-    sql3 = OCSQL_initWithSQL(envhp, errhp,
-                             "UPDATE district SET d_next_o_id = :1 + 1 "
-                             "WHERE d_id = :2 AND d_w_id = :3");
-  errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                       OCSQL_execute(sql3, errhp, svchp,
-                                     out->d_next_o_id,
-                                     in->d_id,
-                                     in->w_id));
-  if (errcode != 0) goto end;
+  if (! in->select_only)
+  {
+    if (sql3 == NULL)
+      sql3 = OCSQL_initWithSQL(envhp, errhp,
+                               "UPDATE district SET d_next_o_id = :1 + 1 "
+                               "WHERE d_id = :2 AND d_w_id = :3");
+    errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
+                         OCSQL_execute(sql3, errhp, svchp,
+                                       out->d_next_o_id,
+                                       in->d_id,
+                                       in->w_id));
+    if (errcode != 0) goto end;
 
-  if (sql4 == NULL)
-    sql4 = OCSQL_initWithSQL(envhp, errhp,
-                             "INSERT INTO orders (o_id, o_d_id, o_w_id, "
-                             "  o_c_id, o_entry_d, o_carrier_id, o_ol_cnt, "
-                             "  o_all_local) "
-                             "VALUES (:1, :2, :3, :4, SYSDATE, NULL, :5, :6)");
-  errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                       OCSQL_execute(sql4, errhp, svchp,
-                                     out->d_next_o_id,
-                                     in->d_id,
-                                     in->w_id,
-                                     in->c_id,
-                                     in->o_ol_cnt,
-                                     in->o_all_local));
-  if (errcode != 0) goto end;
+    if (sql4 == NULL)
+      sql4 = OCSQL_initWithSQL(envhp, errhp,
+                               "INSERT INTO orders (o_id, o_d_id, o_w_id, "
+                               "  o_c_id, o_entry_d, o_carrier_id, o_ol_cnt, "
+                               "  o_all_local) "
+                               "VALUES (:1, :2, :3, :4, SYSDATE, NULL, :5, :6)");
+    errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
+                         OCSQL_execute(sql4, errhp, svchp,
+                                       out->d_next_o_id,
+                                       in->d_id,
+                                       in->w_id,
+                                       in->c_id,
+                                       in->o_ol_cnt,
+                                       in->o_all_local));
+    if (errcode != 0) goto end;
 
-  if (sql5 == NULL)
-    sql5 = OCSQL_initWithSQL(envhp, errhp,
-                             "INSERT INTO new_order (no_o_id, no_d_id, "
-                             "  no_w_id) "
-                             "VALUES (:1, :2, :3)");
-  errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                       OCSQL_execute(sql5, errhp, svchp,
-                                     out->d_next_o_id,
-                                     in->d_id,
-                                     in->w_id));
-  if (errcode != 0) goto end;
+    if (sql5 == NULL)
+      sql5 = OCSQL_initWithSQL(envhp, errhp,
+                               "INSERT INTO new_order (no_o_id, no_d_id, "
+                               "  no_w_id) "
+                               "VALUES (:1, :2, :3)");
+    errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
+                         OCSQL_execute(sql5, errhp, svchp,
+                                       out->d_next_o_id,
+                                       in->d_id,
+                                       in->w_id));
+    if (errcode != 0) goto end;
+  }
 
   for (ol_number = 0; ol_number < atol(in->o_ol_cnt); ol_number++)
   {
@@ -238,28 +241,31 @@ int OCTACBenchNewOrder_oracleTX(OCIEnv *envhp, OCIError *errhp,
       snprintf(out->s_quantity, sizeof(out->s_quantity), "%ld",
                atol(out->s_quantity) - atol(in->qty[ol_number]) + 91);
 
-    /*
-     * S_YTD is increased by OL_QUANTITY and S_ORDER_CNT is incremented by 1.
-     * If the order-line is remote, then S_REMOTE_CNT is incremented by 1.
-     */
-    if (sql8 == NULL)
-      sql8 = OCSQL_initWithSQL(envhp, errhp,
-                               "UPDATE stock SET s_quantity = :1, "
-                               "  s_ytd = s_ytd + :2, "
-                               "  s_order_cnt = s_order_cnt + 1, "
-                               "  s_remote_cnt = s_remote_cnt + :3 "
-                               "WHERE s_i_id = :4 "
-                               "AND s_w_id = :5");
-    errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                         OCSQL_execute(sql8, errhp, svchp,
-                                       out->s_quantity,
-                                       in->qty[ol_number],
-                                       atol(in->w_id) !=
-                                       atol(in->supware[ol_number]) ?
-                                       "1" : "0",
-                                       in->itemid[ol_number],
-                                       in->supware[ol_number]));
-    if (errcode != 0) goto end;
+    if (! in->select_only)
+    {
+      /*
+       * S_YTD is increased by OL_QUANTITY and S_ORDER_CNT is incremented by 1.
+       * If the order-line is remote, then S_REMOTE_CNT is incremented by 1.
+       */
+      if (sql8 == NULL)
+        sql8 = OCSQL_initWithSQL(envhp, errhp,
+                                 "UPDATE stock SET s_quantity = :1, "
+                                 "  s_ytd = s_ytd + :2, "
+                                 "  s_order_cnt = s_order_cnt + 1, "
+                                 "  s_remote_cnt = s_remote_cnt + :3 "
+                                 "WHERE s_i_id = :4 "
+                                 "AND s_w_id = :5");
+      errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
+                           OCSQL_execute(sql8, errhp, svchp,
+                                         out->s_quantity,
+                                         in->qty[ol_number],
+                                         atol(in->w_id) !=
+                                         atol(in->supware[ol_number]) ?
+                                         "1" : "0",
+                                         in->itemid[ol_number],
+                                         in->supware[ol_number]));
+      if (errcode != 0) goto end;
+    }
 
     /*
      * The amount for the item in the order (OL_AMOUNT) is computed as:
@@ -277,29 +283,33 @@ int OCTACBenchNewOrder_oracleTX(OCIEnv *envhp, OCIError *errhp,
              (1 - atof(out->c_discount));
 
     snprintf(ol_number_str, sizeof(ol_number_str), "%ld", ol_number + 1);
-    if (sql9 == NULL)
-      sql9 = OCSQL_initWithSQL(envhp, errhp,
-                               "INSERT INTO order_line (ol_o_id, ol_d_id, "
-                               "  ol_w_id, ol_number, ol_i_id, "
-                               "  ol_supply_w_id, ol_quantity, ol_amount, "
-                               "  ol_dist_info) "
-                               "VALUES (:1, :2, :3, :4, :5, :6, :7, :8, :9)");
-    errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                         OCSQL_execute(sql9, errhp, svchp,
-                                       out->d_next_o_id,
-                                       in->d_id,
-                                       in->w_id,
-                                       ol_number_str,
-                                       in->itemid[ol_number],
-                                       in->supware[ol_number],
-                                       in->qty[ol_number],
-                                       out->ol_amount,
-                                       out->ol_dist_info));
-    if (errcode != 0) goto end;
+    if (! in->select_only)
+    {
+      if (sql9 == NULL)
+        sql9 = OCSQL_initWithSQL(envhp, errhp,
+                                 "INSERT INTO order_line (ol_o_id, ol_d_id, "
+                                 "  ol_w_id, ol_number, ol_i_id, "
+                                 "  ol_supply_w_id, ol_quantity, ol_amount, "
+                                 "  ol_dist_info) "
+                                 "VALUES (:1, :2, :3, :4, :5, :6, :7, :8, :9)");
+      errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
+                           OCSQL_execute(sql9, errhp, svchp,
+                                         out->d_next_o_id,
+                                         in->d_id,
+                                         in->w_id,
+                                         ol_number_str,
+                                         in->itemid[ol_number],
+                                         in->supware[ol_number],
+                                         in->qty[ol_number],
+                                         out->ol_amount,
+                                         out->ol_dist_info));
+      if (errcode != 0) goto end;
+    }
   }
 
   snprintf(out->total, sizeof(out->total), "%f", total);
-  OCITransCommit(svchp, errhp, (ub4) 0);
+  if (! in->select_only)
+    OCITransCommit(svchp, errhp, (ub4) 0);
 
  end:
   /* if (sql1 != NULL) */

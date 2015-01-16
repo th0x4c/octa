@@ -43,6 +43,7 @@ struct OCTAOption
   struct timeval think_time[TXS];
   int tx_percentage[TXS];
   TABool long_format;
+  TABool select_only;
 };
 typedef struct OCTAOption OCTAOption;
 

@@ -103,17 +103,20 @@ int OCTACBenchDelivery_oracleTX(OCIEnv *envhp, OCIError *errhp,
         goto end;
     }
 
-    if (sql2 == NULL)
-      sql2 = OCSQL_initWithSQL(envhp, errhp,
-                               "DELETE FROM new_order "
-                               "WHERE no_w_id = :1 AND no_d_id = :2 "
-                               "  AND no_o_id = :3");
-    errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                         OCSQL_execute(sql2, errhp, svchp,
-                                       in->w_id,
-                                       out->d_id,
-                                       out->no_o_id));
-    if (errcode != 0) goto end;
+    if (! in->select_only)
+    {
+      if (sql2 == NULL)
+        sql2 = OCSQL_initWithSQL(envhp, errhp,
+                                 "DELETE FROM new_order "
+                                 "WHERE no_w_id = :1 AND no_d_id = :2 "
+                                 "  AND no_o_id = :3");
+      errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
+                           OCSQL_execute(sql2, errhp, svchp,
+                                         in->w_id,
+                                         out->d_id,
+                                         out->no_o_id));
+      if (errcode != 0) goto end;
+    }
 
     if (sql3 == NULL)
       sql3 = OCSQL_initWithSQL(envhp, errhp,
@@ -132,30 +135,33 @@ int OCTACBenchDelivery_oracleTX(OCIEnv *envhp, OCIError *errhp,
                                          out->c_id));
     if (errcode != 0) goto end;
 
-    if (sql4 == NULL)
-      sql4 = OCSQL_initWithSQL(envhp, errhp,
-                               "UPDATE orders SET o_carrier_id = :1 "
-                               "WHERE o_id = :2 AND o_d_id = :3 "
-                               "  AND o_w_id = :4");
-    errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                         OCSQL_execute(sql4, errhp, svchp,
-                                       in->o_carrier_id,
-                                       out->no_o_id,
-                                       out->d_id,
-                                       in->w_id));
-    if (errcode != 0) goto end;
+    if (! in->select_only)
+    {
+      if (sql4 == NULL)
+        sql4 = OCSQL_initWithSQL(envhp, errhp,
+                                 "UPDATE orders SET o_carrier_id = :1 "
+                                 "WHERE o_id = :2 AND o_d_id = :3 "
+                                 "  AND o_w_id = :4");
+      errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
+                           OCSQL_execute(sql4, errhp, svchp,
+                                         in->o_carrier_id,
+                                         out->no_o_id,
+                                         out->d_id,
+                                         in->w_id));
+      if (errcode != 0) goto end;
 
-    if (sql5 == NULL)
-      sql5 = OCSQL_initWithSQL(envhp, errhp,
-                               "UPDATE order_line SET ol_delivery_d = SYSDATE "
-                               "WHERE ol_o_id = :1 AND ol_d_id = :2 "
-                               "  AND ol_w_id = :3");
-    errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                         OCSQL_execute(sql5, errhp, svchp,
-                                       out->no_o_id,
-                                       out->d_id,
-                                       in->w_id));
-    if (errcode != 0) goto end;
+      if (sql5 == NULL)
+        sql5 = OCSQL_initWithSQL(envhp, errhp,
+                                 "UPDATE order_line SET ol_delivery_d = SYSDATE "
+                                 "WHERE ol_o_id = :1 AND ol_d_id = :2 "
+                                 "  AND ol_w_id = :3");
+      errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
+                           OCSQL_execute(sql5, errhp, svchp,
+                                         out->no_o_id,
+                                         out->d_id,
+                                         in->w_id));
+      if (errcode != 0) goto end;
+    }
 
     if (sql6 == NULL)
       sql6 = OCSQL_initWithSQL(envhp, errhp,
@@ -174,35 +180,40 @@ int OCTACBenchDelivery_oracleTX(OCIEnv *envhp, OCIError *errhp,
                                          out->ol_total));
     if (errcode != 0) goto end;
 
-    /*
-     * The row in the CUSTOMER table with matching C_W_ID (equals W_ID),
-     * C_D_ID (equals D_ID), and C_ID (equals O_C_ID) is selected and
-     * C_BALANCE is increased by the sum of all order-line amounts (OL_AMOUNT)
-     * previously retrieved. C_DELIVERY_CNT is incremented by 1.
-     */
-    if (sql7 == NULL)
-      sql7 = OCSQL_initWithSQL(envhp, errhp,
-                               "UPDATE customer "
-                               "SET c_balance = c_balance + :1, "
-                               "  c_delivery_cnt = c_delivery_cnt + 1 "
-                               "WHERE c_id = :2 AND c_d_id = :3 "
-                               "  AND c_w_id = :4");
-    errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                         OCSQL_execute(sql7, errhp, svchp,
-                                       out->ol_total,
-                                       out->c_id,
-                                       out->d_id,
-                                       in->w_id));
-    if (errcode != 0) goto end;
+    if (! in->select_only)
+    {
+      /*
+       * The row in the CUSTOMER table with matching C_W_ID (equals W_ID),
+       * C_D_ID (equals D_ID), and C_ID (equals O_C_ID) is selected and
+       * C_BALANCE is increased by the sum of all order-line amounts (OL_AMOUNT)
+       * previously retrieved. C_DELIVERY_CNT is incremented by 1.
+       */
+      if (sql7 == NULL)
+        sql7 = OCSQL_initWithSQL(envhp, errhp,
+                                 "UPDATE customer "
+                                 "SET c_balance = c_balance + :1, "
+                                 "  c_delivery_cnt = c_delivery_cnt + 1 "
+                                 "WHERE c_id = :2 AND c_d_id = :3 "
+                                 "  AND c_w_id = :4");
+      errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
+                           OCSQL_execute(sql7, errhp, svchp,
+                                         out->ol_total,
+                                         out->c_id,
+                                         out->d_id,
+                                         in->w_id));
+      if (errcode != 0) goto end;
+    }
 
-    OCITransCommit(svchp, errhp, (ub4) 0);
+    if (! in->select_only)
+      OCITransCommit(svchp, errhp, (ub4) 0);
 
     snprintf(logstr, sizeof(logstr), "D: %s, O: %s, time: %s",
              out->d_id, out->no_o_id, datetime_str);
     TALog_info(log, logstr);
   }
 
-  OCITransCommit(svchp, errhp, (ub4) 0);
+  if (! in->select_only)
+    OCITransCommit(svchp, errhp, (ub4) 0);
 
  end:
   /* if (sql1 != NULL) */

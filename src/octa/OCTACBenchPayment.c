@@ -82,15 +82,18 @@ int OCTACBenchPayment_oracleTX(OCIEnv *envhp, OCIError *errhp,
 
   memset(out, 0, sizeof(*out));
 
-  if (sql1 == NULL)
-    sql1 = OCSQL_initWithSQL(envhp, errhp,
-                             "UPDATE warehouse SET w_ytd = w_ytd + :1 "
-                             "WHERE w_id = :2");
-  errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                       OCSQL_execute(sql1, errhp, svchp,
-                                     in->h_amount,
-                                     in->w_id));
-  if (errcode != 0) goto end;
+  if (! in->select_only)
+  {
+    if (sql1 == NULL)
+      sql1 = OCSQL_initWithSQL(envhp, errhp,
+                               "UPDATE warehouse SET w_ytd = w_ytd + :1 "
+                               "WHERE w_id = :2");
+    errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
+                         OCSQL_execute(sql1, errhp, svchp,
+                                       in->h_amount,
+                                       in->w_id));
+    if (errcode != 0) goto end;
+  }
 
   if (sql2 == NULL)
     sql2 = OCSQL_initWithSQL(envhp, errhp,
@@ -112,16 +115,19 @@ int OCTACBenchPayment_oracleTX(OCIEnv *envhp, OCIError *errhp,
                                        out->w_name));
   if (errcode != 0) goto end;
 
-  if (sql3 == NULL)
-    sql3 = OCSQL_initWithSQL(envhp, errhp,
-                             "UPDATE district SET d_ytd = d_ytd + :1 "
-                             "WHERE d_w_id = :2 AND d_id = :3");
-  errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                       OCSQL_execute(sql3, errhp, svchp,
-                                     in->h_amount,
-                                     in->w_id,
-                                     in->d_id));
-  if (errcode != 0) goto end;
+  if (! in->select_only)
+  {
+    if (sql3 == NULL)
+      sql3 = OCSQL_initWithSQL(envhp, errhp,
+                               "UPDATE district SET d_ytd = d_ytd + :1 "
+                               "WHERE d_w_id = :2 AND d_id = :3");
+    errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
+                         OCSQL_execute(sql3, errhp, svchp,
+                                       in->h_amount,
+                                       in->w_id,
+                                       in->d_id));
+    if (errcode != 0) goto end;
+  }
 
   if (sql4 == NULL)
     sql4 = OCSQL_initWithSQL(envhp, errhp,
@@ -278,50 +284,56 @@ int OCTACBenchPayment_oracleTX(OCIEnv *envhp, OCIError *errhp,
              in->h_amount);
     strncat(out->c_new_data, out->c_data, 500 - strlen(out->c_new_data));
 
-    /*
-     * C_BALANCE is decreased by H_AMOUNT. C_YTD_PAYMENT is increased by
-     * H_AMOUNT. C_PAYMENT_CNT is incremented by 1.
-     */
-    if (sql9 == NULL)
-      sql9 = OCSQL_initWithSQL(envhp, errhp,
-                               "UPDATE customer "
-                               "SET c_balance = c_balance - :1, c_data = :2, "
-                               "  c_ytd_payment = c_ytd_payment + :3, "
-                               "  c_payment_cnt = c_payment_cnt + 1 "
-                               "WHERE c_w_id = :4 AND c_d_id = :5 "
-                               "  AND c_id = :6");
-    errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                         OCSQL_execute(sql9, errhp, svchp,
-                                       in->h_amount,
-                                       out->c_new_data,
-                                       in->h_amount,
-                                       in->c_w_id,
-                                       in->c_d_id,
-                                       out->c_id));
-    if (errcode != 0) goto end;
+    if (! in->select_only)
+    {
+      /*
+       * C_BALANCE is decreased by H_AMOUNT. C_YTD_PAYMENT is increased by
+       * H_AMOUNT. C_PAYMENT_CNT is incremented by 1.
+       */
+      if (sql9 == NULL)
+        sql9 = OCSQL_initWithSQL(envhp, errhp,
+                                 "UPDATE customer "
+                                 "SET c_balance = c_balance - :1, c_data = :2, "
+                                 "  c_ytd_payment = c_ytd_payment + :3, "
+                                 "  c_payment_cnt = c_payment_cnt + 1 "
+                                 "WHERE c_w_id = :4 AND c_d_id = :5 "
+                                 "  AND c_id = :6");
+      errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
+                           OCSQL_execute(sql9, errhp, svchp,
+                                         in->h_amount,
+                                         out->c_new_data,
+                                         in->h_amount,
+                                         in->c_w_id,
+                                         in->c_d_id,
+                                         out->c_id));
+      if (errcode != 0) goto end;
+    }
   }
   else
   {
-    /*
-     * C_BALANCE is decreased by H_AMOUNT. C_YTD_PAYMENT is increased by
-     * H_AMOUNT. C_PAYMENT_CNT is incremented by 1.
-     */
-    if (sql10 == NULL)
-      sql10 = OCSQL_initWithSQL(envhp, errhp,
-                                "UPDATE customer "
-                                "SET c_balance = c_balance - :1, "
-                                "  c_ytd_payment = c_ytd_payment + :2, "
-                                "  c_payment_cnt = c_payment_cnt + 1 "
-                                "WHERE c_w_id = :3 AND c_d_id = :4 "
-                                "  AND c_id = :5");
-    errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                         OCSQL_execute(sql10, errhp, svchp,
-                                       in->h_amount,
-                                       in->h_amount,
-                                       in->c_w_id,
-                                       in->c_d_id,
-                                       out->c_id));
-    if (errcode != 0) goto end;
+    if (! in->select_only)
+    {
+      /*
+       * C_BALANCE is decreased by H_AMOUNT. C_YTD_PAYMENT is increased by
+       * H_AMOUNT. C_PAYMENT_CNT is incremented by 1.
+       */
+      if (sql10 == NULL)
+        sql10 = OCSQL_initWithSQL(envhp, errhp,
+                                  "UPDATE customer "
+                                  "SET c_balance = c_balance - :1, "
+                                  "  c_ytd_payment = c_ytd_payment + :2, "
+                                  "  c_payment_cnt = c_payment_cnt + 1 "
+                                  "WHERE c_w_id = :3 AND c_d_id = :4 "
+                                  "  AND c_id = :5");
+      errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
+                           OCSQL_execute(sql10, errhp, svchp,
+                                         in->h_amount,
+                                         in->h_amount,
+                                         in->c_w_id,
+                                         in->c_d_id,
+                                         out->c_id));
+      if (errcode != 0) goto end;
+    }
   }
 
   /*
@@ -330,24 +342,28 @@ int OCTACBenchPayment_oracleTX(OCIEnv *envhp, OCIError *errhp,
   snprintf(out->h_data, sizeof(out->h_data), "%s    %s",
            out->w_name, out->d_name);
 
-  if (sql11 == NULL)
-    sql11 = OCSQL_initWithSQL(envhp, errhp,
-                              "INSERT INTO history (h_c_d_id, h_c_w_id, "
-                              "  h_c_id, h_d_id, h_w_id, h_date, h_amount, "
-                              "h_data) "
-                              "VALUES (:1, :2, :3, :4, :5, SYSDATE, :6, :7)");
-  errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
-                       OCSQL_execute(sql11, errhp, svchp,
-                                     in->c_d_id,
-                                     in->c_w_id,
-                                     out->c_id,
-                                     in->d_id,
-                                     in->w_id,
-                                     in->h_amount,
-                                     out->h_data));
-  if (errcode != 0) goto end;
+  if (! in->select_only)
+  {
+    if (sql11 == NULL)
+      sql11 = OCSQL_initWithSQL(envhp, errhp,
+                                "INSERT INTO history (h_c_d_id, h_c_w_id, "
+                                "  h_c_id, h_d_id, h_w_id, h_date, h_amount, "
+                                "h_data) "
+                                "VALUES (:1, :2, :3, :4, :5, SYSDATE, :6, :7)");
+    errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
+                         OCSQL_execute(sql11, errhp, svchp,
+                                       in->c_d_id,
+                                       in->c_w_id,
+                                       out->c_id,
+                                       in->d_id,
+                                       in->w_id,
+                                       in->h_amount,
+                                       out->h_data));
+    if (errcode != 0) goto end;
+  }
 
-  OCITransCommit(svchp, errhp, (ub4) 0);
+  if (! in->select_only)
+    OCITransCommit(svchp, errhp, (ub4) 0);
 
  end:
   /* if (sql1 != NULL) */

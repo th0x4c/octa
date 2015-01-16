@@ -11,7 +11,7 @@
 
 void OCTAOption_getOption(int argc, char * const argv[], OCTAOption *option)
 {
-  char *optstring = "BCu:T:I:n:s:m:U:D:k:t:p:lh";
+  char *optstring = "BCu:T:I:n:s:m:U:D:k:t:p:lSh";
   int ch;
   char *c;
   int tpcc_default_percentages[TXS] = DEFAULT_PERCENTAGES;
@@ -41,6 +41,7 @@ void OCTAOption_getOption(int argc, char * const argv[], OCTAOption *option)
     option->tx_percentage[i] = tpcc_default_percentages[i];
   }
   option->long_format = FALSE;
+  option->select_only = FALSE;
 
   while ((ch = getopt(argc, argv, optstring)) != -1)
   {
@@ -154,6 +155,9 @@ void OCTAOption_getOption(int argc, char * const argv[], OCTAOption *option)
     case 'l':
       option->long_format = TRUE;
       break;
+    case 'S':
+      option->select_only = TRUE;
+      break;
     case '?':
     default:
       OCTAOption_usage();
@@ -250,6 +254,7 @@ void OCTAOption_usage()
     "\t-T \tTablespace name for tables\n"
     "\t-I \tTablespace name for indexes\n"
     "\t-l \tUse a long monitoring format\n"
+    "\t-S \tPerform select-only transactions\n"
     "\t-h \tPrint Help (this message) and exit\n"
     "\n"
     "Command:\n"
