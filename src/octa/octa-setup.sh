@@ -312,6 +312,483 @@ analyze_tpcb()
   echo "list"
 }
 
+create_table_tpcc()
+{
+  local num_warehouses=$SCALE_FACTOR
+
+  echo "CREATE TABLE warehouse"
+  echo "("
+  echo "  w_id       NUMBER,       -- 2*W unique IDs"
+  echo "  w_name     VARCHAR2(10),"
+  echo "  w_street_1 VARCHAR2(20),"
+  echo "  w_street_2 VARCHAR2(20),"
+  echo "  w_city     VARCHAR2(20),"
+  echo "  w_state    CHAR(2),"
+  echo "  w_zip      CHAR(9),"
+  echo "  w_tax      NUMBER(4, 4),"
+  echo "  w_ytd      NUMBER(12, 2)"
+  echo ")"
+  echo "TABLESPACE $TABLE_TABLESPACE"
+  table_partitioning_clause "w_id" $num_warehouses $NUM_PARTITION $TABLE_TABLESPACE
+  echo "/"
+  echo "list"
+
+  echo "CREATE TABLE district"
+  echo "("
+  echo "  d_id        NUMBER(2, 0), -- 20 unique IDs"
+  echo "  d_w_id      NUMBER,       -- 2*W unique IDs"
+  echo "  d_name      VARCHAR2(10),"
+  echo "  d_street_1  VARCHAR2(20),"
+  echo "  d_street_2  VARCHAR2(20),"
+  echo "  d_city      VARCHAR2(20),"
+  echo "  d_state     CHAR(2),"
+  echo "  d_zip       CHAR(9),"
+  echo "  d_tax       NUMBER(4, 4),"
+  echo "  d_ytd       NUMBER(12, 2),"
+  echo "  d_next_o_id NUMBER(8, 0)  -- 10,000,000 unique IDs"
+  echo ")"
+  echo "TABLESPACE $TABLE_TABLESPACE"
+  table_partitioning_clause "d_w_id" $num_warehouses $NUM_PARTITION $TABLE_TABLESPACE
+  echo "/"
+  echo "list"
+
+  echo "CREATE TABLE customer"
+  echo "("
+  echo "  c_id           NUMBER(5, 0), -- 96,000 unique IDs"
+  echo "  c_d_id         NUMBER(2, 0), -- 20 unique IDs"
+  echo "  c_w_id         NUMBER,       -- 2*W unique IDs"
+  echo "  c_first        VARCHAR2(16),"
+  echo "  c_middle       CHAR(2),"
+  echo "  c_last         VARCHAR2(16),"
+  echo "  c_street_1     VARCHAR2(20),"
+  echo "  c_street_2     VARCHAR2(20),"
+  echo "  c_city         VARCHAR2(20),"
+  echo "  c_state        CHAR(2),"
+  echo "  c_zip          CHAR(9),"
+  echo "  c_phone        CHAR(16),"
+  echo "  c_since        DATE,"
+  echo "  c_credit       CHAR(2),"
+  echo "  c_credit_lim   NUMBER(12, 2),"
+  echo "  c_discount     NUMBER(4, 4),"
+  echo "  c_balance      NUMBER(12, 2),"
+  echo "  c_ytd_payment  NUMBER(12, 2),"
+  echo "  c_payment_cnt  NUMBER(4, 0),"
+  echo "  c_delivery_cnt NUMBER(4, 0),"
+  echo "  c_data         VARCHAR2(500)"
+  echo ")"
+  echo "TABLESPACE $TABLE_TABLESPACE"
+  table_partitioning_clause "c_w_id" $num_warehouses $NUM_PARTITION $TABLE_TABLESPACE
+  echo "/"
+  echo "list"
+
+  echo "CREATE TABLE history"
+  echo "("
+  echo "  h_c_id   NUMBER(5, 0), -- 96,000 unique IDs"
+  echo "  h_c_d_id NUMBER(2, 0), -- 20 unique IDs"
+  echo "  h_c_w_id NUMBER,       -- 2*W unique IDs"
+  echo "  h_d_id   NUMBER(2, 0), -- 20 unique IDs"
+  echo "  h_w_id   NUMBER,       -- 2*W unique IDs"
+  echo "  h_date   DATE,"
+  echo "  h_amount NUMBER(6, 2),"
+  echo "  h_data   VARCHAR2(24)"
+  echo ")"
+  echo "TABLESPACE $TABLE_TABLESPACE"
+  table_partitioning_clause "h_w_id" $num_warehouses $NUM_PARTITION $TABLE_TABLESPACE
+  echo "/"
+  echo "list"
+
+  echo "CREATE TABLE new_order"
+  echo "("
+  echo "  no_o_id NUMBER(8, 0), -- 10,000,000 unique IDs"
+  echo "  no_d_id NUMBER(2, 0), -- 20 unique IDs"
+  echo "  no_w_id NUMBER        -- 2*W unique IDs"
+  echo ")"
+  echo "TABLESPACE $TABLE_TABLESPACE"
+  table_partitioning_clause "no_w_id" $num_warehouses $NUM_PARTITION $TABLE_TABLESPACE
+  echo "/"
+  echo "list"
+
+  echo "CREATE TABLE orders"
+  echo "("
+  echo "  o_id         NUMBER(8, 0), -- 10,000,000 unique IDs"
+  echo "  o_d_id       NUMBER(2, 0), -- 20 unique IDs"
+  echo "  o_w_id       NUMBER,       -- 2*W unique IDs"
+  echo "  o_c_id       NUMBER(5, 0), -- 96,000 unique IDs"
+  echo "  o_entry_d    DATE,"
+  echo "  o_carrier_id NUMBER(2, 0), -- 10 unique IDs, or null"
+  echo "  o_ol_cnt     NUMBER(2, 0),"
+  echo "  o_all_local  NUMBER(1, 0)"
+  echo ")"
+  echo "TABLESPACE $TABLE_TABLESPACE"
+  table_partitioning_clause "o_w_id" $num_warehouses $NUM_PARTITION $TABLE_TABLESPACE
+  echo "/"
+  echo "list"
+
+  echo "CREATE TABLE order_line"
+  echo "("
+  echo "  ol_o_id        NUMBER(8, 0), -- 10,000,000 unique IDs"
+  echo "  ol_d_id        NUMBER(2, 0), -- 20 unique IDs"
+  echo "  ol_w_id        NUMBER,       -- 2*W unique IDs"
+  echo "  ol_number      NUMBER(2, 0), -- 15 unique IDs"
+  echo "  ol_i_id        NUMBER(6, 0), -- 200,000 unique IDs"
+  echo "  ol_supply_w_id NUMBER,       -- 2*W unique IDs"
+  echo "  ol_delivery_d  DATE,         -- date and time, or null"
+  echo "  ol_quantity    NUMBER(2, 0),"
+  echo "  ol_amount      NUMBER(6, 2),"
+  echo "  ol_dist_info   CHAR(24)"
+  echo ")"
+  echo "TABLESPACE $TABLE_TABLESPACE"
+  table_partitioning_clause "ol_w_id" $num_warehouses $NUM_PARTITION $TABLE_TABLESPACE
+  echo "/"
+  echo "list"
+
+  echo "CREATE TABLE item"
+  echo "("
+  echo "  i_id    NUMBER(6, 0), -- 200,000 unique IDs"
+  echo "  i_im_id NUMBER(6, 0), -- 200,000 unique IDs"
+  echo "  i_name  VARCHAR2(24),"
+  echo "  i_price NUMBER(5, 2),"
+  echo "  i_data  VARCHAR2(50)"
+  echo ")"
+  echo "TABLESPACE $TABLE_TABLESPACE"
+  echo "/"
+  echo "list"
+
+  echo "CREATE TABLE stock"
+  echo "("
+  echo "  s_i_id       NUMBER(6, 0), -- 200,000 unique IDs"
+  echo "  s_w_id       NUMBER,       -- 2*W unique IDs"
+  echo "  s_quantity   NUMBER(4, 0),"
+  echo "  s_dist_01    CHAR(24),"
+  echo "  s_dist_02    CHAR(24),"
+  echo "  s_dist_03    CHAR(24),"
+  echo "  s_dist_04    CHAR(24),"
+  echo "  s_dist_05    CHAR(24),"
+  echo "  s_dist_06    CHAR(24),"
+  echo "  s_dist_07    CHAR(24),"
+  echo "  s_dist_08    CHAR(24),"
+  echo "  s_dist_09    CHAR(24),"
+  echo "  s_dist_10    CHAR(24),"
+  echo "  s_ytd        NUMBER(8, 0),"
+  echo "  s_order_cnt  NUMBER(4, 0),"
+  echo "  s_remote_cnt NUMBER(4, 0),"
+  echo "  s_data       VARCHAR2(50)"
+  echo ")"
+  echo "TABLESPACE $TABLE_TABLESPACE"
+  table_partitioning_clause "s_w_id" $num_warehouses $NUM_PARTITION $TABLE_TABLESPACE
+  echo "/"
+  echo "list"
+}
+
+create_index_tpcc()
+{
+  local num_warehouses=$SCALE_FACTOR
+
+  echo "CREATE UNIQUE INDEX warehouse_pk"
+  echo "  ON warehouse ( w_id )"
+  index_partitioning_clause $num_warehouses $NUM_PARTITION
+  echo "  TABLESPACE $INDEX_TABLESPACE"
+  echo "  PARALLEL $PARALLEL_DEGREE"
+  echo "/"
+  echo "list"
+
+  echo "CREATE UNIQUE INDEX district_pk"
+  echo "  ON district ( d_w_id, d_id )"
+  index_partitioning_clause $num_warehouses $NUM_PARTITION
+  echo "  TABLESPACE $INDEX_TABLESPACE"
+  echo "  PARALLEL $PARALLEL_DEGREE"
+  echo "/"
+  echo "list"
+
+  echo "CREATE UNIQUE INDEX customer_pk"
+  echo "  ON customer ( c_w_id, c_d_id, c_id )"
+  index_partitioning_clause $num_warehouses $NUM_PARTITION
+  echo "  TABLESPACE $INDEX_TABLESPACE"
+  echo "  PARALLEL $PARALLEL_DEGREE"
+  echo "/"
+  echo "list"
+
+  echo "CREATE UNIQUE INDEX new_order_pk"
+  echo "  ON new_order ( no_w_id, no_d_id, no_o_id )"
+  index_partitioning_clause $num_warehouses $NUM_PARTITION
+  echo "  TABLESPACE $INDEX_TABLESPACE"
+  echo "  PARALLEL $PARALLEL_DEGREE"
+  echo "/"
+  echo "list"
+
+  echo "CREATE UNIQUE INDEX orders_pk"
+  echo "  ON orders ( o_w_id, o_d_id, o_id )"
+  index_partitioning_clause $num_warehouses $NUM_PARTITION
+  echo "  TABLESPACE $INDEX_TABLESPACE"
+  echo "  PARALLEL $PARALLEL_DEGREE"
+  echo "/"
+  echo "list"
+
+  echo "CREATE UNIQUE INDEX order_line_pk"
+  echo "  ON order_line ( ol_w_id, ol_d_id, ol_o_id, ol_number )"
+  index_partitioning_clause $num_warehouses $NUM_PARTITION
+  echo "  TABLESPACE $INDEX_TABLESPACE"
+  echo "  PARALLEL $PARALLEL_DEGREE"
+  echo "/"
+  echo "list"
+
+  echo "CREATE UNIQUE INDEX item_pk"
+  echo "  ON item ( i_id )"
+  echo "  TABLESPACE $INDEX_TABLESPACE"
+  echo "  PARALLEL $PARALLEL_DEGREE"
+  echo "/"
+  echo "list"
+
+  echo "CREATE UNIQUE INDEX stock_pk"
+  echo "  ON stock ( s_w_id, s_i_id )"
+  index_partitioning_clause $num_warehouses $NUM_PARTITION
+  echo "  TABLESPACE $INDEX_TABLESPACE"
+  echo "  PARALLEL $PARALLEL_DEGREE"
+  echo "/"
+  echo "list"
+
+  # Additional index
+  echo "CREATE UNIQUE INDEX customer_idx"
+  echo "  ON customer ( c_last, c_w_id, c_d_id, c_first, c_id )"
+  index_partitioning_clause $num_warehouses $NUM_PARTITION
+  echo "  TABLESPACE $INDEX_TABLESPACE"
+  echo "  PARALLEL $PARALLEL_DEGREE"
+  echo "/"
+  echo "list"
+
+  echo "CREATE UNIQUE INDEX orders_idx"
+  echo "  ON orders ( o_c_id, o_d_id, o_w_id, o_id )"
+  index_partitioning_clause $num_warehouses $NUM_PARTITION
+  echo "  TABLESPACE $INDEX_TABLESPACE"
+  echo "  PARALLEL $PARALLEL_DEGREE"
+  echo "/"
+  echo "list"
+}
+
+add_constraint_tpcc()
+{
+  # Primary key
+  echo "ALTER TABLE warehouse ADD CONSTRAINT warehouse_pk"
+  echo "  PRIMARY KEY ( w_id )"
+  echo "  USING INDEX warehouse_pk"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE district ADD CONSTRAINT district_pk"
+  echo "  PRIMARY KEY ( d_w_id, d_id )"
+  echo "  USING INDEX district_pk"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE customer ADD CONSTRAINT customer_pk"
+  echo "  PRIMARY KEY ( c_w_id, c_d_id, c_id )"
+  echo "  USING INDEX customer_pk"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE new_order ADD CONSTRAINT new_order_pk"
+  echo "  PRIMARY KEY ( no_w_id, no_d_id, no_o_id )"
+  echo "  USING INDEX new_order_pk"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE orders ADD CONSTRAINT orders_pk"
+  echo "  PRIMARY KEY ( o_w_id, o_d_id, o_id )"
+  echo "  USING INDEX orders_pk"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE order_line ADD CONSTRAINT order_line_pk"
+  echo "  PRIMARY KEY ( ol_w_id, ol_d_id, ol_o_id, ol_number )"
+  echo "  USING INDEX order_line_pk"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE item ADD CONSTRAINT item_pk"
+  echo "  PRIMARY KEY ( i_id )"
+  echo "  USING INDEX item_pk"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE stock ADD CONSTRAINT stock_pk"
+  echo "  PRIMARY KEY ( s_w_id, s_i_id )"
+  echo "  USING INDEX stock_pk"
+  echo "/"
+  echo "list"
+
+  # Foreign key
+  echo "ALTER TABLE district ADD CONSTRAINT district_fk"
+  echo "  FOREIGN KEY ( d_w_id )"
+  echo "  REFERENCES warehouse ( w_id )"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE customer ADD CONSTRAINT customer_fk"
+  echo "  FOREIGN KEY ( c_w_id, c_d_id )"
+  echo "  REFERENCES district ( d_w_id, d_id )"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE history ADD CONSTRAINT history_fk1"
+  echo "  FOREIGN KEY ( h_c_w_id, h_c_d_id, h_c_id )"
+  echo "  REFERENCES customer ( c_w_id, c_d_id, c_id )"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE history ADD CONSTRAINT history_fk2"
+  echo "  FOREIGN KEY ( h_w_id, h_d_id )"
+  echo "  REFERENCES district ( d_w_id, d_id )"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE new_order ADD CONSTRAINT new_order_fk"
+  echo "  FOREIGN KEY ( no_w_id, no_d_id, no_o_id )"
+  echo "  REFERENCES orders ( o_w_id, o_d_id, o_id )"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE orders ADD CONSTRAINT orders_fk"
+  echo "  FOREIGN KEY ( o_w_id, o_d_id, o_c_id )"
+  echo "  REFERENCES customer ( c_w_id, c_d_id, c_id )"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE order_line ADD CONSTRAINT order_line_fk1"
+  echo "  FOREIGN KEY ( ol_w_id, ol_d_id, ol_o_id )"
+  echo "  REFERENCES orders ( o_w_id, o_d_id, o_id )"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE order_line ADD CONSTRAINT order_line_fk2"
+  echo "  FOREIGN KEY ( ol_supply_w_id, ol_i_id )"
+  echo "  REFERENCES stock ( s_w_id, s_i_id )"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE stock ADD CONSTRAINT stock_fk1"
+  echo "  FOREIGN KEY ( s_w_id )"
+  echo "  REFERENCES warehouse ( w_id )"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE stock ADD CONSTRAINT stock_fk2"
+  echo "  FOREIGN KEY ( s_i_id )"
+  echo "  REFERENCES item ( i_id )"
+  echo "/"
+  echo "list"
+}
+
+analyze_tpcc()
+{
+  echo "DECLARE"
+  echo "  username USER_USERS.USERNAME%TYPE;"
+  echo "BEGIN"
+  echo "  SELECT USERNAME into username FROM USER_USERS;"
+  echo "  DBMS_STATS.GATHER_TABLE_STATS(ownname => username,"
+  echo "                                tabname => 'WAREHOUSE',"
+  echo "                                degree  => ${PARALLEL_DEGREE},"
+  echo "                                cascade => true);"
+  echo "END;"
+  echo "/"
+  echo "list"
+
+  echo "DECLARE"
+  echo "  username USER_USERS.USERNAME%TYPE;"
+  echo "BEGIN"
+  echo "  SELECT USERNAME into username FROM USER_USERS;"
+  echo "  DBMS_STATS.GATHER_TABLE_STATS(ownname => username,"
+  echo "                                tabname => 'DISTRICT',"
+  echo "                                degree  => ${PARALLEL_DEGREE},"
+  echo "                                cascade => true);"
+  echo "END;"
+  echo "/"
+  echo "list"
+
+  echo "DECLARE"
+  echo "  username USER_USERS.USERNAME%TYPE;"
+  echo "BEGIN"
+  echo "  SELECT USERNAME into username FROM USER_USERS;"
+  echo "  DBMS_STATS.GATHER_TABLE_STATS(ownname => username,"
+  echo "                                tabname => 'CUSTOMER',"
+  echo "                                degree  => ${PARALLEL_DEGREE},"
+  echo "                                cascade => true);"
+  echo "END;"
+  echo "/"
+  echo "list"
+
+  echo "DECLARE"
+  echo "  username USER_USERS.USERNAME%TYPE;"
+  echo "BEGIN"
+  echo "  SELECT USERNAME into username FROM USER_USERS;"
+  echo "  DBMS_STATS.GATHER_TABLE_STATS(ownname => username,"
+  echo "                                tabname => 'HISTORY',"
+  echo "                                degree  => ${PARALLEL_DEGREE},"
+  echo "                                cascade => true);"
+  echo "END;"
+  echo "/"
+  echo "list"
+
+  echo "DECLARE"
+  echo "  username USER_USERS.USERNAME%TYPE;"
+  echo "BEGIN"
+  echo "  SELECT USERNAME into username FROM USER_USERS;"
+  echo "  DBMS_STATS.GATHER_TABLE_STATS(ownname => username,"
+  echo "                                tabname => 'NEW_ORDER',"
+  echo "                                degree  => ${PARALLEL_DEGREE},"
+  echo "                                cascade => true);"
+  echo "END;"
+  echo "/"
+  echo "list"
+
+  echo "DECLARE"
+  echo "  username USER_USERS.USERNAME%TYPE;"
+  echo "BEGIN"
+  echo "  SELECT USERNAME into username FROM USER_USERS;"
+  echo "  DBMS_STATS.GATHER_TABLE_STATS(ownname => username,"
+  echo "                                tabname => 'ORDERS',"
+  echo "                                degree  => ${PARALLEL_DEGREE},"
+  echo "                                cascade => true);"
+  echo "END;"
+  echo "/"
+  echo "list"
+
+  echo "DECLARE"
+  echo "  username USER_USERS.USERNAME%TYPE;"
+  echo "BEGIN"
+  echo "  SELECT USERNAME into username FROM USER_USERS;"
+  echo "  DBMS_STATS.GATHER_TABLE_STATS(ownname => username,"
+  echo "                                tabname => 'ORDER_LINE',"
+  echo "                                degree  => ${PARALLEL_DEGREE},"
+  echo "                                cascade => true);"
+  echo "END;"
+  echo "/"
+  echo "list"
+
+  echo "DECLARE"
+  echo "  username USER_USERS.USERNAME%TYPE;"
+  echo "BEGIN"
+  echo "  SELECT USERNAME into username FROM USER_USERS;"
+  echo "  DBMS_STATS.GATHER_TABLE_STATS(ownname => username,"
+  echo "                                tabname => 'ITEM',"
+  echo "                                degree  => ${PARALLEL_DEGREE},"
+  echo "                                cascade => true);"
+  echo "END;"
+  echo "/"
+  echo "list"
+
+  echo "DECLARE"
+  echo "  username USER_USERS.USERNAME%TYPE;"
+  echo "BEGIN"
+  echo "  SELECT USERNAME into username FROM USER_USERS;"
+  echo "  DBMS_STATS.GATHER_TABLE_STATS(ownname => username,"
+  echo "                                tabname => 'STOCK',"
+  echo "                                degree  => ${PARALLEL_DEGREE},"
+  echo "                                cascade => true);"
+  echo "END;"
+  echo "/"
+  echo "list"
+}
+
 while [ $# -gt 0 ]
 do
   case $1 in
@@ -428,18 +905,20 @@ BRANCH_INDEX_TABLESPACE=$INDEX_TABLESPACE
 
 welcome
 
+lower_mode=$(echo $MODE | tr "A-Z" "a-z")
+
 echo "Create Table"
-create_table_tpcb | sqlplus -S ${USER_ID}
+create_table_tpc${lower_mode} | sqlplus -S ${USER_ID}
 
 $OCTA -u ${USER_ID} -${MODE} -n $PARALLEL_DEGREE -s $SCALE_FACTOR load
 
 echo "Create Index"
-create_index_tpcb | sqlplus -S ${USER_ID}
+create_index_tpc${lower_mode} | sqlplus -S ${USER_ID}
 
 echo "Add Constraint"
-add_constraint_tpcb | sqlplus -S ${USER_ID}
+add_constraint_tpc${lower_mode} | sqlplus -S ${USER_ID}
 
 echo "Analyze"
-analyze_tpcb | sqlplus -S ${USER_ID}
+analyze_tpc${lower_mode} | sqlplus -S ${USER_ID}
 
 bye
