@@ -61,23 +61,66 @@ bye()
   echo "----------------------------------------------------------------"
 }
 
+table_partitioning_clause()
+{
+  local partition_key=$1
+  local num_table_rows=$2
+  local num_partition=$3
+  local tablespace_name=$4
+  local rows_per_partition=0
+  local value=1
+  local length=$(expr length $num_partition)
+  local partition_name=""
+  local i=1
+
+  if [ $num_partition -gt 0 ]
+  then
+    rows_per_partition=$(expr $num_table_rows / $num_partition)
+  fi
+
+  if [ $rows_per_partition -gt 0 ]
+  then
+    echo "PARTITION BY RANGE($partition_key)"
+    echo "("
+    i=1
+    value=$(expr 1 + $rows_per_partition)
+    while [ $value -lt $num_table_rows  ]
+    do
+      partition_name=$(printf "p%0${length}d" $i)
+      echo "  PARTITION ${partition_name} VALUES LESS THAN (${value}) TABLESPACE ${tablespace_name},"
+      value=$(expr $value + $rows_per_partition)
+      i=$(expr $i + 1)
+    done
+    partition_name=$(printf "p%0${length}d" $i)
+    echo "  PARTITION ${partition_name} VALUES LESS THAN (MAXVALUE) TABLESPACE ${tablespace_name}"
+    echo ")"
+  fi
+}
+
+index_partitioning_clause()
+{
+  local num_table_rows=$1
+  local num_partition=$2
+  local rows_per_partition=0
+  local i=1
+
+  if [ $num_partition -gt 0 ]
+  then
+    rows_per_partition=$(expr $num_table_rows / $num_partition)
+  fi
+
+  if [ $rows_per_partition -gt 0 ]
+  then
+    echo "LOCAL"
+  fi
+}
+
 create_table_tpcb()
 {
-  local branch_id=1
-  local teller_id=1
-  local account_id=1
-  local branches_per_partition=0
-  local tellers_per_partition=0
-  local accounts_per_partition=0
-  local i=0
+  local num_branches=$SCALE_FACTOR
+  local num_tellers=$(expr $SCALE_FACTOR \* $TELLERS_PER_BRANCH)
+  local num_accounts=$(expr $SCALE_FACTOR \* $ACCOUNTS_PER_BRANCH)
 
-  if [ $NUM_PARTITION -gt 0 ]
-  then
-    branches_per_partition=$(expr $SCALE_FACTOR / $NUM_PARTITION)
-    tellers_per_partition=$(expr $SCALE_FACTOR \* $TELLERS_PER_BRANCH / $NUM_PARTITION)
-    accounts_per_partition=$(expr $SCALE_FACTOR \* $ACCOUNTS_PER_BRANCH / $NUM_PARTITION)
-  fi
-  
   echo "CREATE TABLE account"
   echo "("
   echo "  account_id       NUMBER(10,0),"
@@ -86,21 +129,7 @@ create_table_tpcb()
   echo "  filler           VARCHAR2(97) "
   echo ")"
   echo "TABLESPACE $ACCOUNT_TABLESPACE"
-  if [ $accounts_per_partition -gt 0 ]
-  then
-    echo "PARTITION BY RANGE(account_id)"
-    echo "("
-    i=1
-    account_id=$(expr 1 + $accounts_per_partition)
-    while [ $account_id -lt $(expr $SCALE_FACTOR \* $ACCOUNTS_PER_BRANCH)  ]
-    do
-      echo "  PARTITION p${i} VALUES LESS THAN (${account_id}) TABLESPACE $ACCOUNT_TABLESPACE,"
-      account_id=$(expr $account_id + $accounts_per_partition)
-      i=$(expr $i + 1)
-    done
-    echo "  PARTITION p${i} VALUES LESS THAN (MAXVALUE) TABLESPACE $ACCOUNT_TABLESPACE"
-    echo ")"
-  fi
+  table_partitioning_clause "account_id" $num_accounts $NUM_PARTITION $ACCOUNT_TABLESPACE
   echo "/"
   echo "list"
 
@@ -112,21 +141,7 @@ create_table_tpcb()
   echo "  filler          CHAR(97)"
   echo ")"
   echo "TABLESPACE $TELLER_TABLESPACE"
-  if [ $tellers_per_partition -gt 0 ]
-  then
-    echo "PARTITION BY RANGE(teller_id)"
-    echo "("
-    i=1
-    teller_id=$(expr 1 + $tellers_per_partition)
-    while [ $teller_id -lt $(expr $SCALE_FACTOR \* $TELLERS_PER_BRANCH) ]
-    do
-      echo "  PARTITION p${i} VALUES LESS THAN (${teller_id}) TABLESPACE $TELLER_TABLESPACE,"
-      teller_id=$(expr $teller_id + $tellers_per_partition)
-      i=$(expr $i + 1)
-    done
-    echo "  PARTITION p${i} VALUES LESS THAN (MAXVALUE) TABLESPACE $TELLER_TABLESPACE"
-    echo ")"
-  fi
+  table_partitioning_clause "teller_id" $num_tellers $NUM_PARTITION $TELLER_TABLESPACE
   echo "/"
   echo "list"
 
@@ -137,21 +152,7 @@ create_table_tpcb()
   echo "  filler          CHAR(98)"
   echo ") "
   echo "TABLESPACE $BRANCH_TABLESPACE"
-  if [ $branches_per_partition -gt 0 ]
-  then
-    echo "PARTITION BY RANGE(branch_id)"
-    echo "("
-    i=1
-    branch_id=$(expr 1 + $branches_per_partition)
-    while [ $branch_id -lt $SCALE_FACTOR ]
-    do
-      echo "  PARTITION p${i} VALUES LESS THAN (${branch_id}) TABLESPACE $BRANCH_TABLESPACE,"
-      branch_id=$(expr $branch_id + $branches_per_partition)
-      i=$(expr $i + 1)
-    done
-    echo "  PARTITION p${i} VALUES LESS THAN (MAXVALUE) TABLESPACE $BRANCH_TABLESPACE"
-    echo ")"
-  fi
+  table_partitioning_clause "branch_id" $num_branches $NUM_PARTITION $BRANCH_TABLESPACE
   echo "/"
   echo "list"
 
@@ -165,45 +166,20 @@ create_table_tpcb()
   echo "  filler            CHAR(39)"
   echo ")"
   echo "TABLESPACE $HISTORY_TABLESPACE"
-  if [ $tellers_per_partition -gt 0 ]
-  then
-    echo "PARTITION BY RANGE(teller_id)"
-    echo "("
-    i=1
-    teller_id=$(expr 1 + $tellers_per_partition)
-    while [ $teller_id -lt $(expr $SCALE_FACTOR \* $TELLERS_PER_BRANCH) ]
-    do
-      echo "  PARTITION p${i} VALUES LESS THAN (${teller_id}) TABLESPACE $HISTORY_TABLESPACE,"
-      teller_id=$(expr $teller_id + $tellers_per_partition)
-      i=$(expr $i + 1)
-    done
-    echo "  PARTITION p${i} VALUES LESS THAN (MAXVALUE) TABLESPACE $HISTORY_TABLESPACE"
-    echo ")"
-  fi
+  table_partitioning_clause "teller_id" $num_tellers $NUM_PARTITION $TELLER_TABLESPACE
   echo "/"
   echo "list"
 }
 
 create_index_tpcb()
 {
-  local branches_per_partition=0
-  local tellers_per_partition=0
-  local accounts_per_partition=0
-  local i=0
+  local num_branches=$SCALE_FACTOR
+  local num_tellers=$(expr $SCALE_FACTOR \* $TELLERS_PER_BRANCH)
+  local num_accounts=$(expr $SCALE_FACTOR \* $ACCOUNTS_PER_BRANCH)
 
-  if [ $NUM_PARTITION -gt 0 ]
-  then
-    branches_per_partition=$(expr $SCALE_FACTOR / $NUM_PARTITION)
-    tellers_per_partition=$(expr $SCALE_FACTOR \* $TELLERS_PER_BRANCH / $NUM_PARTITION)
-    accounts_per_partition=$(expr $SCALE_FACTOR \* $ACCOUNTS_PER_BRANCH / $NUM_PARTITION)
-  fi
-  
   echo "CREATE UNIQUE INDEX account_pk"
   echo "ON account ( account_id )"
-  if [ $accounts_per_partition -gt 0 ]
-  then
-    echo "LOCAL"
-  fi
+  index_partitioning_clause $num_accounts $NUM_PARTITION
   echo "TABLESPACE $ACCOUNT_INDEX_TABLESPACE"
   echo "PARALLEL $PARALLEL_DEGREE"
   echo "/"
@@ -211,10 +187,7 @@ create_index_tpcb()
 
   echo "CREATE UNIQUE INDEX teller_pk"
   echo "ON teller ( teller_id )"
-  if [ $tellers_per_partition -gt 0 ]
-  then
-    echo "LOCAL"
-  fi
+  index_partitioning_clause $num_tellers $NUM_PARTITION
   echo "TABLESPACE $TELLER_INDEX_TABLESPACE"
   echo "PARALLEL $PARALLEL_DEGREE"
   echo "/"
@@ -222,10 +195,7 @@ create_index_tpcb()
 
   echo "CREATE UNIQUE INDEX branch_pk"
   echo "ON branch ( branch_id )"
-  if [ $branches_per_partition -gt 0 ]
-  then
-    echo "LOCAL"
-  fi
+  index_partitioning_clause $num_branches $NUM_PARTITION
   echo "TABLESPACE $BRANCH_INDEX_TABLESPACE"
   echo "PARALLEL $PARALLEL_DEGREE"
   echo "/"
