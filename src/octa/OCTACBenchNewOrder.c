@@ -103,12 +103,20 @@ int OCTACBenchNewOrder_oracleTX(OCIEnv *envhp, OCIError *errhp,
   if (errcode != 0) goto end;
 
   if (sql2 == NULL)
-    sql2 = OCSQL_initWithSQL(envhp, errhp,
-                             "SELECT d_next_o_id, d_tax "
-                             "FROM district "
-                             "WHERE d_id = :1 AND d_w_id = :2"
-                             " FOR UPDATE"); /* avoid unique constraint    *
-                                              * (TPCC.ORDERS_PK) violation */
+  {
+    if (! in->select_only)
+      sql2 = OCSQL_initWithSQL(envhp, errhp,
+                               "SELECT d_next_o_id, d_tax "
+                               "FROM district "
+                               "WHERE d_id = :1 AND d_w_id = :2"
+                               " FOR UPDATE"); /* avoid unique constraint    *
+                                                * (TPCC.ORDERS_PK) violation */
+    else
+      sql2 = OCSQL_initWithSQL(envhp, errhp,
+                               "SELECT d_next_o_id, d_tax "
+                               "FROM district "
+                               "WHERE d_id = :1 AND d_w_id = :2");
+  }
   errcode = OCOCIERROR(errhp, errmsg, errmsgsize,
                        OCSQL_execute(sql2, errhp, svchp,
                                      in->d_id,
