@@ -510,16 +510,18 @@ static void TASessionManager_printTestDuration(TASessionManager self,
                                                char *tx_names[], int tx_count)
 {
   TATXStat summary_stat = NULL;
-  struct timeval rampup_first_time, first_time, end_time;
-  struct timeval rampup_interval, measurement_interval;
+  struct timeval rampup_first_time, first_time, end_time, rampdown_end_time;
+  struct timeval rampup_interval, measurement_interval, rampdown_interval;
   struct timeval tmp_time;
   int i = 0;
 
   timerclear(&rampup_first_time);
   timerclear(&first_time);
   timerclear(&end_time);
+  timerclear(&rampdown_end_time);
   timerclear(&rampup_interval);
   timerclear(&measurement_interval);
+  timerclear(&rampdown_interval);
   timerclear(&tmp_time);
   for (i = 0; i < tx_count; i++)
   {
@@ -563,13 +565,30 @@ static void TASessionManager_printTestDuration(TASessionManager self,
     }
     TATXStat_release(summary_stat);
   }
+  for (i = 0; i < tx_count; i++)
+  {
+    summary_stat = TASessionManager_summaryStatByNameInPeriodInPhase(self,
+                     tx_names[i], TASession_RAMPDOWN, TASession_AFTER);
+    tmp_time = TATXStat_endTime(summary_stat);
+    if (i == 0)
+      rampdown_end_time = tmp_time;
+    else
+    {
+      if (timercmp(&rampdown_end_time, &tmp_time, <))
+        rampdown_end_time = tmp_time;
+    }
+    TATXStat_release(summary_stat);
+  }
   if (timerisset(&rampup_first_time) && timerisset(&first_time))
     timersub(&first_time, &rampup_first_time, &rampup_interval);
   if (timerisset(&first_time) && timerisset(&end_time))
     timersub(&end_time, &first_time, &measurement_interval);
+  if (timerisset(&end_time) && timerisset(&rampdown_end_time))
+    timersub(&rampdown_end_time, &end_time, &rampdown_interval);
 
   printf("  - Ramp-up time %39.3f seconds\n", timeval2sec(rampup_interval));
   printf("  - Measurement interval %31.3f seconds\n",
          timeval2sec(measurement_interval));
+  printf("  - Ramp-down time %37.3f seconds\n", timeval2sec(rampdown_interval));
   fflush(stdout);
 }
