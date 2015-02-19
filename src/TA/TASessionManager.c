@@ -297,9 +297,13 @@ void TASessionManager_printNumericalQuantitiesSummary(TASessionManager self,
                    tx_names[0], TASession_MEASUREMENT, TASession_TX);
   printf("MQTh, computed Maximum Qualified Throughput %16.2f tpm\n",
          TATXStat_tps(summary_stat) * 60);
-  printf("  - %-39s %16.2f tps\n", TATXStat_name(summary_stat),
-         TATXStat_tps(summary_stat));
-  TATXStat_release(summary_stat);
+  for (i = 0; i < tx_count; i++)
+  {
+    summary_stat = TASessionManager_summaryStatByNameInPeriodInPhase(self,
+                     tx_names[i], TASession_MEASUREMENT, TASession_TX);
+    printf("  - %-39s %16.2f tps\n", tx_names[i], TATXStat_tps(summary_stat));
+    TATXStat_release(summary_stat);
+  }
   printf("\n");
 
   printf("Response Times (minimum/ Average/ maximum) in seconds\n");
