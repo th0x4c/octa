@@ -130,6 +130,7 @@ create_table_tpcb()
   echo "  filler           VARCHAR2(97) "
   echo ")"
   echo "TABLESPACE $ACCOUNT_TABLESPACE"
+  echo "PARALLEL $PARALLEL_DEGREE"
   table_partitioning_clause "account_id" $num_accounts $NUM_PARTITION $ACCOUNT_TABLESPACE
   echo "/"
   echo "list"
@@ -142,6 +143,7 @@ create_table_tpcb()
   echo "  filler          CHAR(97)"
   echo ")"
   echo "TABLESPACE $TELLER_TABLESPACE"
+  echo "PARALLEL $PARALLEL_DEGREE"
   table_partitioning_clause "teller_id" $num_tellers $NUM_PARTITION $TELLER_TABLESPACE
   echo "/"
   echo "list"
@@ -153,6 +155,7 @@ create_table_tpcb()
   echo "  filler          CHAR(98)"
   echo ") "
   echo "TABLESPACE $BRANCH_TABLESPACE"
+  echo "PARALLEL $PARALLEL_DEGREE"
   table_partitioning_clause "branch_id" $num_branches $NUM_PARTITION $BRANCH_TABLESPACE
   echo "/"
   echo "list"
@@ -167,6 +170,7 @@ create_table_tpcb()
   echo "  filler            CHAR(39)"
   echo ")"
   echo "TABLESPACE $HISTORY_TABLESPACE"
+  echo "PARALLEL $PARALLEL_DEGREE"
   table_partitioning_clause "teller_id" $num_tellers $NUM_PARTITION $TELLER_TABLESPACE
   echo "/"
   echo "list"
@@ -209,6 +213,7 @@ add_constraint_tpcb()
   echo "ADD CONSTRAINT account_pk"
   echo "PRIMARY KEY ( account_id )"
   echo "USING INDEX account_pk"
+  echo "ENABLE NOVALIDATE"
   echo "/"
   echo "list"
 
@@ -216,6 +221,7 @@ add_constraint_tpcb()
   echo "ADD CONSTRAINT teller_pk"
   echo "PRIMARY KEY ( teller_id )"
   echo "USING INDEX teller_pk"
+  echo "ENABLE NOVALIDATE"
   echo "/"
   echo "list"
 
@@ -223,6 +229,7 @@ add_constraint_tpcb()
   echo "ADD CONSTRAINT branch_pk"
   echo "PRIMARY KEY ( branch_id )"
   echo "USING INDEX branch_pk"
+  echo "ENABLE NOVALIDATE"
   echo "/"
   echo "list"
 
@@ -230,6 +237,7 @@ add_constraint_tpcb()
   echo "ADD CONSTRAINT account_fk"
   echo "FOREIGN KEY ( branch_id )"
   echo "REFERENCES branch ( branch_id )"
+  echo "ENABLE NOVALIDATE"
   echo "/"
   echo "list"
 
@@ -237,6 +245,7 @@ add_constraint_tpcb()
   echo "ADD CONSTRAINT teller_fk"
   echo "FOREIGN KEY ( branch_id )"
   echo "REFERENCES branch ( branch_id )"
+  echo "ENABLE NOVALIDATE"
   echo "/"
   echo "list"
 
@@ -244,6 +253,7 @@ add_constraint_tpcb()
   echo "ADD CONSTRAINT history_fk1"
   echo "FOREIGN KEY ( branch_id )"
   echo "REFERENCES branch ( branch_id )"
+  echo "ENABLE NOVALIDATE"
   echo "/"
   echo "list"
 
@@ -251,6 +261,7 @@ add_constraint_tpcb()
   echo "ADD CONSTRAINT history_fk2"
   echo "FOREIGN KEY ( teller_id )"
   echo "REFERENCES teller ( teller_id )"
+  echo "ENABLE NOVALIDATE"
   echo "/"
   echo "list"
 
@@ -258,6 +269,50 @@ add_constraint_tpcb()
   echo "ADD CONSTRAINT history_fk3"
   echo "FOREIGN KEY ( account_id )"
   echo "REFERENCES account ( account_id )"
+  echo "ENABLE NOVALIDATE"
+  echo "/"
+  echo "list"
+}
+
+validate_constraint_tpcb()
+{
+  echo "ALTER TABLE account"
+  echo "MODIFY CONSTRAINT account_pk VALIDATE"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE teller"
+  echo "MODIFY CONSTRAINT teller_pk VALIDATE"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE branch"
+  echo "MODIFY CONSTRAINT branch_pk VALIDATE"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE account"
+  echo "MODIFY CONSTRAINT account_fk VALIDATE"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE teller"
+  echo "MODIFY CONSTRAINT teller_fk VALIDATE"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE history"
+  echo "MODIFY CONSTRAINT history_fk1 VALIDATE"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE history"
+  echo "MODIFY CONSTRAINT history_fk2 VALIDATE"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE history"
+  echo "MODIFY CONSTRAINT history_fk3 VALIDATE"
   echo "/"
   echo "list"
 }
@@ -330,6 +385,7 @@ create_table_tpcc()
   echo "  w_ytd      NUMBER(12, 2)"
   echo ")"
   echo "TABLESPACE $TABLE_TABLESPACE"
+  echo "PARALLEL $PARALLEL_DEGREE"
   table_partitioning_clause "w_id" $num_warehouses $NUM_PARTITION $TABLE_TABLESPACE
   echo "/"
   echo "list"
@@ -349,6 +405,7 @@ create_table_tpcc()
   echo "  d_next_o_id NUMBER(8, 0)  -- 10,000,000 unique IDs"
   echo ")"
   echo "TABLESPACE $TABLE_TABLESPACE"
+  echo "PARALLEL $PARALLEL_DEGREE"
   table_partitioning_clause "d_w_id" $num_warehouses $NUM_PARTITION $TABLE_TABLESPACE
   echo "/"
   echo "list"
@@ -378,6 +435,7 @@ create_table_tpcc()
   echo "  c_data         VARCHAR2(500)"
   echo ")"
   echo "TABLESPACE $TABLE_TABLESPACE"
+  echo "PARALLEL $PARALLEL_DEGREE"
   table_partitioning_clause "c_w_id" $num_warehouses $NUM_PARTITION $TABLE_TABLESPACE
   echo "/"
   echo "list"
@@ -394,6 +452,7 @@ create_table_tpcc()
   echo "  h_data   VARCHAR2(24)"
   echo ")"
   echo "TABLESPACE $TABLE_TABLESPACE"
+  echo "PARALLEL $PARALLEL_DEGREE"
   table_partitioning_clause "h_w_id" $num_warehouses $NUM_PARTITION $TABLE_TABLESPACE
   echo "/"
   echo "list"
@@ -405,6 +464,7 @@ create_table_tpcc()
   echo "  no_w_id NUMBER        -- 2*W unique IDs"
   echo ")"
   echo "TABLESPACE $TABLE_TABLESPACE"
+  echo "PARALLEL $PARALLEL_DEGREE"
   table_partitioning_clause "no_w_id" $num_warehouses $NUM_PARTITION $TABLE_TABLESPACE
   echo "/"
   echo "list"
@@ -421,6 +481,7 @@ create_table_tpcc()
   echo "  o_all_local  NUMBER(1, 0)"
   echo ")"
   echo "TABLESPACE $TABLE_TABLESPACE"
+  echo "PARALLEL $PARALLEL_DEGREE"
   table_partitioning_clause "o_w_id" $num_warehouses $NUM_PARTITION $TABLE_TABLESPACE
   echo "/"
   echo "list"
@@ -439,6 +500,7 @@ create_table_tpcc()
   echo "  ol_dist_info   CHAR(24)"
   echo ")"
   echo "TABLESPACE $TABLE_TABLESPACE"
+  echo "PARALLEL $PARALLEL_DEGREE"
   table_partitioning_clause "ol_w_id" $num_warehouses $NUM_PARTITION $TABLE_TABLESPACE
   echo "/"
   echo "list"
@@ -452,6 +514,7 @@ create_table_tpcc()
   echo "  i_data  VARCHAR2(50)"
   echo ")"
   echo "TABLESPACE $TABLE_TABLESPACE"
+  echo "PARALLEL $PARALLEL_DEGREE"
   echo "/"
   echo "list"
 
@@ -476,6 +539,7 @@ create_table_tpcc()
   echo "  s_data       VARCHAR2(50)"
   echo ")"
   echo "TABLESPACE $TABLE_TABLESPACE"
+  echo "PARALLEL $PARALLEL_DEGREE"
   table_partitioning_clause "s_w_id" $num_warehouses $NUM_PARTITION $TABLE_TABLESPACE
   echo "/"
   echo "list"
@@ -572,48 +636,56 @@ add_constraint_tpcc()
   echo "ALTER TABLE warehouse ADD CONSTRAINT warehouse_pk"
   echo "  PRIMARY KEY ( w_id )"
   echo "  USING INDEX warehouse_pk"
+  echo "  ENABLE NOVALIDATE"
   echo "/"
   echo "list"
 
   echo "ALTER TABLE district ADD CONSTRAINT district_pk"
   echo "  PRIMARY KEY ( d_w_id, d_id )"
   echo "  USING INDEX district_pk"
+  echo "  ENABLE NOVALIDATE"
   echo "/"
   echo "list"
 
   echo "ALTER TABLE customer ADD CONSTRAINT customer_pk"
   echo "  PRIMARY KEY ( c_w_id, c_d_id, c_id )"
   echo "  USING INDEX customer_pk"
+  echo "  ENABLE NOVALIDATE"
   echo "/"
   echo "list"
 
   echo "ALTER TABLE new_order ADD CONSTRAINT new_order_pk"
   echo "  PRIMARY KEY ( no_w_id, no_d_id, no_o_id )"
   echo "  USING INDEX new_order_pk"
+  echo "  ENABLE NOVALIDATE"
   echo "/"
   echo "list"
 
   echo "ALTER TABLE orders ADD CONSTRAINT orders_pk"
   echo "  PRIMARY KEY ( o_w_id, o_d_id, o_id )"
   echo "  USING INDEX orders_pk"
+  echo "  ENABLE NOVALIDATE"
   echo "/"
   echo "list"
 
   echo "ALTER TABLE order_line ADD CONSTRAINT order_line_pk"
   echo "  PRIMARY KEY ( ol_w_id, ol_d_id, ol_o_id, ol_number )"
   echo "  USING INDEX order_line_pk"
+  echo "  ENABLE NOVALIDATE"
   echo "/"
   echo "list"
 
   echo "ALTER TABLE item ADD CONSTRAINT item_pk"
   echo "  PRIMARY KEY ( i_id )"
   echo "  USING INDEX item_pk"
+  echo "  ENABLE NOVALIDATE"
   echo "/"
   echo "list"
 
   echo "ALTER TABLE stock ADD CONSTRAINT stock_pk"
   echo "  PRIMARY KEY ( s_w_id, s_i_id )"
   echo "  USING INDEX stock_pk"
+  echo "  ENABLE NOVALIDATE"
   echo "/"
   echo "list"
 
@@ -621,60 +693,165 @@ add_constraint_tpcc()
   echo "ALTER TABLE district ADD CONSTRAINT district_fk"
   echo "  FOREIGN KEY ( d_w_id )"
   echo "  REFERENCES warehouse ( w_id )"
+  echo "  ENABLE NOVALIDATE"
   echo "/"
   echo "list"
 
   echo "ALTER TABLE customer ADD CONSTRAINT customer_fk"
   echo "  FOREIGN KEY ( c_w_id, c_d_id )"
   echo "  REFERENCES district ( d_w_id, d_id )"
+  echo "  ENABLE NOVALIDATE"
   echo "/"
   echo "list"
 
   echo "ALTER TABLE history ADD CONSTRAINT history_fk1"
   echo "  FOREIGN KEY ( h_c_w_id, h_c_d_id, h_c_id )"
   echo "  REFERENCES customer ( c_w_id, c_d_id, c_id )"
+  echo "  ENABLE NOVALIDATE"
   echo "/"
   echo "list"
 
   echo "ALTER TABLE history ADD CONSTRAINT history_fk2"
   echo "  FOREIGN KEY ( h_w_id, h_d_id )"
   echo "  REFERENCES district ( d_w_id, d_id )"
+  echo "  ENABLE NOVALIDATE"
   echo "/"
   echo "list"
 
   echo "ALTER TABLE new_order ADD CONSTRAINT new_order_fk"
   echo "  FOREIGN KEY ( no_w_id, no_d_id, no_o_id )"
   echo "  REFERENCES orders ( o_w_id, o_d_id, o_id )"
+  echo "  ENABLE NOVALIDATE"
   echo "/"
   echo "list"
 
   echo "ALTER TABLE orders ADD CONSTRAINT orders_fk"
   echo "  FOREIGN KEY ( o_w_id, o_d_id, o_c_id )"
   echo "  REFERENCES customer ( c_w_id, c_d_id, c_id )"
+  echo "  ENABLE NOVALIDATE"
   echo "/"
   echo "list"
 
   echo "ALTER TABLE order_line ADD CONSTRAINT order_line_fk1"
   echo "  FOREIGN KEY ( ol_w_id, ol_d_id, ol_o_id )"
   echo "  REFERENCES orders ( o_w_id, o_d_id, o_id )"
+  echo "  ENABLE NOVALIDATE"
   echo "/"
   echo "list"
 
   echo "ALTER TABLE order_line ADD CONSTRAINT order_line_fk2"
   echo "  FOREIGN KEY ( ol_supply_w_id, ol_i_id )"
   echo "  REFERENCES stock ( s_w_id, s_i_id )"
+  echo "  ENABLE NOVALIDATE"
   echo "/"
   echo "list"
 
   echo "ALTER TABLE stock ADD CONSTRAINT stock_fk1"
   echo "  FOREIGN KEY ( s_w_id )"
   echo "  REFERENCES warehouse ( w_id )"
+  echo "  ENABLE NOVALIDATE"
   echo "/"
   echo "list"
 
   echo "ALTER TABLE stock ADD CONSTRAINT stock_fk2"
   echo "  FOREIGN KEY ( s_i_id )"
   echo "  REFERENCES item ( i_id )"
+  echo "  ENABLE NOVALIDATE"
+  echo "/"
+  echo "list"
+}
+
+validate_constraint_tpcc()
+{
+  # Primary key
+  echo "ALTER TABLE warehouse"
+  echo "MODIFY CONSTRAINT warehouse_pk VALIDATE"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE district"
+  echo "MODIFY CONSTRAINT district_pk VALIDATE"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE customer"
+  echo "MODIFY CONSTRAINT customer_pk VALIDATE"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE new_order"
+  echo "MODIFY CONSTRAINT new_order_pk VALIDATE"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE orders"
+  echo "MODIFY CONSTRAINT orders_pk VALIDATE"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE order_line"
+  echo "MODIFY CONSTRAINT order_line_pk VALIDATE"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE item"
+  echo "MODIFY CONSTRAINT item_pk VALIDATE"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE stock"
+  echo "MODIFY CONSTRAINT stock_pk VALIDATE"
+  echo "/"
+  echo "list"
+
+  # Foreign key
+  echo "ALTER TABLE district"
+  echo "MODIFY CONSTRAINT district_fk VALIDATE"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE customer"
+  echo "MODIFY CONSTRAINT customer_fk VALIDATE"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE history"
+  echo "MODIFY CONSTRAINT history_fk1 VALIDATE"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE history"
+  echo "MODIFY CONSTRAINT history_fk2 VALIDATE"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE new_order"
+  echo "MODIFY CONSTRAINT new_order_fk VALIDATE"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE orders"
+  echo "MODIFY CONSTRAINT orders_fk VALIDATE"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE order_line"
+  echo "MODIFY CONSTRAINT order_line_fk1 VALIDATE"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE order_line"
+  echo "MODIFY CONSTRAINT order_line_fk2 VALIDATE"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE stock"
+  echo "MODIFY CONSTRAINT stock_fk1 VALIDATE"
+  echo "/"
+  echo "list"
+
+  echo "ALTER TABLE stock"
+  echo "MODIFY CONSTRAINT stock_fk2 VALIDATE"
   echo "/"
   echo "list"
 }
@@ -918,6 +1095,9 @@ create_index_tpc${lower_mode} | sqlplus -S ${USER_ID}
 
 echo "Add Constraint"
 add_constraint_tpc${lower_mode} | sqlplus -S ${USER_ID}
+
+echo "Validate Constraint"
+validate_constraint_tpc${lower_mode} | sqlplus -S ${USER_ID}
 
 echo "Analyze"
 analyze_tpc${lower_mode} | sqlplus -S ${USER_ID}
