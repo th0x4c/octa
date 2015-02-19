@@ -180,6 +180,7 @@ void TASessionManager_printMonitoredTX(TASessionManager self,
 
   if (pagesize > 0 && (monitor_count % pagesize) == 0)
   {
+    printf("\n");
     printf("Time           Period      Count    Error    AVG      TPS     ");
     if (long_format)
       printf(" 0%%tile   50%%tile  80%%tile  90%%tile  100%%tile Transaction");
