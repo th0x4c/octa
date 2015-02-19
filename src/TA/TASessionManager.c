@@ -22,6 +22,8 @@ static volatile sig_atomic_t sigflag = 0;
 
 static TABool TASessionManager_isAllStatus(TASessionManager self, int status);
 static void TASessionManager_signalHandler(int sig);
+static void TASessionManager_printTestDuration(TASessionManager self,
+                                               char *tx_names[], int tx_count);
 
 TASessionManager TASessionManager_initWithSessionPrototype(TASession prototype,
                                                            int num_sessions)
@@ -277,9 +279,6 @@ void TASessionManager_printNumericalQuantitiesSummary(TASessionManager self,
   TATXStat before_stat = NULL;
   TATXStat after_stat = NULL;
   long total_count = 0;
-  struct timeval rampup_first_time, first_time, end_time;
-  struct timeval rampup_interval, measurement_interval;
-  struct timeval tmp_time;
   int i = 0;
 
   for (i = 0; i < tx_count; i++)
@@ -289,59 +288,6 @@ void TASessionManager_printNumericalQuantitiesSummary(TASessionManager self,
     total_count += TATXStat_count(summary_stat);
     TATXStat_release(summary_stat);
   }
-
-  timerclear(&rampup_first_time);
-  timerclear(&first_time);
-  timerclear(&end_time);
-  timerclear(&rampup_interval);
-  timerclear(&measurement_interval);
-  timerclear(&tmp_time);
-  for (i = 0; i < tx_count; i++)
-  {
-    summary_stat = TASessionManager_summaryStatByNameInPeriodInPhase(self,
-                     tx_names[i], TASession_RAMPUP, TASession_BEFORE);
-    tmp_time = TATXStat_firstTime(summary_stat);
-    if (i == 0)
-      rampup_first_time = tmp_time;
-    else
-    {
-      if (timercmp(&tmp_time, &rampup_first_time, <))
-        rampup_first_time = tmp_time;
-    }
-    TATXStat_release(summary_stat);
-  }
-  for (i = 0; i < tx_count; i++)
-  {
-    summary_stat = TASessionManager_summaryStatByNameInPeriodInPhase(self,
-                     tx_names[i], TASession_MEASUREMENT, TASession_BEFORE);
-    tmp_time = TATXStat_firstTime(summary_stat);
-    if (i == 0)
-      first_time = tmp_time;
-    else
-    {
-      if (timercmp(&tmp_time, &first_time, <))
-        first_time = tmp_time;
-    }
-    TATXStat_release(summary_stat);
-  }
-  for (i = 0; i < tx_count; i++)
-  {
-    summary_stat = TASessionManager_summaryStatByNameInPeriodInPhase(self,
-                     tx_names[i], TASession_MEASUREMENT, TASession_AFTER);
-    tmp_time = TATXStat_endTime(summary_stat);
-    if (i == 0)
-      end_time = tmp_time;
-    else
-    {
-      if (timercmp(&end_time, &tmp_time, <))
-        end_time = tmp_time;
-    }
-    TATXStat_release(summary_stat);
-  }
-  if (timerisset(&rampup_first_time) && timerisset(&first_time))
-    timersub(&first_time, &rampup_first_time, &rampup_interval);
-  if (timerisset(&first_time) && timerisset(&end_time))
-    timersub(&end_time, &first_time, &measurement_interval);
 
   printf("================================================================\n");
   printf("================= Numerical Quantities Summary =================\n");
@@ -438,9 +384,7 @@ void TASessionManager_printNumericalQuantitiesSummary(TASessionManager self,
   printf("\n");
 
   printf("Test Duration\n");
-  printf("  - Ramp-up time %39.3f seconds\n", timeval2sec(rampup_interval));
-  printf("  - Measurement interval %31.3f seconds\n",
-         timeval2sec(measurement_interval));
+  TASessionManager_printTestDuration(self, tx_names, tx_count);
   printf("  - Number of transactions (all types)\n");
   printf("    completed in measurement interval %26ld\n", total_count);
   printf("================================================================\n");
@@ -560,4 +504,72 @@ static TABool TASessionManager_isAllStatus(TASessionManager self, int status)
 static void TASessionManager_signalHandler(int sig)
 {
   sigflag = sig;
+}
+
+static void TASessionManager_printTestDuration(TASessionManager self,
+                                               char *tx_names[], int tx_count)
+{
+  TATXStat summary_stat = NULL;
+  struct timeval rampup_first_time, first_time, end_time;
+  struct timeval rampup_interval, measurement_interval;
+  struct timeval tmp_time;
+  int i = 0;
+
+  timerclear(&rampup_first_time);
+  timerclear(&first_time);
+  timerclear(&end_time);
+  timerclear(&rampup_interval);
+  timerclear(&measurement_interval);
+  timerclear(&tmp_time);
+  for (i = 0; i < tx_count; i++)
+  {
+    summary_stat = TASessionManager_summaryStatByNameInPeriodInPhase(self,
+                     tx_names[i], TASession_RAMPUP, TASession_BEFORE);
+    tmp_time = TATXStat_firstTime(summary_stat);
+    if (i == 0)
+      rampup_first_time = tmp_time;
+    else
+    {
+      if (timercmp(&tmp_time, &rampup_first_time, <))
+        rampup_first_time = tmp_time;
+    }
+    TATXStat_release(summary_stat);
+  }
+  for (i = 0; i < tx_count; i++)
+  {
+    summary_stat = TASessionManager_summaryStatByNameInPeriodInPhase(self,
+                     tx_names[i], TASession_MEASUREMENT, TASession_BEFORE);
+    tmp_time = TATXStat_firstTime(summary_stat);
+    if (i == 0)
+      first_time = tmp_time;
+    else
+    {
+      if (timercmp(&tmp_time, &first_time, <))
+        first_time = tmp_time;
+    }
+    TATXStat_release(summary_stat);
+  }
+  for (i = 0; i < tx_count; i++)
+  {
+    summary_stat = TASessionManager_summaryStatByNameInPeriodInPhase(self,
+                     tx_names[i], TASession_MEASUREMENT, TASession_AFTER);
+    tmp_time = TATXStat_endTime(summary_stat);
+    if (i == 0)
+      end_time = tmp_time;
+    else
+    {
+      if (timercmp(&end_time, &tmp_time, <))
+        end_time = tmp_time;
+    }
+    TATXStat_release(summary_stat);
+  }
+  if (timerisset(&rampup_first_time) && timerisset(&first_time))
+    timersub(&first_time, &rampup_first_time, &rampup_interval);
+  if (timerisset(&first_time) && timerisset(&end_time))
+    timersub(&end_time, &first_time, &measurement_interval);
+
+  printf("  - Ramp-up time %39.3f seconds\n", timeval2sec(rampup_interval));
+  printf("  - Measurement interval %31.3f seconds\n",
+         timeval2sec(measurement_interval));
+  fflush(stdout);
 }
