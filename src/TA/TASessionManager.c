@@ -513,6 +513,8 @@ static void TASessionManager_printTestDuration(TASessionManager self,
   struct timeval rampup_first_time, first_time, end_time, rampdown_end_time;
   struct timeval rampup_interval, measurement_interval, rampdown_interval;
   struct timeval tmp_time;
+  char from_time_str[24] = "0000-00-00 00:00:00.000";
+  char to_time_str[24] = "0000-00-00 00:00:00.000";
   int i = 0;
 
   timerclear(&rampup_first_time);
@@ -587,8 +589,23 @@ static void TASessionManager_printTestDuration(TASessionManager self,
     timersub(&rampdown_end_time, &end_time, &rampdown_interval);
 
   printf("  - Ramp-up time %39.3f seconds\n", timeval2sec(rampup_interval));
+  if (timerisset(&rampup_interval))
+  {
+    timeval2str(from_time_str, rampup_first_time);
+    timeval2str(to_time_str, first_time);
+    printf("             (%23s / %23s)\n", from_time_str, to_time_str);
+  }
   printf("  - Measurement interval %31.3f seconds\n",
          timeval2sec(measurement_interval));
+  timeval2str(from_time_str, first_time);
+  timeval2str(to_time_str, end_time);
+  printf("             (%23s / %23s)\n", from_time_str, to_time_str);
   printf("  - Ramp-down time %37.3f seconds\n", timeval2sec(rampdown_interval));
+  if (timerisset(&rampdown_interval))
+  {
+    timeval2str(from_time_str, end_time);
+    timeval2str(to_time_str, rampdown_end_time);
+    printf("             (%23s / %23s)\n", from_time_str, to_time_str);
+  }
   fflush(stdout);
 }
