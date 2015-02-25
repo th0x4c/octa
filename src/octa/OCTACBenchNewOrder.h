@@ -11,7 +11,7 @@
 
 #include <stdio.h>  /* snprintf */
 #include <string.h> /* memset strlen strcat strstr */
-#include <stdlib.h> /* atol atof */
+#include <stdlib.h> /* atol atof qsort */
 #include <math.h>   /* log */
 #include <oci.h>    /* OCITransCommit */
 #include <TA/TA.h>

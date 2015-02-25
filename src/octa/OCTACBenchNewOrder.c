@@ -8,6 +8,16 @@
 
 #include "OCTACBenchNewOrder.h"
 
+struct OCTACBenchNewOrderItem
+{
+  long ol_i_id;
+  long ol_supply_w_id;
+  long ol_quantity;
+};
+typedef struct OCTACBenchNewOrderItem OCTACBenchNewOrderItem;
+
+static int OCTACBenchNewOrder_compItem(const void* i1, const void* i2);
+
 void OCTACBenchNewOrder_beforeTX(OCTACBenchNewOrderInput *input,
                                  int session_id, long scale_factor,
                                  struct timeval keying_time)
@@ -16,8 +26,7 @@ void OCTACBenchNewOrder_beforeTX(OCTACBenchNewOrderInput *input,
   long ol_cnt = TARandom_number(5, 15);
   long rbk = TARandom_number(1, 100);
   TABool home = TRUE;
-  long ol_i_id;
-  long ol_supply_w_id;
+  OCTACBenchNewOrderItem items[15] = {0};
   int i = 0;
 
   snprintf(input->w_id, sizeof(input->w_id), "%ld", w_id);
@@ -30,29 +39,37 @@ void OCTACBenchNewOrder_beforeTX(OCTACBenchNewOrderInput *input,
   for (i = 0; i < ol_cnt; i++)
   {
     if (i == ol_cnt -1 && rbk == 1)
-      ol_i_id = UNUSED_I_ID;
+      items[i].ol_i_id = UNUSED_I_ID;
     else
-      ol_i_id = OCTACConfig_NURand(8191, 1, MAXITEMS);
+      items[i].ol_i_id = OCTACConfig_NURand(8191, 1, MAXITEMS);
 
-    ol_supply_w_id = w_id;
+    items[i].ol_supply_w_id = w_id;
     if (scale_factor > 1)
     {
       if (TARandom_number(1, 100) == 1)
       {
         do
         {
-          ol_supply_w_id = TARandom_number(1, scale_factor);
-        } while (ol_supply_w_id == w_id);
+          items[i].ol_supply_w_id = TARandom_number(1, scale_factor);
+        } while (items[i].ol_supply_w_id == w_id);
         home = FALSE;
       }
     }
 
-    snprintf(input->supware[i], sizeof(input->supware[i]), "%ld",
-             ol_supply_w_id);
-    snprintf(input->itemid[i], sizeof(input->itemid[i]), "%ld", ol_i_id);
-    snprintf(input->qty[i], sizeof(input->qty[i]), "%ld",
-             TARandom_number(1, 10));
+    items[i].ol_quantity = TARandom_number(1, 10);
   }
+
+  qsort(items, 15, sizeof(OCTACBenchNewOrderItem), OCTACBenchNewOrder_compItem);
+
+  for (i = 0; i < ol_cnt; i++)
+  {
+    snprintf(input->supware[i], sizeof(input->supware[i]), "%ld",
+             items[i].ol_supply_w_id);
+    snprintf(input->itemid[i], sizeof(input->itemid[i]), "%ld",
+             items[i].ol_i_id);
+    snprintf(input->qty[i], sizeof(input->qty[i]), "%ld", items[i].ol_quantity);
+  }
+
   snprintf(input->o_all_local, sizeof(input->o_all_local), "%d\n",
            home ? 1 : 0);
 
@@ -373,4 +390,17 @@ void OCTACBenchNewOrder_afterTX(OCTACBenchNewOrderInOut *inout,
                                 struct timeval think_time)
 {
   OCTACConfig_sleepThinkTime(think_time);
+}
+
+static int OCTACBenchNewOrder_compItem(const void* i1, const void* i2)
+{
+  OCTACBenchNewOrderItem item1 = *(OCTACBenchNewOrderItem *)i1;
+  OCTACBenchNewOrderItem item2 = *(OCTACBenchNewOrderItem *)i2;
+  int ret = 0;
+
+  ret = item2.ol_supply_w_id - item1.ol_supply_w_id;
+  if (ret == 0)
+    ret = item2.ol_i_id - item1.ol_i_id;
+
+  return ret;
 }
