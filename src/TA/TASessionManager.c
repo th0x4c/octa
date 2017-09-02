@@ -22,6 +22,11 @@ static volatile sig_atomic_t sigflag = 0;
 
 static TABool TASessionManager_isAllStatus(TASessionManager self, int status);
 static void TASessionManager_signalHandler(int sig);
+static void TASessionManager_printLineMonitoredTX(TATXStat txstat,
+                                                  const char *tx_name,
+                                                  struct timeval current_time,
+                                                  int period,
+                                                  TABool long_format);
 static void TASessionManager_printTestDuration(TASessionManager self,
                                                char *tx_names[], int tx_count);
 
@@ -149,11 +154,7 @@ void TASessionManager_printMonitoredTX(TASessionManager self,
   static TATXStat pre_summary_rampdown = NULL;
   TATXStat summary_rampup, summary_measurement, summary_rampdown;
   TATXStat diff_rampup, diff_measurement, diff_rampdown;
-  TADistribution distribution = NULL;
   struct timeval current_time;
-  char current_time_str[24] = "0000-00-00 00:00:00.000";
-  char short_time_str[15];
-  struct timeval avg;
 
   if (pre_summary_rampup == NULL)
     pre_summary_rampup = TATXStat_init();
@@ -162,11 +163,8 @@ void TASessionManager_printMonitoredTX(TASessionManager self,
   if (pre_summary_rampdown == NULL)
     pre_summary_rampdown = TATXStat_init();
 
-  timerclear(&avg);
   timerclear(&current_time);
   gettimeofday(&current_time, (struct timezone *)0);
-  timeval2str(current_time_str, current_time);
-  sprintf(short_time_str, "%.*s", 14, current_time_str + 5);
 
   summary_rampup = TASessionManager_summaryStatByNameInPeriodInPhase(self,
                      tx_name, TASession_RAMPUP, TASession_TX);
@@ -197,66 +195,12 @@ void TASessionManager_printMonitoredTX(TASessionManager self,
   }
   monitor_count++;
 
-  if (TATXStat_count(diff_rampup) > 0)
-  {
-    avg = TATXStat_avgElapsedTime(diff_rampup);
-    printf("%s %-11s %8d %8d %8.6f %8.3f", short_time_str, "Ramp-up",
-           TATXStat_count(diff_rampup),
-           TATXStat_errorCount(diff_rampup),
-           timeval2sec(avg), TATXStat_tps(diff_rampup));
-    if (long_format)
-    {
-      distribution = TATXStat_distribution(diff_rampup);
-      printf(" %8.6f %8.6f %8.6f %8.6f %8.6f %s",
-             timeval2sec(TADistribution_percentile(distribution, 0)),
-             timeval2sec(TADistribution_percentile(distribution, 50)),
-             timeval2sec(TADistribution_percentile(distribution, 80)),
-             timeval2sec(TADistribution_percentile(distribution, 90)),
-             timeval2sec(TADistribution_percentile(distribution, 100)),
-             tx_name);
-    }
-    printf("\n");
-  }
-  if (TATXStat_count(diff_measurement) > 0)
-  {
-    avg = TATXStat_avgElapsedTime(diff_measurement);
-    printf("%s %-11s %8d %8d %8.6f %8.3f", short_time_str, "Measurement",
-           TATXStat_count(diff_measurement),
-           TATXStat_errorCount(diff_measurement),
-           timeval2sec(avg), TATXStat_tps(diff_measurement));
-    if (long_format)
-    {
-      distribution = TATXStat_distribution(diff_measurement);
-      printf(" %8.6f %8.6f %8.6f %8.6f %8.6f %s",
-             timeval2sec(TADistribution_percentile(distribution, 0)),
-             timeval2sec(TADistribution_percentile(distribution, 50)),
-             timeval2sec(TADistribution_percentile(distribution, 80)),
-             timeval2sec(TADistribution_percentile(distribution, 90)),
-             timeval2sec(TADistribution_percentile(distribution, 100)),
-             tx_name);
-    }
-    printf("\n");
-  }
-  if (TATXStat_count(diff_rampdown) > 0)
-  {
-    avg = TATXStat_avgElapsedTime(diff_rampdown);
-    printf("%s %-11s %8d %8d %8.6f %8.3f", short_time_str, "Ramp-down",
-           TATXStat_count(diff_rampdown),
-           TATXStat_errorCount(diff_rampdown),
-           timeval2sec(avg), TATXStat_tps(diff_rampdown));
-    if (long_format)
-    {
-      distribution = TATXStat_distribution(diff_rampdown);
-      printf(" %8.6f %8.6f %8.6f %8.6f %8.6f %s",
-             timeval2sec(TADistribution_percentile(distribution, 0)),
-             timeval2sec(TADistribution_percentile(distribution, 50)),
-             timeval2sec(TADistribution_percentile(distribution, 80)),
-             timeval2sec(TADistribution_percentile(distribution, 90)),
-             timeval2sec(TADistribution_percentile(distribution, 100)),
-             tx_name);
-    }
-    printf("\n");
-  }
+  TASessionManager_printLineMonitoredTX(diff_rampup, tx_name, current_time,
+                                        TASession_RAMPUP, long_format);
+  TASessionManager_printLineMonitoredTX(diff_measurement, tx_name, current_time,
+                                        TASession_MEASUREMENT, long_format);
+  TASessionManager_printLineMonitoredTX(diff_rampdown, tx_name, current_time,
+                                        TASession_RAMPDOWN, long_format);
   fflush(stdout);
 
   TATXStat_release(pre_summary_rampup);
@@ -508,6 +452,45 @@ static TABool TASessionManager_isAllStatus(TASessionManager self, int status)
 static void TASessionManager_signalHandler(int sig)
 {
   sigflag = sig;
+}
+
+static void TASessionManager_printLineMonitoredTX(TATXStat txstat,
+                                                  const char *tx_name,
+                                                  struct timeval current_time,
+                                                  int period,
+                                                  TABool long_format)
+{
+  char current_time_str[24] = "0000-00-00 00:00:00.000";
+  char short_time_str[15];
+  struct timeval avg;
+#define NUM_PERIOD 3
+  char *period_strs[NUM_PERIOD] = { "Ramp-up", "Measurement", "Ramp-down" };
+  TADistribution distribution = NULL;
+
+  timerclear(&avg);
+  timeval2str(current_time_str, current_time);
+  sprintf(short_time_str, "%.*s", 14, current_time_str + 5);
+
+  if (TATXStat_count(txstat) > 0)
+  {
+    avg = TATXStat_avgElapsedTime(txstat);
+    printf("%s %-11s %8d %8d %8.6f %8.3f", short_time_str, period_strs[period],
+           TATXStat_count(txstat),
+           TATXStat_errorCount(txstat),
+           timeval2sec(avg), TATXStat_tps(txstat));
+    if (long_format)
+    {
+      distribution = TATXStat_distribution(txstat);
+      printf(" %8.6f %8.6f %8.6f %8.6f %8.6f %s",
+             timeval2sec(TADistribution_percentile(distribution, 0)),
+             timeval2sec(TADistribution_percentile(distribution, 50)),
+             timeval2sec(TADistribution_percentile(distribution, 80)),
+             timeval2sec(TADistribution_percentile(distribution, 90)),
+             timeval2sec(TADistribution_percentile(distribution, 100)),
+             tx_name);
+    }
+    printf("\n");
+  }
 }
 
 static void TASessionManager_printTestDuration(TASessionManager self,
