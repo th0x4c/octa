@@ -21,8 +21,10 @@ struct __TASessionManager
 static volatile sig_atomic_t sigflag = 0;
 
 static TABool TASessionManager_isAllStatus(TASessionManager self, int status);
+static TABool TASessionManager_isAnyPeriod(TASessionManager self, int period);
 static void TASessionManager_signalHandler(int sig);
-static void TASessionManager_printLineMonitoredTX(TATXStat txstat,
+static void TASessionManager_printLineMonitoredTX(TASessionManager self,
+                                                  TATXStat txstat,
                                                   const char *tx_name,
                                                   struct timeval current_time,
                                                   int period,
@@ -195,12 +197,15 @@ void TASessionManager_printMonitoredTX(TASessionManager self,
   }
   monitor_count++;
 
-  TASessionManager_printLineMonitoredTX(diff_rampup, tx_name, current_time,
-                                        TASession_RAMPUP, long_format);
-  TASessionManager_printLineMonitoredTX(diff_measurement, tx_name, current_time,
-                                        TASession_MEASUREMENT, long_format);
-  TASessionManager_printLineMonitoredTX(diff_rampdown, tx_name, current_time,
-                                        TASession_RAMPDOWN, long_format);
+  TASessionManager_printLineMonitoredTX(self, diff_rampup, tx_name,
+                                        current_time, TASession_RAMPUP,
+                                        long_format);
+  TASessionManager_printLineMonitoredTX(self, diff_measurement, tx_name,
+                                        current_time, TASession_MEASUREMENT,
+                                        long_format);
+  TASessionManager_printLineMonitoredTX(self, diff_rampdown, tx_name,
+                                        current_time, TASession_RAMPDOWN,
+                                        long_format);
   fflush(stdout);
 
   TATXStat_release(pre_summary_rampup);
@@ -449,12 +454,26 @@ static TABool TASessionManager_isAllStatus(TASessionManager self, int status)
   return TRUE;
 }
 
+static TABool TASessionManager_isAnyPeriod(TASessionManager self, int period)
+{
+  int i = 0;
+
+  for (i = 0; i < self->num_sessions; i++)
+  {
+    if (TASession_period(self->sessions[i]) == period)
+      return TRUE;
+  }
+
+  return FALSE;
+}
+
 static void TASessionManager_signalHandler(int sig)
 {
   sigflag = sig;
 }
 
-static void TASessionManager_printLineMonitoredTX(TATXStat txstat,
+static void TASessionManager_printLineMonitoredTX(TASessionManager self,
+                                                  TATXStat txstat,
                                                   const char *tx_name,
                                                   struct timeval current_time,
                                                   int period,
@@ -489,6 +508,18 @@ static void TASessionManager_printLineMonitoredTX(TATXStat txstat,
              timeval2sec(TADistribution_percentile(distribution, 100)),
              tx_name);
     }
+    printf("\n");
+  }
+  else if (TATXStat_count(txstat) == 0 &&
+           TASessionManager_isAnyPeriod(self, period))
+  {
+    printf("%s %-11s %8d %8d %8s %8.3f", short_time_str, period_strs[period],
+           TATXStat_count(txstat),
+           TATXStat_errorCount(txstat),
+           "", TATXStat_tps(txstat));
+    if (long_format)
+      printf(" %8s %8s %8s %8s %8s %s", "", "", "", "", "", tx_name);
+
     printf("\n");
   }
 }
