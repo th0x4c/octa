@@ -21,6 +21,7 @@ struct __TASessionManager
 static volatile sig_atomic_t sigflag = 0;
 
 static TABool TASessionManager_isAllStatus(TASessionManager self, int status);
+static TABool TASessionManager_isAnyStatus(TASessionManager self, int status);
 static TABool TASessionManager_isAnyPeriod(TASessionManager self, int period);
 static void TASessionManager_signalHandler(int sig);
 static void TASessionManager_printLineMonitoredTX(TASessionManager self,
@@ -454,6 +455,19 @@ static TABool TASessionManager_isAllStatus(TASessionManager self, int status)
   return TRUE;
 }
 
+static TABool TASessionManager_isAnyStatus(TASessionManager self, int status)
+{
+  int i = 0;
+
+  for (i = 0; i < self->num_sessions; i++)
+  {
+    if (TASession_status(self->sessions[i]) == status)
+      return TRUE;
+  }
+
+  return FALSE;
+}
+
 static TABool TASessionManager_isAnyPeriod(TASessionManager self, int period)
 {
   int i = 0;
@@ -511,7 +525,8 @@ static void TASessionManager_printLineMonitoredTX(TASessionManager self,
     printf("\n");
   }
   else if (TATXStat_count(txstat) == 0 &&
-           TASessionManager_isAnyPeriod(self, period))
+           TASessionManager_isAnyPeriod(self, period) &&
+           ! TASessionManager_isAnyStatus(self, TASession_TERM))
   {
     printf("%s %-11s %8d %8d %8s %8.3f", short_time_str, period_strs[period],
            TATXStat_count(txstat),
