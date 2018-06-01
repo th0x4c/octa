@@ -84,12 +84,11 @@ table_partitioning_clause()
     echo "PARTITION BY RANGE($partition_key)"
     echo "("
     i=1
-    value=$(expr 1 + $rows_per_partition)
-    while [ $value -lt $num_table_rows  ]
+    while [ $i -lt $num_partition ]
     do
       partition_name=$(printf "p%0${length}d" $i)
+      value=$(expr $num_table_rows \* $i / $num_partition + 1)
       echo "  PARTITION ${partition_name} VALUES LESS THAN (${value}) TABLESPACE ${tablespace_name},"
-      value=$(expr $value + $rows_per_partition)
       i=$(expr $i + 1)
     done
     partition_name=$(printf "p%0${length}d" $i)
