@@ -102,7 +102,6 @@ index_partitioning_clause()
   local num_table_rows=$1
   local num_partition=$2
   local rows_per_partition=0
-  local i=1
 
   if [ $num_partition -gt 0 ]
   then
