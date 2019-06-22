@@ -75,7 +75,7 @@ static int TXSample(OCIEnv *envhp, OCIError *errhp, OCISvcCtx *svchp,
   return errcode;
 }
 
-static test_OCOracle_execTX()
+static void test_OCOracle_execTX()
 {
   OCOracle oracle = OCOracle_init();
   txinout *txiop = NULL;

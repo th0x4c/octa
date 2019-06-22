@@ -89,7 +89,7 @@ static void teardown()
   return;
 }
 
-static test_OCSQL_execute()
+static void test_OCSQL_execute()
 {
   static char *sqltxt = "SELECT * FROM emp WHERE empno = :1";
 #define ERR_MSG_SIZE 512
@@ -106,7 +106,7 @@ static test_OCSQL_execute()
   mu_assert(errcode == 0);
 }
 
-static test_OCSQL_fetch()
+static void test_OCSQL_fetch()
 {
 #define ERR_MSG_SIZE 512
   char errmsg[ERR_MSG_SIZE];
@@ -147,7 +147,7 @@ static test_OCSQL_fetch()
   OCSQL_release(sqlemp);
 }
 
-static test_OCSQL_fetchInto()
+static void test_OCSQL_fetchInto()
 {
 #define ERR_MSG_SIZE 512
   char errmsg[ERR_MSG_SIZE];
