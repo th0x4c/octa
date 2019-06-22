@@ -103,15 +103,15 @@ int OCOracle_connect(OCOracle self, const char *username, const char *password,
                     (OCIError *) self->errhp);
 
   (void) OCIHandleAlloc((dvoid *) self->envhp, (dvoid **) &self->authp,
-			(ub4) OCI_HTYPE_SESSION, (size_t) 0, (dvoid **) 0);
+                        (ub4) OCI_HTYPE_SESSION, (size_t) 0, (dvoid **) 0);
 
   (void) OCIAttrSet((dvoid *) self->authp, (ub4) OCI_HTYPE_SESSION,
-		    (dvoid *) username, (ub4) strlen((char *) username),
-		    (ub4) OCI_ATTR_USERNAME, self->errhp);
+                    (dvoid *) username, (ub4) strlen((char *) username),
+                    (ub4) OCI_ATTR_USERNAME, self->errhp);
 
   (void) OCIAttrSet((dvoid *) self->authp, (ub4) OCI_HTYPE_SESSION,
-		    (dvoid *) password, (ub4) strlen((char *) password),
-		    (ub4) OCI_ATTR_PASSWORD, self->errhp);
+                    (dvoid *) password, (ub4) strlen((char *) password),
+                    (ub4) OCI_ATTR_PASSWORD, self->errhp);
 
   self->error_code = OCOCIERROR(self->errhp, self->error_message, ERR_MSG_SIZE,
                                 OCISessionBegin(self->svchp, self->errhp,
@@ -119,7 +119,7 @@ int OCOracle_connect(OCOracle self, const char *username, const char *password,
                                                 (ub4) OCI_DEFAULT));
 
   (void) OCIAttrSet((dvoid *) self->svchp, (ub4) OCI_HTYPE_SVCCTX,
-		    (dvoid *) self->authp, (ub4) 0, (ub4) OCI_ATTR_SESSION,
+                    (dvoid *) self->authp, (ub4) 0, (ub4) OCI_ATTR_SESSION,
                     self->errhp);
 
   return self->error_code;
