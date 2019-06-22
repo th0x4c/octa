@@ -74,12 +74,6 @@ OCSQL OCSQL_initWithSQL(OCIEnv *envhp, OCIError *errhp, const char *sql)
 
 void OCSQL_release(OCSQL self)
 {
-  char *sql;
-  ub4 bind_count;
-  ub4 define_count;
-  OCIDefine **defineps;
-  char **values;
-
   int i = 0;
 
   (void) OCIHandleFree((dvoid*) self->stmthp, OCI_HTYPE_STMT);
