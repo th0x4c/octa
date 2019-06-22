@@ -10,10 +10,66 @@
 #include "../munit.h"
 #include <TA/TATime.h>
 #include "config.h"
+#include <stdlib.h> /* malloc exit free */
+#include <string.h> /* strcmp */
 
 int mu_nfail=0;
 int mu_ntest=0;
 int mu_nassert=0;
+
+static void test_TADistribution_initWithJSON()
+{
+#define TEST_COUNT 1000
+  TADistribution tadist1 = NULL;
+  TADistribution tadist2 = NULL;
+  char *json1;
+  char *json2;
+  struct timeval msec, dsec, sec;
+  struct timeval elaps;
+  int i = 0;
+
+  timerclear(&msec);
+  msec.tv_sec = 0;
+  msec.tv_usec = 1000;
+  timerclear(&dsec);
+  dsec.tv_sec = 0;
+  dsec.tv_usec = 100000;
+  timerclear(&sec);
+  sec.tv_sec = 1;
+  sec.tv_usec = 0;
+  timerclear(&elaps);
+
+  tadist1 = TADistribution_init();
+  json1 = malloc(TADistribution_JSONMaxLength() + 1);
+  json2 = malloc(TADistribution_JSONMaxLength() + 1);
+  if (json1 == NULL || json2 == NULL)
+    exit(1);
+
+  for (i = 0; i < TEST_COUNT; i++)
+  {
+    timermlt(&msec, i + 1, &elaps);
+    TADistribution_setElapsedTime(tadist1, elaps);
+    timermlt(&dsec, i + 1, &elaps);
+    TADistribution_setElapsedTime(tadist1, elaps);
+    timermlt(&sec, i + 1, &elaps);
+    TADistribution_setElapsedTime(tadist1, elaps);
+  }
+  TADistribution_print(tadist1);
+  mu_assert(TADistribution_JSON(tadist1, json1, TADistribution_JSONMaxLength() + 1) != NULL);
+  printf("JSON[%ld]: %s\n", TADistribution_JSONMaxLength(), json1);
+
+  tadist2 = TADistribution_initWithJSON(json1);
+  TADistribution_print(tadist2);
+  mu_assert(TADistribution_JSON(tadist2, json2, TADistribution_JSONMaxLength() + 1) != NULL);
+  printf("JSON[%ld]: %s\n", TADistribution_JSONMaxLength(), json2);
+
+  mu_assert(strcmp(json1, json2) == 0);
+
+  TADistribution_release(tadist1);
+  TADistribution_release(tadist2);
+  free(json1);
+  free(json2);
+}
 
 static void test_TADistribution_percentile()
 {
@@ -85,6 +141,7 @@ static void test_TADistribution_percentile()
 
 int main(int argc, char *argv[])
 {
+  mu_run_test(test_TADistribution_initWithJSON);
   mu_run_test(test_TADistribution_percentile);
   mu_show_failures();
   return mu_nfail != 0;

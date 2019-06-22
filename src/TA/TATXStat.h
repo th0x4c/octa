@@ -9,10 +9,13 @@
 #ifndef _TATXSTAT_H_
 #define _TATXSTAT_H_
 
-#include <stdlib.h>   /* malloc free */
-#include <string.h>   /* memset strcpy strncpy strlen */
+#include <stdlib.h>   /* malloc free strtol strtoul */
+#include <string.h>   /* memset strstr strrchr strcpy strncpy strlen */
 #include <sys/time.h> /* gettimeofday */
 #include <stdio.h>    /* snprintf */
+#include <errno.h>    /* errno ERANGE */
+#include <limits.h>   /* INT_MAX UINT_MAX LONG_MAX */
+#include <math.h>     /* log10 */
 #include "TABool.h"
 #include "TATime.h"
 #include "TADistribution.h"
@@ -20,6 +23,7 @@
 typedef struct __TATXStat *TATXStat;
 
 TATXStat TATXStat_init();
+TATXStat TATXStat_initWithJSON(const char *json);
 void TATXStat_release(TATXStat self);
 size_t TATXStat_sizeof();
 TATXStat TATXStat_nextAddr(TATXStat self);
@@ -46,5 +50,7 @@ double TATXStat_tps(TATXStat self);
 char *TATXStat_description(TATXStat self, char *output, size_t outputsize);
 TATXStat TATXStat_plus(TATXStat self, TATXStat txstat);
 TATXStat TATXStat_minus(TATXStat self, TATXStat txstat);
+char *TATXStat_JSON(TATXStat self, char *output, size_t outputsize);
+size_t TATXStat_JSONMaxLength();
 
 #endif /* _TATXSTAT_H_ */

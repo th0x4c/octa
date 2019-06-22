@@ -66,6 +66,56 @@ TADistribution TADistribution_init()
   return self;
 }
 
+TADistribution TADistribution_initWithJSON(const char *json)
+{
+  struct __TADistribution *self = malloc(sizeof(struct __TADistribution));
+  char *s;
+  char *e;
+  char *end;
+  int i = 0;
+  int j = 0;
+
+  if (self == NULL)
+    return NULL;
+
+  memset(self, 0, sizeof(*self));
+
+  s = strstr(json, "{deep_copied:");
+  e = strstr(json, ",count:");
+  if (s == NULL || e == NULL)
+    return NULL;
+  s = s + strlen("{deep_copied:");
+  self->deep_copied = (int) strtol(s, &end, 10);
+  if (end == s || errno == ERANGE)
+    return NULL;
+
+  s = e + strlen(",count:");
+  e = strstr(s, ",buckets:");
+  if (e == NULL)
+    return NULL;
+  self->count = (unsigned int) strtoul(s, &end, 10);
+  if (end == s || errno == ERANGE)
+    return NULL;
+
+  s = e + strlen(",buckets:");
+  e = strstr(s, "}");
+  if (e == NULL)
+    return NULL;
+  s = s + strlen("[");
+  for (i = 0; i < SCALE; i++)
+  {
+    for (j = 0; j < NUM_BUCKETS; j++)
+    {
+      self->buckets[i][j] = (unsigned int) strtoul(s, &end, 10);
+      if (end == s || errno == ERANGE)
+        return NULL;
+      s = end + 1;
+    }
+  }
+
+  return self;
+}
+
 void TADistribution_release(TADistribution self)
 {
   if (self->deep_copied == FALSE)
@@ -276,6 +326,62 @@ TADistribution TADistribution_minus(TADistribution self,
       ret->buckets[i][j] = self->buckets[i][j] - tadist->buckets[i][j];
     }
   }
+
+  return ret;
+}
+
+char *TADistribution_JSON(TADistribution self, char *output, size_t outputsize)
+{
+  char *json[2];
+  size_t json_maxlen = TADistribution_JSONMaxLength() + 1;
+  int i = 0;
+  int j = 0;
+  int k = 0;
+
+  for (i = 0; i < 2; i++) {
+    json[i] = malloc(TADistribution_JSONMaxLength() + 1);
+    if (json[i] == NULL)
+      return NULL;
+  }
+
+  snprintf(json[0], json_maxlen, "{deep_copied:%d,", self->deep_copied);
+  snprintf(json[1], json_maxlen, "%scount:%d,", json[0], self->count);
+  snprintf(json[0], json_maxlen, "%sbuckets:[", json[1]);
+
+  k = 0;
+  for (i = 0; i < SCALE; i++)
+  {
+    for (j = 0; j < NUM_BUCKETS; j++)
+    {
+      k = k == 0 ? 1 : 0;
+      snprintf(json[k], json_maxlen, "%s%d,", json[(k + 1) % 2],
+               self->buckets[i][j]);
+    }
+  }
+  json[k][strlen(json[k]) - 1] = '\0';
+
+  k = k == 0 ? 1 : 0;
+  snprintf(json[k], json_maxlen, "%s]}", json[(k + 1) % 2]);
+
+  snprintf(output, outputsize, "%s", json[k]);
+  free(json[0]);
+  free(json[1]);
+
+  if (outputsize < strlen(json[k]) + 1)
+    return NULL;
+  else
+    return output;
+}
+
+size_t TADistribution_JSONMaxLength()
+{
+  size_t ret = 0;
+
+  ret = strlen("{deep_copied:") + (size_t)log10((double)INT_MAX) + strlen(",");
+  ret += strlen("count:") + (size_t)log10((double)UINT_MAX) + strlen(",");
+  ret += strlen("buckets:[");
+  ret += ((size_t)log10((double)UINT_MAX) + strlen(",")) * SCALE * NUM_BUCKETS;
+  ret += strlen("]}");
 
   return ret;
 }

@@ -76,6 +76,34 @@ static void teardown()
   TATXStat_release(tatxstat3);
 }
 
+static void test_TATXStat_initWithJSON()
+{
+  TATXStat tatxstat_json = NULL;
+  char *json1;
+  char *json2;
+#define DESC_SIZE 512
+  char desc[DESC_SIZE] = "";
+
+  json1 = malloc(TATXStat_JSONMaxLength() + 1);
+  json2 = malloc(TATXStat_JSONMaxLength() + 1);
+  if (json1 == NULL || json2 == NULL)
+    exit(1);
+
+  mu_assert(TATXStat_JSON(tatxstat, json1, TATXStat_JSONMaxLength() + 1) != NULL);
+  printf("JSON[%ld]: %s\n", TATXStat_JSONMaxLength(), json1);
+
+  tatxstat_json = TATXStat_initWithJSON(json1);
+  printf("%s\n", TATXStat_description(tatxstat_json, desc, DESC_SIZE));
+  mu_assert(TATXStat_JSON(tatxstat_json, json2, TATXStat_JSONMaxLength() + 1) != NULL);
+  printf("JSON[%ld]: %s\n", TATXStat_JSONMaxLength(), json2);
+
+  mu_assert(strcmp(json1, json2) == 0);
+
+  TATXStat_release(tatxstat_json);
+  free(json1);
+  free(json2);
+}
+
 static void test_TATXStat_name()
 {
   mu_assert(strcmp(TATXStat_name(tatxstat), "unit test") == 0);
@@ -195,6 +223,7 @@ static void test_TATXStat_plus()
 int main(int argc, char *argv[])
 {
   setup();
+  mu_run_test(test_TATXStat_initWithJSON);
   mu_run_test(test_TATXStat_name);
   mu_run_test(test_TATXStat_count);
   mu_run_test(test_TATXStat_totalElapsedTime);

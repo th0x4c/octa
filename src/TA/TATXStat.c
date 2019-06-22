@@ -54,6 +54,135 @@ TATXStat TATXStat_init()
   return self;
 }
 
+TATXStat TATXStat_initWithJSON(const char *json)
+{
+  struct __TATXStat *self = malloc(sizeof(struct __TATXStat));
+  char *s;
+  char *e;
+  char *end;
+  struct timeval usec;
+
+  if (self == NULL)
+    return NULL;
+
+  memset(self, 0, sizeof(*self));
+
+  timerclear(&usec);
+  usec.tv_sec = 0;
+  usec.tv_usec = 1;
+
+  s = strstr(json, "{deep_copied:");
+  e = strstr(json, ",name:");
+  if (s == NULL || e == NULL)
+    return NULL;
+  s = s + strlen("{deep_copied:");
+  self->deep_copied = (int) strtol(s, &end, 10);
+  if (end == s || errno == ERANGE)
+    return NULL;
+
+  s = e + strlen(",name:");
+  e = strstr(s, ",count:");
+  if (e == NULL)
+    return NULL;
+  snprintf(self->name, (size_t) (e - s + 1), "%s", s);
+
+  s = e + strlen(",count:");
+  e = strstr(s, ",first_time:");
+  if (e == NULL)
+    return NULL;
+  self->count = (unsigned int) strtoul(s, &end, 10);
+  if (end == s || errno == ERANGE)
+    return NULL;
+
+  s = e + strlen(",first_time:");
+  e = strstr(s, ",start_time:");
+  if (e == NULL)
+    return NULL;
+  timermlt(&usec, (unsigned long) strtoul(s, &end, 10), &(self->first_time));
+  if (end == s || errno == ERANGE)
+    return NULL;
+
+  s = e + strlen(",start_time:");
+  e = strstr(s, ",end_time:");
+  if (e == NULL)
+    return NULL;
+  timermlt(&usec, (unsigned long) strtoul(s, &end, 10), &(self->start_time));
+  if (end == s || errno == ERANGE)
+    return NULL;
+
+  s = e + strlen(",end_time:");
+  e = strstr(s, ",elapsed_time:");
+  if (e == NULL)
+    return NULL;
+  timermlt(&usec, (unsigned long) strtoul(s, &end, 10), &(self->end_time));
+  if (end == s || errno == ERANGE)
+    return NULL;
+
+  s = e + strlen(",elapsed_time:");
+  e = strstr(s, ",total_elapsed_time:");
+  if (e == NULL)
+    return NULL;
+  timermlt(&usec, (unsigned long) strtoul(s, &end, 10), &(self->elapsed_time));
+  if (end == s || errno == ERANGE)
+    return NULL;
+
+  s = e + strlen(",total_elapsed_time:");
+  e = strstr(s, ",max_elapsed_time:");
+  if (e == NULL)
+    return NULL;
+  timermlt(&usec, (unsigned long) strtoul(s, &end, 10), &(self->total_elapsed_time));
+  if (end == s || errno == ERANGE)
+    return NULL;
+
+  s = e + strlen(",max_elapsed_time:");
+  e = strstr(s, ",min_elapsed_time:");
+  if (e == NULL)
+    return NULL;
+  timermlt(&usec, (unsigned long) strtoul(s, &end, 10), &(self->max_elapsed_time));
+  if (end == s || errno == ERANGE)
+    return NULL;
+
+  s = e + strlen(",min_elapsed_time:");
+  e = strstr(s, ",error_count:");
+  if (e == NULL)
+    return NULL;
+  timermlt(&usec, (unsigned long) strtoul(s, &end, 10), &(self->min_elapsed_time));
+  if (end == s || errno == ERANGE)
+    return NULL;
+
+  s = e + strlen(",error_count:");
+  e = strstr(s, ",error_code:");
+  if (e == NULL)
+    return NULL;
+  self->error_count = (unsigned int) strtoul(s, &end, 10);
+  if (end == s || errno == ERANGE)
+    return NULL;
+
+  s = e + strlen(",error_code:");
+  e = strstr(s, ",error_message:");
+  if (e == NULL)
+    return NULL;
+  self->error_code = (int) strtoul(s, &end, 10);
+  if (end == s || errno == ERANGE)
+    return NULL;
+
+  s = e + strlen(",error_message:");
+  e = strstr(s, ",distribution:");
+  if (e == NULL)
+    return NULL;
+  snprintf(self->error_message, (size_t) (e - s + 1), "%s", s);
+
+  s = e + strlen(",distribution:");
+  e = strrchr(s, '}');
+  if (e == NULL)
+    return NULL;
+  self->distribution = TADistribution_initWithJSON(s);
+  if (self->distribution == NULL)
+    return NULL;
+
+  return self;
+}
+
 void TATXStat_release(TATXStat self)
 {
   TADistribution_release(self->distribution);
@@ -379,6 +508,81 @@ TATXStat TATXStat_minus(TATXStat self, TATXStat txstat)
   TADistribution_release(ret->distribution);
   ret->distribution = TADistribution_minus(self->distribution,
                                            txstat->distribution);
+
+  return ret;
+}
+
+char *TATXStat_JSON(TATXStat self, char *output, size_t outputsize)
+{
+  char *json[2];
+  size_t json_maxlen = TATXStat_JSONMaxLength() + 1;
+  char *tadist_json;
+  int i = 0;
+
+  for (i = 0; i < 2; i++) {
+    json[i] = malloc(TATXStat_JSONMaxLength() + 1);
+    if (json[i] == NULL)
+      return NULL;
+  }
+  tadist_json = malloc(TADistribution_JSONMaxLength() + 1);
+  if (tadist_json == NULL)
+    return NULL;
+
+  snprintf(json[0], json_maxlen, "{deep_copied:%d,", self->deep_copied);
+  snprintf(json[1], json_maxlen, "%sname:%s,", json[0], self->name);
+  snprintf(json[0], json_maxlen, "%scount:%d,", json[1], self->count);
+  snprintf(json[1], json_maxlen, "%sfirst_time:%ld%06ld,", json[0],
+           self->first_time.tv_sec, self->first_time.tv_usec);
+  snprintf(json[0], json_maxlen, "%sstart_time:%ld%06ld,", json[1],
+           self->start_time.tv_sec, self->start_time.tv_usec);
+  snprintf(json[1], json_maxlen, "%send_time:%ld%06ld,", json[0],
+           self->end_time.tv_sec, self->end_time.tv_usec);
+  snprintf(json[0], json_maxlen, "%selapsed_time:%ld%06ld,", json[1],
+           self->elapsed_time.tv_sec, self->elapsed_time.tv_usec);
+  snprintf(json[1], json_maxlen, "%stotal_elapsed_time:%ld%06ld,", json[0],
+           self->total_elapsed_time.tv_sec, self->total_elapsed_time.tv_usec);
+  snprintf(json[0], json_maxlen, "%smax_elapsed_time:%ld%06ld,", json[1],
+           self->max_elapsed_time.tv_sec, self->max_elapsed_time.tv_usec);
+  snprintf(json[1], json_maxlen, "%smin_elapsed_time:%ld%06ld,", json[0],
+           self->min_elapsed_time.tv_sec, self->min_elapsed_time.tv_usec);
+  snprintf(json[0], json_maxlen, "%serror_count:%d,", json[1], self->error_count);
+  snprintf(json[1], json_maxlen, "%serror_code:%d,", json[0], self->error_code);
+  snprintf(json[0], json_maxlen, "%serror_message:%s,", json[1], self->error_message);
+  if (TADistribution_JSON(self->distribution, tadist_json, TADistribution_JSONMaxLength() + 1) == NULL)
+    return NULL;
+  snprintf(json[1], json_maxlen, "%sdistribution:%s", json[0], tadist_json);
+  snprintf(json[0], json_maxlen, "%s}", json[1]);
+
+  snprintf(output, outputsize, "%s", json[0]);
+  free(json[0]);
+  free(json[1]);
+  free(tadist_json);
+
+  if (outputsize < strlen(json[0]) + 1)
+    return NULL;
+  else
+    return output;
+}
+
+size_t TATXStat_JSONMaxLength()
+{
+  size_t ret = 0;
+
+  ret = strlen("{deep_copied:") + (size_t)log10((double)INT_MAX) + strlen(",");
+  ret += strlen("name:") + MAX_NAME_SIZE + strlen(",");
+  ret += strlen("count:") + (size_t)log10((double)UINT_MAX) + strlen(",");
+  ret += strlen("first_time:") + (size_t)log10((double)LONG_MAX) * 2 + strlen(",");
+  ret += strlen("start_time:") + (size_t)log10((double)LONG_MAX) * 2 + strlen(",");
+  ret += strlen("end_time:") + (size_t)log10((double)LONG_MAX) * 2 + strlen(",");
+  ret += strlen("elapsed_time:") + (size_t)log10((double)LONG_MAX) * 2 + strlen(",");
+  ret += strlen("total_elapsed_time:") + (size_t)log10((double)LONG_MAX) * 2 + strlen(",");
+  ret += strlen("max_elapsed_time:") + (size_t)log10((double)LONG_MAX) * 2 + strlen(",");
+  ret += strlen("min_elapsed_time:") + (size_t)log10((double)LONG_MAX) * 2 + strlen(",");
+  ret += strlen("error_count:") + (size_t)log10((double)UINT_MAX) + strlen(",");
+  ret += strlen("error_code:") + (size_t)log10((double)INT_MAX) + strlen(",");
+  ret += strlen("error_message:") + MAX_MSG_SIZE + strlen(",");
+  ret += strlen("distribution:") + TADistribution_JSONMaxLength();
+  ret += strlen("}");
 
   return ret;
 }
