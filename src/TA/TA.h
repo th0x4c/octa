@@ -13,6 +13,7 @@
 #include <TA/TATime.h>
 #include <TA/TARandom.h>
 #include <TA/TALog.h>
+#include <TA/TANet.h>
 #include <TA/TADistribution.h>
 #include <TA/TATXStat.h>
 #include <TA/TASession.h>
