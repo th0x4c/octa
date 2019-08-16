@@ -42,6 +42,7 @@ struct OCTAOption
   struct timeval keying_time[TXS];
   struct timeval think_time[TXS];
   int tx_percentage[TXS];
+  unsigned short port;
   TABool long_format;
   TABool select_only;
 };

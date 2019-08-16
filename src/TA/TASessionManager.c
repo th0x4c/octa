@@ -16,12 +16,14 @@ struct __TASessionManager
   void (*afterTeardown)(TASessionManager self, void **inout);
   void (*monitor)(TASessionManager self);
   TASession *sessions;
+  unsigned short port;
 };
 
 static volatile sig_atomic_t sigflag = 0;
 
 static TABool TASessionManager_isAllStatus(TASessionManager self, int status);
 static TABool TASessionManager_isAnyStatus(TASessionManager self, int status);
+static TABool TASessionManager_isAllPeriod(TASessionManager self, int period);
 static TABool TASessionManager_isAnyPeriod(TASessionManager self, int period);
 static void TASessionManager_signalHandler(int sig);
 static void TASessionManager_printLineMonitoredTX(TASessionManager self,
@@ -32,6 +34,10 @@ static void TASessionManager_printLineMonitoredTX(TASessionManager self,
                                                   TABool long_format);
 static void TASessionManager_printTestDuration(TASessionManager self,
                                                char *tx_names[], int tx_count);
+static int TASessionManager_response(void *front_object, int method,
+                                     const char *path, long content_length,
+                                     const char *request_body,
+                                     char *response_body);
 
 TASessionManager TASessionManager_initWithSessionPrototype(TASession prototype,
                                                            int num_sessions)
@@ -73,6 +79,7 @@ TASessionManager TASessionManager_initWithSessionPrototype(TASession prototype,
     self->sessions[i] = session;
     TASession_deepCopy(prototype, session);
   }
+  self->port = 0;
 
   return self;
 }
@@ -121,6 +128,12 @@ void TASessionManager_setMonitor(TASessionManager self,
                                  void (*monitor)(TASessionManager self))
 {
   self->monitor = monitor;
+}
+
+void TASessionManager_setPort(TASessionManager self, unsigned short port)
+{
+  if (port > 0 && port < 65536)
+    self->port = port;
 }
 
 TATXStat TASessionManager_summaryStatByNameInPeriodInPhase(
@@ -352,6 +365,8 @@ int TASessionManager_main(TASessionManager self, void **inout)
   int i = 0;
   struct timespec sleeptp;
   struct sigaction act, oldact;
+#define MAX_PORT_LENGTH 6 /* 0-65535 + '\0' */
+  char port[MAX_PORT_LENGTH];
 
   sleeptp.tv_sec = 1;  /* 1s */
   sleeptp.tv_nsec = 0;
@@ -372,6 +387,30 @@ int TASessionManager_main(TASessionManager self, void **inout)
     case 0:
       /* child */
       TASession_main(session, inout);
+      if (shmdt(self->sessions) == -1)
+      {
+        fprintf(stderr, "shmdt failed\n");
+        exit(1);
+      }
+      exit(0);
+      break;
+    default:
+      /* parent */
+      break;
+    }
+  }
+
+  if (self->port > 0)
+  {
+    switch (pid = fork())
+    {
+    case -1:
+      fprintf(stderr, "fork failed\n");
+      exit(1);
+    case 0:
+      /* child */
+      sprintf(port, "%d", self->port);
+      TANet_startService(self, port, TASessionManager_response);
       if (shmdt(self->sessions) == -1)
       {
         fprintf(stderr, "shmdt failed\n");
@@ -435,7 +474,7 @@ int TASessionManager_main(TASessionManager self, void **inout)
   if (self->afterTeardown)
     self->afterTeardown(self, inout);
 
-  wait(NULL);
+  waitpid(pid, NULL, 0);
   TASessionManager_release(self);
 
   return 0;
@@ -466,6 +505,19 @@ static TABool TASessionManager_isAnyStatus(TASessionManager self, int status)
   }
 
   return FALSE;
+}
+
+static TABool TASessionManager_isAllPeriod(TASessionManager self, int period)
+{
+  int i = 0;
+
+  for (i = 0; i < self->num_sessions; i++)
+  {
+    if (TASession_period(self->sessions[i]) != period)
+      return FALSE;
+  }
+
+  return TRUE;
 }
 
 static TABool TASessionManager_isAnyPeriod(TASessionManager self, int period)
@@ -641,4 +693,189 @@ static void TASessionManager_printTestDuration(TASessionManager self,
     printf("             (%23s / %23s)\n", from_time_str, to_time_str);
   }
   fflush(stdout);
+}
+
+static int TASessionManager_response(void *front_object, int method,
+                                     const char *path, long content_length,
+                                     const char *request_body,
+                                     char *response_body)
+{
+  TASessionManager self = (TASessionManager)front_object;
+#define MAX_NAME_SIZE 64
+  char tx_name[MAX_NAME_SIZE];
+  char period_str[MAX_NAME_SIZE];
+  char phase_str[MAX_NAME_SIZE];
+  int period = -1;
+  int phase = -1;
+  TATXStat tatxstat = NULL;
+  char status_str[MAX_NAME_SIZE];
+  struct timeval start_time;
+  int rampup_interval = 0;
+  int measurement_interval = 0;
+  int rampdown_interval = 0;
+#define notfoundhtml                  \
+  "<!DOCTYPE html>\n"                 \
+  "<html>\n"                          \
+  "  <head>\n"                        \
+  "    <meta charset=\"utf-8\">\n"    \
+  "    <title>Not Found</title>\n"    \
+  "  </head>\n"                       \
+  "  <body>\n"                        \
+  "    <p>File Not Found</p>\n"       \
+  "  </body>\n"                       \
+  "</html>\n"
+  char *errorbody = notfoundhtml;
+  char *s, *e, *end;
+  int i = 0;
+
+  switch (method)
+  {
+  case TANet_GET:
+  case TANet_HEAD:
+    if (strncmp(path, "/stat/:tx_name/:period/:phase", 6) == 0)
+    {
+      s = strstr(path, "/stat/");
+      if (s != NULL)
+      {
+        s = s + strlen("/stat/");
+        e = strchr(s, '/');
+        snprintf(tx_name, (size_t) (e - s + 1), "%s", s);
+      }
+      s = e + 1;
+      e = strchr(s, '/');
+      if (e != NULL)
+      {
+        snprintf(period_str, (size_t) (e - s + 1), "%s", s);
+        if (strcmp(period_str, "rampup") == 0)
+          period = TASession_RAMPUP;
+        else if (strcmp(period_str, "measurement") == 0)
+          period = TASession_MEASUREMENT;
+        else if (strcmp(period_str, "rampdown") == 0)
+          period = TASession_RAMPDOWN;
+      }
+      s = e + 1;
+      if (s[0] != '\0')
+      {
+        strcpy(phase_str, s);
+        if (strcmp(phase_str, "before") == 0)
+          phase = TASession_BEFORE;
+        else if (strcmp(phase_str, "tx") == 0)
+          phase = TASession_TX;
+        else if (strcmp(phase_str, "after") == 0)
+          phase = TASession_AFTER;
+      }
+
+      if (period == -1 || phase == -1)
+      {
+        strcpy(response_body, errorbody);
+        return TANet_NOT_FOUND;
+      }
+
+      tatxstat = TASessionManager_summaryStatByNameInPeriodInPhase(self,
+                   tx_name, period, phase);
+      TATXStat_JSON(tatxstat, response_body, TANet_MAX_BODY_LENGTH);
+      TATXStat_release(tatxstat);
+      return TANet_OK;
+    }
+    else if (strcmp(path, "/status") == 0)
+    {
+      if (TASessionManager_isAllStatus(self, TASession_INIT))
+        strcpy(status_str, "init");
+      else if (TASessionManager_isAnyStatus(self, TASession_STANDBY))
+        strcpy(status_str, "standby");
+
+      if (TASessionManager_isAnyStatus(self, TASession_RUNNING))
+        strcpy(status_str, "running");
+      else if (TASessionManager_isAnyStatus(self, TASession_STOP))
+        strcpy(status_str, "stop");
+
+      if (TASessionManager_isAllStatus(self, TASession_TERM))
+        strcpy(status_str, "term");
+      else if (TASessionManager_isAnyStatus(self, TASession_INIT))
+        strcpy(status_str, "init");
+
+      sprintf(response_body, "{status:%s}", status_str);
+      return TANet_OK;
+    }
+    else if (strcmp(path, "/period") == 0)
+    {
+      if (TASessionManager_isAllPeriod(self, TASession_RAMPUP))
+        strcpy(period_str, "rampup");
+      else if (TASessionManager_isAnyPeriod(self, TASession_MEASUREMENT))
+        strcpy(period_str, "measurement");
+      else if (TASessionManager_isAllPeriod(self, TASession_RAMPDOWN))
+        strcpy(period_str, "rampdown");
+
+      sprintf(response_body, "{period:%s}", period_str);
+      return TANet_OK;
+    }
+    else
+    {
+      strcpy(response_body, errorbody);
+      return TANet_NOT_FOUND;
+    }
+    break;
+  case TANet_POST:
+    if (strcmp(path, "/period-interval") == 0)
+    {
+      timerclear(&start_time);
+      gettimeofday(&start_time, (struct timezone *)0);
+
+      strcpy(response_body, "");
+
+      s = strstr(request_body, "{rampup_interval:");
+      if (s == NULL)
+        return TANet_BAD_REQUEST;
+
+      s = s + strlen("{rampup_interval:");
+      rampup_interval = (int) strtol(s, &end, 10);
+      if (end == s || errno == ERANGE)
+        return TANet_BAD_REQUEST;
+
+      e = strstr(s, ",measurement_interval:");
+      if (e == NULL)
+        return TANet_BAD_REQUEST;
+
+      s = e + strlen(",measurement_interval:");
+      measurement_interval = (int) strtol(s, &end, 10);
+      if (end == s || errno == ERANGE)
+        return TANet_BAD_REQUEST;
+
+      e = strstr(s, ",rampdown_interval:");
+      if (e == NULL)
+        return TANet_BAD_REQUEST;
+
+      s = e + strlen(",rampdown_interval:");
+      rampdown_interval = (int) strtol(s, &end, 10);
+      if (end == s || errno == ERANGE)
+        return TANet_BAD_REQUEST;
+
+      for (i = 0; i < TASessionManager_numberOfSessions(self); i++)
+      {
+        TASession_setPeriodInterval(TASessionManager_sessions(self)[i], start_time,
+                                    rampup_interval, measurement_interval,
+                                    rampdown_interval);
+      }
+
+      return TANet_OK;
+    }
+    else if (strcmp(path, "/stop") == 0)
+    {
+      strcpy(response_body, "");
+      return TANet_SERVICE_UNAVAILABLE;
+    }
+    else
+    {
+      strcpy(response_body, errorbody);
+      return TANet_NOT_FOUND;
+    }
+    break;
+  case TANet_PUT:
+  case TANet_PATCH:
+    return TANet_METHOD_NOT_ALLOWED;
+    break;
+  default:
+    return TANet_NOT_IMPLEMENTED;
+    break;
+  }
 }

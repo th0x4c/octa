@@ -360,6 +360,8 @@ int OCTACBench_main(const OCTAOption *opt)
   TASessionManager_setBeforeSetup(session_manager, OCTACBench_beforeSetup);
   TASessionManager_setAfterTeardown(session_manager, OCTACBench_afterTeardown);
   TASessionManager_setMonitor(session_manager, OCTACBench_monitor);
+  if (opt->port > 0)
+    TASessionManager_setPort(session_manager, opt->port);
 
   ret = TASessionManager_main(session_manager, (void **)&io);
   TASession_release(session_prototype);

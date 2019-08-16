@@ -11,7 +11,7 @@
 
 void OCTAOption_getOption(int argc, char * const argv[], OCTAOption *option)
 {
-  char *optstring = "BCu:T:I:n:s:m:U:D:k:t:p:lSh";
+  char *optstring = "BCu:T:I:n:s:m:U:D:k:t:p:P:lSh";
   int ch;
   char *c;
   int tpcc_default_percentages[TXS] = DEFAULT_PERCENTAGES;
@@ -42,6 +42,7 @@ void OCTAOption_getOption(int argc, char * const argv[], OCTAOption *option)
   }
   option->long_format = FALSE;
   option->select_only = FALSE;
+  option->port = 0;
 
   while ((ch = getopt(argc, argv, optstring)) != -1)
   {
@@ -152,6 +153,9 @@ void OCTAOption_getOption(int argc, char * const argv[], OCTAOption *option)
         }
       }
       break;
+    case 'P':
+      option->port = atoi(optarg);
+      break;
     case 'l':
       option->long_format = TRUE;
       break;
@@ -236,7 +240,7 @@ void OCTAOption_usage()
     "       octa -B|-C -u <userid> -n <sessions> -s <scale_factor> -T <table_tablespace> -I <index_tablespace> setup\n"
     "       octa -B|-C -u <userid> -n <sessions> -s <scale_factor> load\n"
     "       octa -B -u <userid> -n <sessions> -s <scale_factor> -m <measurement_interval> [-U <rampup_time>] [-D <rampdown_time>] [-t <think_time>] bench\n"
-    "       octa -C -u <userid> -n <sessions> -s <scale_factor> -m <measurement_interval> [-U <rampup_time>] [-D <rampdown_time>] [-t <think_time>] [-k <keying_time>] [-p <percentage>] bench\n"
+    "       octa -C -u <userid> -n <sessions> -s <scale_factor> -m <measurement_interval> [-U <rampup_time>] [-D <rampdown_time>] [-t <think_time>] [-k <keying_time>] [-p <percentage>] [-P <port>] bench\n"
     "       octa -B|-C -u <userid> teardown\n"
     "\n"
     "Option:\n"
@@ -251,6 +255,7 @@ void OCTAOption_usage()
     "\t-t \tThink time (in msec)\n"
     "\t-k \tKeying time (in msec)\n"
     "\t-p \tPercentage of transactions\n"
+    "\t-P \tListening port\n"
     "\t-T \tTablespace name for tables\n"
     "\t-I \tTablespace name for indexes\n"
     "\t-l \tUse a long monitoring format\n"
@@ -345,6 +350,9 @@ void OCTAOption_print(OCTAOption option)
            (double) option.tx_percentage[IDX_ORDER_STATUS] * 100 / total,
            (double) option.tx_percentage[IDX_DELIVERY] * 100 / total,
            (double) option.tx_percentage[IDX_STOCK_LEVEL] * 100 / total);
+    if (option.port > 0)
+      printf("                 Listening port : %d\n", option.port);
+
     break;
   default:
     break;

@@ -9,8 +9,8 @@
 #ifndef _TASESSIONMANAGER_H_
 #define _TASESSIONMANAGER_H_
 
-#include <stdlib.h>    /* malloc free fprintf stderr strerror */
-#include <string.h>    /* memset */
+#include <stdlib.h>    /* malloc free fprintf stderr strerror strtol */
+#include <string.h>    /* memset strstr strchr strcmp strncmp strcpy */
 #include <stdio.h>     /* sprintf printf fflush */
 #include <sys/shm.h>   /* shmget shmat shmdt shmctl */
 #include <stdlib.h>    /* exit */
@@ -18,13 +18,14 @@
 #include <unistd.h>    /* fork */
 #include <time.h>      /* nanosleep */
 #include <sys/time.h>  /* gettimeofday */
-#include <sys/types.h> /* wait */
-#include <sys/wait.h>  /* wait */
+#include <sys/types.h> /* waitpid */
+#include <sys/wait.h>  /* waitpid */
 #include <signal.h>    /* sigemptyset sigaction kill */
 #include "TABool.h"
 #include "TATime.h"
 #include "TATXStat.h"
 #include "TASession.h"
+#include "TANet.h"
 
 typedef struct __TASessionManager *TASessionManager;
 
@@ -42,6 +43,7 @@ void TASessionManager_setAfterTeardown(TASessionManager self,
                                                 void **inout));
 void TASessionManager_setMonitor(TASessionManager self,
                                  void (*monitor)(TASessionManager self));
+void TASessionManager_setPort(TASessionManager self, unsigned short port);
 TATXStat TASessionManager_summaryStatByNameInPeriodInPhase(
            TASessionManager self,
            const char *tx_name,
