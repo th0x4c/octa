@@ -493,6 +493,8 @@ static char *TANet_statusDescription(int status_code)
   {
   case TANet_OK:
     return "OK";
+  case TANet_BAD_REQUEST:
+    return "Bad Request";
   case TANet_NOT_FOUND:
     return "Not Found";
   case TANet_METHOD_NOT_ALLOWED:

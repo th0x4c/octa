@@ -32,6 +32,7 @@ typedef struct __TANet *TANet;
 
 /* status code */
 #define TANet_OK                  200
+#define TANet_BAD_REQUEST         400
 #define TANet_NOT_FOUND           404
 #define TANet_METHOD_NOT_ALLOWED  405
 #define TANet_NOT_IMPLEMENTED     501
