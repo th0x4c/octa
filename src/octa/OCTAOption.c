@@ -11,7 +11,7 @@
 
 void OCTAOption_getOption(int argc, char * const argv[], OCTAOption *option)
 {
-  char *optstring = "BCu:T:I:n:s:m:U:D:k:t:p:P:lSh";
+  char *optstring = "BCu:T:I:n:s:m:U:D:k:t:p:P:r:lSh";
   int ch;
   char *c;
   int tpcc_default_percentages[TXS] = DEFAULT_PERCENTAGES;
@@ -19,6 +19,7 @@ void OCTAOption_getOption(int argc, char * const argv[], OCTAOption *option)
   int tpcc_default_think_times[TXS] = DEFAULT_THINK_TIMES;
   int t_option = FALSE;
   int p_option = FALSE;
+  int r_option = FALSE;
   int i = 0;
   extern char *optarg;
   extern int optind;
@@ -43,6 +44,10 @@ void OCTAOption_getOption(int argc, char * const argv[], OCTAOption *option)
   option->long_format = FALSE;
   option->select_only = FALSE;
   option->port = 0;
+  for (i = 0; i < MAX_REMOTE_URL_SIZE; i++)
+  {
+    strcpy(option->urls[i], "");
+  }
 
   while ((ch = getopt(argc, argv, optstring)) != -1)
   {
@@ -156,6 +161,27 @@ void OCTAOption_getOption(int argc, char * const argv[], OCTAOption *option)
     case 'P':
       option->port = atoi(optarg);
       break;
+    case 'r':
+      r_option = TRUE;
+      option->num_sessions = 0;
+      c = strtok(optarg, ",");
+      if (c == NULL)
+      {
+        option->num_sessions++;
+        strncpy(option->urls[0], optarg, MAX_NAME_SIZE);
+        option->urls[0][MAX_NAME_SIZE - 1] = '\0';
+      }
+      else
+      {
+        for (i = 0; i < MAX_REMOTE_URL_SIZE && c != NULL; i++)
+        {
+          option->num_sessions++;
+          strncpy(option->urls[i], c, MAX_NAME_SIZE);
+          option->urls[i][MAX_NAME_SIZE - 1] = '\0';
+          c = strtok(NULL, ",");
+        }
+      }
+      break;
     case 'l':
       option->long_format = TRUE;
       break;
@@ -173,8 +199,8 @@ void OCTAOption_getOption(int argc, char * const argv[], OCTAOption *option)
   if (option->mode != OCTA_TPCB && option->mode != OCTA_TPCC)
     OCTAOption_usage();
 
-  if (strlen(option->username) == 0 || strlen(option->password) == 0 ||
-      argc == 0)
+  if ((strlen(option->username) == 0 || strlen(option->password) == 0 ||
+       argc == 0) && r_option == FALSE)
     OCTAOption_usage();
 
   if (strcmp(argv[0], "setup") == 0)
@@ -201,7 +227,7 @@ void OCTAOption_getOption(int argc, char * const argv[], OCTAOption *option)
   {
     option->command = OCTA_BENCH;
     if (option->num_sessions == 0 || option->scale_factor == 0 ||
-        !timerisset(&(option->measurement_interval)))
+        (option->port == 0 && !timerisset(&(option->measurement_interval))))
       OCTAOption_usage();
 
     if (option->mode == OCTA_TPCB)
@@ -218,6 +244,16 @@ void OCTAOption_getOption(int argc, char * const argv[], OCTAOption *option)
           option->tx_percentage[i] = 1;
       }
     }
+
+    return;
+  }
+
+  if (strcmp(argv[0], "dist") == 0)
+  {
+    option->command = OCTA_DIST;
+    if (option->num_sessions == 0 ||
+        !timerisset(&(option->measurement_interval)))
+      OCTAOption_usage();
 
     return;
   }
@@ -241,6 +277,7 @@ void OCTAOption_usage()
     "       octa -B|-C -u <userid> -n <sessions> -s <scale_factor> load\n"
     "       octa -B -u <userid> -n <sessions> -s <scale_factor> -m <measurement_interval> [-U <rampup_time>] [-D <rampdown_time>] [-t <think_time>] bench\n"
     "       octa -C -u <userid> -n <sessions> -s <scale_factor> -m <measurement_interval> [-U <rampup_time>] [-D <rampdown_time>] [-t <think_time>] [-k <keying_time>] [-p <percentage>] [-P <port>] bench\n"
+    "       octa -C -r <remote_host:port> -m <measurement_interval> [-U <rampup_time>] [-D <rampdown_time>] dist\n"
     "       octa -B|-C -u <userid> teardown\n"
     "\n"
     "Option:\n"
@@ -256,6 +293,7 @@ void OCTAOption_usage()
     "\t-k \tKeying time (in msec)\n"
     "\t-p \tPercentage of transactions\n"
     "\t-P \tListening port\n"
+    "\t-r \tRemote host:port\n"
     "\t-T \tTablespace name for tables\n"
     "\t-I \tTablespace name for indexes\n"
     "\t-l \tUse a long monitoring format\n"
@@ -266,6 +304,7 @@ void OCTAOption_usage()
     "\tsetup    \tSetup (create table, index, ... and load data)\n"
     "\tload     \tLoad data\n"
     "\tbench    \tBenchmark loosely based on TPC-B/TPC-C\n"
+    "\tdist     \tDistributed benchmark by connecting to remote hosts\n"
     "\tteardown \tTeardown (drop table and related objects)\n"
     "\n"
     "Example:\n"
@@ -274,6 +313,8 @@ void OCTAOption_usage()
     "\tocta -u scott/tiger@orcl -B teardown\n"
     "\tocta -u scott/tiger@orcl -C -n 5 -s 10 -T USERS -I INDX setup\n"
     "\tocta -u scott/tiger@orcl -C -n 5 -s 10 -m 7200 -U 1200 -D 600 -t 12000,12000,10000,5000,5000 -k 18000,3000,2000,2000,2000 -p 45,43,4,4,4 bench\n"
+    "\tocta -u scott/tiger@orcl -C -n 5 -s 10 -P 9000 -t 12,12,10,5,5 -k 18,3,2,2,2 bench\n"
+    "\tocta -C -r rhost1:9000,rhost2:9000,rhost3:9000 -m 7200 -U 1200 -D 600 dist\n"
     "\tocta -u scott/tiger@orcl -C teardown\n";
 
   fprintf(stderr, "%s", usage);
@@ -302,6 +343,17 @@ void OCTAOption_print(OCTAOption option)
   printf("----------------------------------------------------------------\n");
   printf("                           Mode : %s like\n",
          option.mode == OCTA_TPCB ? "TPC-B" : "TPC-C");
+  if (strcmp(option.urls[0], "") != 0)
+  {
+    printf("                   Remote hosts : %s", option.urls[0]);
+    for (i = 1; i < option.num_sessions; i++)
+    {
+      printf(", %s", option.urls[i]);
+    }
+    printf("\n");
+    printf("----------------------------------------------------------------\n");
+    return;
+  }
   printf("              Database username : %s\n", option.username);
   printf("              Database password : %s\n", option.password);
   printf("  Connect identifier (tnsnames) : %s\n", option.tnsname);

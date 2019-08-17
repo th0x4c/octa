@@ -20,6 +20,7 @@
 #include "OCTACSetup.h"
 #include "OCTACLoad.h"
 #include "OCTACBench.h"
+#include "OCTACDist.h"
 #include "OCTACTeardown.h"
 
 #endif /* _OCTAMAIN_H_ */

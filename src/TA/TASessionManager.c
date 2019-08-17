@@ -17,6 +17,8 @@ struct __TASessionManager
   void (*monitor)(TASessionManager self);
   TASession *sessions;
   unsigned short port;
+#define MAX_REMOTE_URL_SIZE 128
+  char *urls[MAX_REMOTE_URL_SIZE];
 };
 
 static volatile sig_atomic_t sigflag = 0;
@@ -80,12 +82,18 @@ TASessionManager TASessionManager_initWithSessionPrototype(TASession prototype,
     TASession_deepCopy(prototype, session);
   }
   self->port = 0;
+  for (i = 0; i < MAX_REMOTE_URL_SIZE; i++)
+  {
+    self->urls[i] = NULL;
+  }
 
   return self;
 }
 
 void TASessionManager_release(TASessionManager self)
 {
+  int i = 0;
+
   if (shmdt(self->sessions) == -1)
   {
     fprintf(stderr, "shmdt failed [%s]\n", strerror(errno));
@@ -96,6 +104,13 @@ void TASessionManager_release(TASessionManager self)
     fprintf(stderr, "shmctl failed [%s]\n", strerror(errno));
     exit(1);
   }
+
+  for (i = 0; i < MAX_REMOTE_URL_SIZE; i++)
+  {
+    if (self->urls[i] != NULL)
+      free(self->urls[i]);
+  }
+
   free(self);
 }
 
@@ -134,6 +149,20 @@ void TASessionManager_setPort(TASessionManager self, unsigned short port)
 {
   if (port > 0 && port < 65536)
     self->port = port;
+}
+
+void TASessionManager_setURL(TASessionManager self, const char *url)
+{
+#define MAX_HOSTNAME_LENGTH 128
+#define MAX_PORT_LENGTH 6 /* 0-65535 + '\0' */
+  static int url_idx = 0;
+
+  self->urls[url_idx] =
+    malloc(sizeof(char) * (MAX_HOSTNAME_LENGTH + MAX_PORT_LENGTH));
+  if (self->urls[url_idx] != NULL)
+    strcpy(self->urls[url_idx], url);
+
+  url_idx++;
 }
 
 TATXStat TASessionManager_summaryStatByNameInPeriodInPhase(
@@ -386,7 +415,11 @@ int TASessionManager_main(TASessionManager self, void **inout)
       exit(1);
     case 0:
       /* child */
-      TASession_main(session, inout);
+      if (self->urls[i] == NULL)
+        TASession_main(session, inout);
+      else
+        TASession_mainWithURL(session, self->urls[i]);
+
       if (shmdt(self->sessions) == -1)
       {
         fprintf(stderr, "shmdt failed\n");
@@ -855,6 +888,7 @@ static int TASessionManager_response(void *front_object, int method,
         TASession_setPeriodInterval(TASessionManager_sessions(self)[i], start_time,
                                     rampup_interval, measurement_interval,
                                     rampdown_interval);
+        TASession_setStatus(TASessionManager_sessions(self)[i], TASession_RUNNING);
       }
 
       return TANet_OK;

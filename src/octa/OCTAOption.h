@@ -34,6 +34,7 @@ struct OCTAOption
 #define OCTA_LOAD     2
 #define OCTA_BENCH    3
 #define OCTA_TEARDOWN 4
+#define OCTA_DIST     5
   int command;
   struct timeval measurement_interval;
   struct timeval rampup_time;
@@ -45,6 +46,8 @@ struct OCTAOption
   unsigned short port;
   TABool long_format;
   TABool select_only;
+#define MAX_REMOTE_URL_SIZE 128
+  char urls[MAX_REMOTE_URL_SIZE][MAX_NAME_SIZE];
 };
 typedef struct OCTAOption OCTAOption;
 

@@ -39,6 +39,9 @@ static volatile sig_atomic_t sigflag = 0;
 static int TASession_TXIndexByName(TASession self, const char *tx_name);
 static void TASession_signalHandler(int sig);
 static void TASession_movePeriodByTarget(TASession self);
+static int TASession_remoteStatus(TANet tanet);
+static int TASession_remotePeriod(TANet tanet);
+static void TASession_syncStatWithRemote(TASession self, TANet tanet);
 
 TASession TASession_init()
 {
@@ -217,7 +220,7 @@ void TASession_setStatus(TASession self, int status)
   {
     snprintf(msg, MSG_SIZE, "sid: %d, msg: \"status %s -> %s\"",
              self->id, status_strs[self->status], status_strs[status]);
-    TALog_info(self->log, msg);
+    /* TALog_info(self->log, msg); */ /* @todo Fail if caller process has not called TASession_setLog */
     self->status = status;
   }
 }
@@ -521,6 +524,41 @@ int TASession_main(TASession self, void **inout)
   return 0;
 }
 
+int TASession_mainWithURL(TASession self, const char *url)
+{
+  TANet tanet = NULL;
+  int status_code;
+  char *response_body;
+  struct timespec sleeptp;
+
+  tanet = TANet_initWithURL(url);
+  if (tanet == NULL)
+    return -1;
+
+  response_body = malloc(sizeof(char) * TANet_MAX_BODY_LENGTH);
+  if (response_body == NULL)
+    return -1;
+
+  sleeptp.tv_sec = 0;
+  sleeptp.tv_nsec = 10000000; /* 10ms */
+
+  while (self->status != TASession_TERM)
+  {
+    self->status = TASession_remoteStatus(tanet);
+    self->period = TASession_remotePeriod(tanet);
+    TASession_syncStatWithRemote(self, tanet);
+    nanosleep(&sleeptp, NULL);
+  }
+
+  status_code = TANet_request(tanet, TANet_POST, "/stop", "", response_body);
+  TANet_release(tanet);
+  free(response_body);
+  if (status_code != TANet_SERVICE_UNAVAILABLE)
+    return -1;
+
+  return 0;
+}
+
 /* private */
 static int TASession_TXIndexByName(TASession self, const char *tx_name)
 {
@@ -577,4 +615,113 @@ static void TASession_movePeriodByTarget(TASession self)
     break;
   }
 
+}
+
+static int TASession_remoteStatus(TANet tanet)
+{
+  int status_code;
+  char *response_body;
+#define MAX_NAME_SIZE 64
+  char status_str[MAX_NAME_SIZE];
+  char *s, *e;
+
+  response_body = malloc(sizeof(char) * TANet_MAX_BODY_LENGTH);
+  if (response_body == NULL)
+    return -1;
+
+  status_code = TANet_request(tanet, TANet_GET, "/status", "", response_body);
+  if (status_code != TANet_OK)
+    return -1;
+
+  s = strstr(response_body, "{status:");
+  if (s != NULL)
+  {
+    s = s + strlen("{status:");
+    e = strchr(s, '}');
+    snprintf(status_str, (size_t) (e - s + 1), "%s", s);
+  }
+
+  free(response_body);
+
+  if (strcmp(status_str, "init") == 0)
+    return TASession_INIT;
+  else if (strcmp(status_str, "standby") == 0)
+    return TASession_STANDBY;
+  else if (strcmp(status_str, "running") == 0)
+    return TASession_RUNNING;
+  else if (strcmp(status_str, "stop") == 0)
+    return TASession_STOP;
+  else if (strcmp(status_str, "term") == 0)
+    return TASession_TERM;
+  else
+    return -1;
+}
+
+static int TASession_remotePeriod(TANet tanet)
+{
+  int status_code;
+  char *response_body;
+#define MAX_NAME_SIZE 64
+  char period_str[MAX_NAME_SIZE];
+  char *s, *e;
+
+  response_body = malloc(sizeof(char) * TANet_MAX_BODY_LENGTH);
+  if (response_body == NULL)
+    return -1;
+
+  status_code = TANet_request(tanet, TANet_GET, "/period", "", response_body);
+  if (status_code != TANet_OK)
+    return -1;
+
+  s = strstr(response_body, "{period:");
+  if (s != NULL)
+  {
+    s = s + strlen("{period:");
+    e = strchr(s, '}');
+    snprintf(period_str, (size_t) (e - s + 1), "%s", s);
+  }
+
+  free(response_body);
+
+  if (strcmp(period_str, "rampup") == 0)
+    return TASession_RAMPUP;
+  else if (strcmp(period_str, "measurement") == 0)
+    return TASession_MEASUREMENT;
+  else if (strcmp(period_str, "rampdown") == 0)
+    return TASession_RAMPDOWN;
+  else
+    return -1;
+}
+
+static void TASession_syncStatWithRemote(TASession self, TANet tanet)
+{
+  char *period_strs[NUM_PERIOD] = { "rampup", "measurement", "rampdown" };
+  char *phase_strs[NUM_PHASE] = { "before", "tx", "after" };
+#define MAX_PATH_LENGTH 128
+  char path[MAX_PATH_LENGTH];
+  TATXStat tatxstat = NULL;
+  int status_code;
+  char *response_body;
+  int i = 0;
+  int j = 0;
+  int k = 0;
+
+  response_body = malloc(sizeof(char) * TANet_MAX_BODY_LENGTH);
+
+  for (i = 0; i < self->tx_count; i++)
+  {
+    for (j = 0; j < NUM_PERIOD; j++)
+    {
+      for (k = 0; k < NUM_PHASE; k++)
+      {
+        sprintf(path, "/stat/%s/%s/%s", TATXStat_name(self->tx_stats[i][j][k]),
+                period_strs[j], phase_strs[k]);
+        status_code = TANet_request(tanet, TANet_GET, path, "", response_body);
+        tatxstat = TATXStat_initWithJSON(response_body);
+        TATXStat_deepCopy(tatxstat, self->tx_stats[i][j][k]);
+      }
+    }
+  }
+
+  free(response_body);
 }

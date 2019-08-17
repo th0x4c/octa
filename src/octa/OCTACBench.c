@@ -44,12 +44,15 @@ static void OCTACBench_beforeSetup(TASessionManager self, void **inout)
   gettimeofday(&start_time, (struct timezone *)0);
   timeval2str(start_time_str, start_time);
 
-  for (i = 0; i < TASessionManager_numberOfSessions(self); i++)
+  if (io->option.port == 0)
   {
-    TASession_setPeriodInterval(TASessionManager_sessions(self)[i], start_time,
-                                (int) timeval2sec(option.rampup_time),
-                                (int) timeval2sec(option.measurement_interval),
-                                (int) timeval2sec(option.rampdown_time));
+    for (i = 0; i < TASessionManager_numberOfSessions(self); i++)
+    {
+      TASession_setPeriodInterval(TASessionManager_sessions(self)[i], start_time,
+                                  (int) timeval2sec(option.rampup_time),
+                                  (int) timeval2sec(option.measurement_interval),
+                                  (int) timeval2sec(option.rampdown_time));
+    }
   }
 
   printf("----------------------------------------------------------------\n");
@@ -68,7 +71,11 @@ static void OCTACBench_setup(TASession self, void **inout)
   OCOracle_connect(io->oracle, io->option.username, io->option.password,
                    io->option.tnsname);
   TASession_setPeriod(self, TASession_RAMPUP);
-  TASession_setStatus(self, TASession_RUNNING);
+
+  if (io->option.port > 0)
+    TASession_setStatus(self, TASession_STANDBY);
+  else
+    TASession_setStatus(self, TASession_RUNNING);
 }
 
 /* New-Order */

@@ -10,8 +10,8 @@
 #define _TASESSION_H_
 
 #include <stdlib.h>   /* malloc free */
-#include <string.h>   /* memset strcpy strcmp */
-#include <stdio.h>    /* snprintf fprintf */
+#include <string.h>   /* memset strcpy strcmp strstr strlen */
+#include <stdio.h>    /* snprintf fprintf sprintf */
 #include <time.h>     /* nanosleep */
 #include <sys/time.h> /* gettimeofday */
 #include <signal.h>   /* sigemptyset sigaction */
@@ -19,6 +19,7 @@
 #include "TATime.h"
 #include "TALog.h"
 #include "TATXStat.h"
+#include "TANet.h"
 
 typedef struct __TASession *TASession;
 
@@ -83,5 +84,6 @@ TATXStat TASession_statByNameInPeriodInPhase(TASession self,
                                              int period, int phase);
 TATXStat TASession_currentStatByName(TASession self, const char *tx_name);
 int TASession_main(TASession self, void **inout);
+int TASession_mainWithURL(TASession self, const char *url);
 
 #endif /* _TASESSION_H_ */

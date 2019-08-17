@@ -44,6 +44,7 @@ void TASessionManager_setAfterTeardown(TASessionManager self,
 void TASessionManager_setMonitor(TASessionManager self,
                                  void (*monitor)(TASessionManager self));
 void TASessionManager_setPort(TASessionManager self, unsigned short port);
+void TASessionManager_setURL(TASessionManager self, const char *url);
 TATXStat TASessionManager_summaryStatByNameInPeriodInPhase(
            TASessionManager self,
            const char *tx_name,
