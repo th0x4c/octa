@@ -10,7 +10,7 @@
 #define _TATXSTAT_H_
 
 #include <stdlib.h>   /* malloc free strtol strtoul */
-#include <string.h>   /* memset strstr strrchr strcpy strncpy strlen */
+#include <string.h>   /* memset strstr strrchr strcpy strncpy strlen strcat */
 #include <sys/time.h> /* gettimeofday */
 #include <stdio.h>    /* snprintf */
 #include <errno.h>    /* errno ERANGE */

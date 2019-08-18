@@ -10,7 +10,7 @@
 #define _TADISTRIBUTION_H_
 
 #include <stdlib.h>   /* malloc free strtol strtoul */
-#include <string.h>   /* memset strstr strlen */
+#include <string.h>   /* memset strstr strlen strcat */
 #include <stdio.h>    /* printf snprintf */
 #include <errno.h>    /* errno ERANGE */
 #include <sys/time.h>

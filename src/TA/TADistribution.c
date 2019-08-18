@@ -332,45 +332,50 @@ TADistribution TADistribution_minus(TADistribution self,
 
 char *TADistribution_JSON(TADistribution self, char *output, size_t outputsize)
 {
-  char *json[2];
-  size_t json_maxlen = TADistribution_JSONMaxLength() + 1;
+#define BUFFER_SIZE 64
+  char buffer_str[BUFFER_SIZE];
+  int length = 0;
   int i = 0;
   int j = 0;
-  int k = 0;
 
-  for (i = 0; i < 2; i++) {
-    json[i] = malloc(TADistribution_JSONMaxLength() + 1);
-    if (json[i] == NULL)
-      return NULL;
-  }
+  length = snprintf(buffer_str, BUFFER_SIZE, "{deep_copied:%d,",
+                    self->deep_copied);
+  if (outputsize > length)
+    strcpy(output, buffer_str);
+  else
+    return NULL;
 
-  snprintf(json[0], json_maxlen, "{deep_copied:%d,", self->deep_copied);
-  snprintf(json[1], json_maxlen, "%scount:%d,", json[0], self->count);
-  snprintf(json[0], json_maxlen, "%sbuckets:[", json[1]);
+  length += snprintf(buffer_str, BUFFER_SIZE, "count:%d,", self->count);
+  if (outputsize > length)
+    strcat(output, buffer_str);
+  else
+    return NULL;
 
-  k = 0;
+  length += snprintf(buffer_str, BUFFER_SIZE, "buckets:[");
+  if (outputsize > length)
+    strcat(output, buffer_str);
+  else
+    return NULL;
+
   for (i = 0; i < SCALE; i++)
   {
     for (j = 0; j < NUM_BUCKETS; j++)
     {
-      k = k == 0 ? 1 : 0;
-      snprintf(json[k], json_maxlen, "%s%d,", json[(k + 1) % 2],
-               self->buckets[i][j]);
+      length += snprintf(buffer_str, BUFFER_SIZE, "%d,", self->buckets[i][j]);
+      if (outputsize > length)
+        strcat(output, buffer_str);
+      else
+        return NULL;
     }
   }
-  json[k][strlen(json[k]) - 1] = '\0';
 
-  k = k == 0 ? 1 : 0;
-  snprintf(json[k], json_maxlen, "%s]}", json[(k + 1) % 2]);
-
-  snprintf(output, outputsize, "%s", json[k]);
-  free(json[0]);
-  free(json[1]);
-
-  if (outputsize < strlen(json[k]) + 1)
-    return NULL;
+  length += snprintf(buffer_str, BUFFER_SIZE, "]}");
+  if (outputsize > length)
+    strcat(output, buffer_str);
   else
-    return output;
+    return NULL;
+
+  return output;
 }
 
 size_t TADistribution_JSONMaxLength()

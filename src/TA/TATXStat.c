@@ -514,54 +514,126 @@ TATXStat TATXStat_minus(TATXStat self, TATXStat txstat)
 
 char *TATXStat_JSON(TATXStat self, char *output, size_t outputsize)
 {
-  char *json[2];
-  size_t json_maxlen = TATXStat_JSONMaxLength() + 1;
-  char *tadist_json;
+#define BUFFER_SIZE (64 + MAX_MSG_SIZE)
+  char buffer_str[BUFFER_SIZE];
+  char tadist_json[TADistribution_JSONMaxLength() + 1];
+  int length = 0;
   int i = 0;
 
-  for (i = 0; i < 2; i++) {
-    json[i] = malloc(TATXStat_JSONMaxLength() + 1);
-    if (json[i] == NULL)
-      return NULL;
-  }
-  tadist_json = malloc(TADistribution_JSONMaxLength() + 1);
-  if (tadist_json == NULL)
+  length = snprintf(buffer_str, BUFFER_SIZE, "{deep_copied:%d,",
+                    self->deep_copied);
+  if (outputsize > length)
+    strcpy(output, buffer_str);
+  else
     return NULL;
 
-  snprintf(json[0], json_maxlen, "{deep_copied:%d,", self->deep_copied);
-  snprintf(json[1], json_maxlen, "%sname:%s,", json[0], self->name);
-  snprintf(json[0], json_maxlen, "%scount:%d,", json[1], self->count);
-  snprintf(json[1], json_maxlen, "%sfirst_time:%ld%06ld,", json[0],
-           self->first_time.tv_sec, self->first_time.tv_usec);
-  snprintf(json[0], json_maxlen, "%sstart_time:%ld%06ld,", json[1],
-           self->start_time.tv_sec, self->start_time.tv_usec);
-  snprintf(json[1], json_maxlen, "%send_time:%ld%06ld,", json[0],
-           self->end_time.tv_sec, self->end_time.tv_usec);
-  snprintf(json[0], json_maxlen, "%selapsed_time:%ld%06ld,", json[1],
-           self->elapsed_time.tv_sec, self->elapsed_time.tv_usec);
-  snprintf(json[1], json_maxlen, "%stotal_elapsed_time:%ld%06ld,", json[0],
-           self->total_elapsed_time.tv_sec, self->total_elapsed_time.tv_usec);
-  snprintf(json[0], json_maxlen, "%smax_elapsed_time:%ld%06ld,", json[1],
-           self->max_elapsed_time.tv_sec, self->max_elapsed_time.tv_usec);
-  snprintf(json[1], json_maxlen, "%smin_elapsed_time:%ld%06ld,", json[0],
-           self->min_elapsed_time.tv_sec, self->min_elapsed_time.tv_usec);
-  snprintf(json[0], json_maxlen, "%serror_count:%d,", json[1], self->error_count);
-  snprintf(json[1], json_maxlen, "%serror_code:%d,", json[0], self->error_code);
-  snprintf(json[0], json_maxlen, "%serror_message:%s,", json[1], self->error_message);
+  length += snprintf(buffer_str, BUFFER_SIZE, "name:%s,", self->name);
+  if (outputsize > length)
+    strcat(output, buffer_str);
+  else
+    return NULL;
+
+  length += snprintf(buffer_str, BUFFER_SIZE, "count:%d,", self->count);
+  if (outputsize > length)
+    strcat(output, buffer_str);
+  else
+    return NULL;
+
+  length += snprintf(buffer_str, BUFFER_SIZE, "first_time:%ld%06ld,",
+                     self->first_time.tv_sec, self->first_time.tv_usec);
+  if (outputsize > length)
+    strcat(output, buffer_str);
+  else
+    return NULL;
+
+  length += snprintf(buffer_str, BUFFER_SIZE, "start_time:%ld%06ld,",
+                     self->start_time.tv_sec, self->start_time.tv_usec);
+  if (outputsize > length)
+    strcat(output, buffer_str);
+  else
+    return NULL;
+
+  length += snprintf(buffer_str, BUFFER_SIZE, "end_time:%ld%06ld,",
+                     self->end_time.tv_sec, self->end_time.tv_usec);
+  if (outputsize > length)
+    strcat(output, buffer_str);
+  else
+    return NULL;
+
+  length += snprintf(buffer_str, BUFFER_SIZE, "elapsed_time:%ld%06ld,",
+                     self->elapsed_time.tv_sec, self->elapsed_time.tv_usec);
+  if (outputsize > length)
+    strcat(output, buffer_str);
+  else
+    return NULL;
+
+  length += snprintf(buffer_str, BUFFER_SIZE, "total_elapsed_time:%ld%06ld,",
+                     self->total_elapsed_time.tv_sec,
+                     self->total_elapsed_time.tv_usec);
+  if (outputsize > length)
+    strcat(output, buffer_str);
+  else
+    return NULL;
+
+  length += snprintf(buffer_str, BUFFER_SIZE, "max_elapsed_time:%ld%06ld,",
+                     self->max_elapsed_time.tv_sec,
+                     self->max_elapsed_time.tv_usec);
+  if (outputsize > length)
+    strcat(output, buffer_str);
+  else
+    return NULL;
+
+  length += snprintf(buffer_str, BUFFER_SIZE, "min_elapsed_time:%ld%06ld,",
+                     self->min_elapsed_time.tv_sec,
+                     self->min_elapsed_time.tv_usec);
+  if (outputsize > length)
+    strcat(output, buffer_str);
+  else
+    return NULL;
+
+  length += snprintf(buffer_str, BUFFER_SIZE, "error_count:%d,",
+                     self->error_count);
+  if (outputsize > length)
+    strcat(output, buffer_str);
+  else
+    return NULL;
+
+  length += snprintf(buffer_str, BUFFER_SIZE, "error_code:%d,",
+                     self->error_code);
+  if (outputsize > length)
+    strcat(output, buffer_str);
+  else
+    return NULL;
+
+  length += snprintf(buffer_str, BUFFER_SIZE, "error_message:%s,",
+                     self->error_message);
+  if (outputsize > length)
+    strcat(output, buffer_str);
+  else
+    return NULL;
+
+  length += snprintf(buffer_str, BUFFER_SIZE, "distribution:");
+  if (outputsize > length)
+    strcat(output, buffer_str);
+  else
+    return NULL;
+
   if (TADistribution_JSON(self->distribution, tadist_json, TADistribution_JSONMaxLength() + 1) == NULL)
     return NULL;
-  snprintf(json[1], json_maxlen, "%sdistribution:%s", json[0], tadist_json);
-  snprintf(json[0], json_maxlen, "%s}", json[1]);
 
-  snprintf(output, outputsize, "%s", json[0]);
-  free(json[0]);
-  free(json[1]);
-  free(tadist_json);
-
-  if (outputsize < strlen(json[0]) + 1)
-    return NULL;
+  length += strlen(tadist_json);
+  if (outputsize > length)
+    strcat(output, tadist_json);
   else
-    return output;
+    return NULL;
+
+  length += snprintf(buffer_str, BUFFER_SIZE, "}");
+  if (outputsize > length)
+    strcat(output, buffer_str);
+  else
+    return NULL;
+
+  return output;
 }
 
 size_t TATXStat_JSONMaxLength()
