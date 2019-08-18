@@ -719,6 +719,7 @@ static void TASession_syncStatWithRemote(TASession self, TANet tanet)
         status_code = TANet_request(tanet, TANet_GET, path, "", response_body);
         tatxstat = TATXStat_initWithJSON(response_body);
         TATXStat_deepCopy(tatxstat, self->tx_stats[i][j][k]);
+        TATXStat_release(tatxstat);
       }
     }
   }
