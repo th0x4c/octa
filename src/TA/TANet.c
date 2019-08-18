@@ -370,8 +370,8 @@ static int TANet_service(int fd, void *front_object,
   request_body[0] = '\0';
   response_body[0] = '\0';
 
-  in = fdopen(fd, "rb");
-  out = fdopen(fd, "wb");
+  in = fdopen(dup(fd), "rb");
+  out = fdopen(dup(fd), "wb");
 
   TANet_parseRequest(in, &method, path, &content_length, request_body);
   status_code = response(front_object, method, path, content_length, request_body, response_body);
@@ -385,6 +385,8 @@ static int TANet_service(int fd, void *front_object,
     response_body = NULL;
   }
 
+  fclose(in);
+  fclose(out);
   return status_code;
 }
 

@@ -14,7 +14,7 @@
 #include <stdio.h>      /* fdopen fclose snprintf fgets fread fprintf fflush */
 #include <sys/types.h>  /* select FD_ZERO FD_SET FD_ISSET FD_CLR getaddrinfo  connect socket listen freeaddrinfo */
 #include <sys/time.h>   /* select FD_ZERO FD_SET FD_ISSET FD_CLR */
-#include <unistd.h>     /* select FD_ZERO FD_SET FD_ISSET FD_CLR close */
+#include <unistd.h>     /* select FD_ZERO FD_SET FD_ISSET FD_CLR close dup */
 #include <sys/socket.h> /* accept getaddrinfo connect socket bind listen freeaddrinfo */
 #include <sys/ioctl.h>  /* ioctl */
 #include <netdb.h>      /* getaddrinfo freeaddrinfo */
