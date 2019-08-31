@@ -41,6 +41,9 @@ static void TASession_signalHandler(int sig);
 static void TASession_movePeriodByTarget(TASession self);
 static int TASession_remoteStatus(TANet tanet);
 static int TASession_remotePeriod(TANet tanet);
+static void TASession_syncStatWithRemoteInPeriodInPhase(TASession self,
+                                                        TANet tanet,
+                                                        int period, int phase);
 static void TASession_syncStatWithRemote(TASession self, TANet tanet);
 
 TASession TASession_init()
@@ -527,9 +530,12 @@ int TASession_main(TASession self, void **inout)
 int TASession_mainWithURL(TASession self, const char *url)
 {
   TANet tanet = NULL;
+  int status = TASession_INIT;
+  int pre_period = TASession_RAMPUP;
   int status_code;
   char *response_body;
   struct timespec sleeptp;
+  int i = 0;
 
   tanet = TANet_initWithURL(url);
   if (tanet == NULL)
@@ -544,10 +550,20 @@ int TASession_mainWithURL(TASession self, const char *url)
 
   while (self->status != TASession_TERM)
   {
-    self->status = TASession_remoteStatus(tanet);
+    status = TASession_remoteStatus(tanet);
+    if (status == TASession_TERM)
+      TASession_syncStatWithRemote(self, tanet);
+
+    self->status = status;
     self->period = TASession_remotePeriod(tanet);
-    TASession_syncStatWithRemote(self, tanet);
+    for (i = 0; i < NUM_PERIOD; i++)
+    {
+      if (pre_period <= i && i <= self->period)
+        TASession_syncStatWithRemoteInPeriodInPhase(self, tanet, i,
+                                                    TASession_TX);
+    }
     nanosleep(&sleeptp, NULL);
+    pre_period = self->period;
   }
 
   status_code = TANet_request(tanet, TANet_POST, "/stop", "", response_body);
@@ -693,7 +709,9 @@ static int TASession_remotePeriod(TANet tanet)
     return -1;
 }
 
-static void TASession_syncStatWithRemote(TASession self, TANet tanet)
+static void TASession_syncStatWithRemoteInPeriodInPhase(TASession self,
+                                                        TANet tanet,
+                                                        int period, int phase)
 {
   char *period_strs[NUM_PERIOD] = { "rampup", "measurement", "rampdown" };
   char *phase_strs[NUM_PHASE] = { "before", "tx", "after" };
@@ -710,19 +728,29 @@ static void TASession_syncStatWithRemote(TASession self, TANet tanet)
 
   for (i = 0; i < self->tx_count; i++)
   {
-    for (j = 0; j < NUM_PERIOD; j++)
-    {
-      for (k = 0; k < NUM_PHASE; k++)
-      {
-        sprintf(path, "/stat/%s/%s/%s", TATXStat_name(self->tx_stats[i][j][k]),
-                period_strs[j], phase_strs[k]);
-        status_code = TANet_request(tanet, TANet_GET, path, "", response_body);
-        tatxstat = TATXStat_initWithJSON(response_body);
-        TATXStat_deepCopy(tatxstat, self->tx_stats[i][j][k]);
-        TATXStat_release(tatxstat);
-      }
-    }
+    sprintf(path, "/stat/%s/%s/%s",
+            TATXStat_name(self->tx_stats[i][period][phase]),
+            period_strs[period],
+            phase_strs[phase]);
+    status_code = TANet_request(tanet, TANet_GET, path, "", response_body);
+    tatxstat = TATXStat_initWithJSON(response_body);
+    TATXStat_deepCopy(tatxstat, self->tx_stats[i][period][phase]);
+    TATXStat_release(tatxstat);
   }
 
   free(response_body);
+}
+
+static void TASession_syncStatWithRemote(TASession self, TANet tanet)
+{
+  int i = 0;
+  int j = 0;
+
+  for (i = 0; i < NUM_PERIOD; i++)
+  {
+    for (j = 0; j < NUM_PHASE; j++)
+    {
+      TASession_syncStatWithRemoteInPeriodInPhase(self, tanet, i, j);
+    }
+  }
 }
