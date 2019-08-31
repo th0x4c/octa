@@ -306,6 +306,7 @@ static int TANet_listenWithPort(const char *port)
   struct addrinfo *res, *ai;
   int err;
   int sockfd;
+  int on = 1;
 
   memset(&hints, 0, sizeof(hints));
 
@@ -321,6 +322,8 @@ static int TANet_listenWithPort(const char *port)
     sockfd = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
     if (sockfd < 0)
       continue;
+
+    setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
 
     if (bind(sockfd, ai->ai_addr, ai->ai_addrlen) < 0)
     {

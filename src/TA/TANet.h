@@ -12,10 +12,10 @@
 #include <stdlib.h>     /* malloc free strtol */
 #include <string.h>     /* memset strchr strcpy strcmp strstr strlen */
 #include <stdio.h>      /* fdopen fclose snprintf fgets fread fprintf fflush */
-#include <sys/types.h>  /* select FD_ZERO FD_SET FD_ISSET FD_CLR getaddrinfo  connect socket listen freeaddrinfo */
+#include <sys/types.h>  /* select FD_ZERO FD_SET FD_ISSET FD_CLR getaddrinfo  connect socket setsockopt listen freeaddrinfo */
 #include <sys/time.h>   /* select FD_ZERO FD_SET FD_ISSET FD_CLR */
 #include <unistd.h>     /* select FD_ZERO FD_SET FD_ISSET FD_CLR close dup */
-#include <sys/socket.h> /* accept getaddrinfo connect socket bind listen freeaddrinfo */
+#include <sys/socket.h> /* accept getaddrinfo connect socket setsockopt bind listen freeaddrinfo */
 #include <sys/ioctl.h>  /* ioctl */
 #include <netdb.h>      /* getaddrinfo freeaddrinfo */
 #include <errno.h>      /* errno */
