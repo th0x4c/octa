@@ -842,6 +842,18 @@ static int TASessionManager_response(void *front_object, int method,
       sprintf(response_body, "{period:%s}", period_str);
       return TANet_OK;
     }
+    else if (strcmp(path, "/period/min") == 0)
+    {
+      if (TASessionManager_isAnyPeriod(self, TASession_RAMPUP))
+        strcpy(period_str, "rampup");
+      else if (TASessionManager_isAnyPeriod(self, TASession_MEASUREMENT))
+        strcpy(period_str, "measurement");
+      else if (TASessionManager_isAllPeriod(self, TASession_RAMPDOWN))
+        strcpy(period_str, "rampdown");
+
+      sprintf(response_body, "{period:%s}", period_str);
+      return TANet_OK;
+    }
     else
     {
       strcpy(response_body, errorbody);

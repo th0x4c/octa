@@ -40,7 +40,7 @@ static int TASession_TXIndexByName(TASession self, const char *tx_name);
 static void TASession_signalHandler(int sig);
 static void TASession_movePeriodByTarget(TASession self);
 static int TASession_remoteStatus(TANet tanet);
-static int TASession_remotePeriod(TANet tanet);
+static int TASession_remotePeriod(TANet tanet, TABool min);
 static void TASession_syncStatWithRemoteInPeriodInPhase(TASession self,
                                                         TANet tanet,
                                                         int period, int phase);
@@ -531,7 +531,8 @@ int TASession_mainWithURL(TASession self, const char *url)
 {
   TANet tanet = NULL;
   int status = TASession_INIT;
-  int pre_period = TASession_RAMPUP;
+  int min_period = TASession_RAMPUP;
+  int pre_min_period = TASession_RAMPUP;
   int status_code;
   char *response_body;
   struct timespec sleeptp;
@@ -555,15 +556,16 @@ int TASession_mainWithURL(TASession self, const char *url)
       TASession_syncStatWithRemote(self, tanet);
 
     self->status = status;
-    self->period = TASession_remotePeriod(tanet);
+    min_period = TASession_remotePeriod(tanet, TRUE);
+    self->period = TASession_remotePeriod(tanet, FALSE);
     for (i = 0; i < NUM_PERIOD; i++)
     {
-      if (pre_period <= i && i <= self->period)
+      if (pre_min_period <= i && i <= self->period)
         TASession_syncStatWithRemoteInPeriodInPhase(self, tanet, i,
                                                     TASession_TX);
     }
+    pre_min_period = min_period;
     nanosleep(&sleeptp, NULL);
-    pre_period = self->period;
   }
 
   status_code = TANet_request(tanet, TANet_POST, "/stop", "", response_body);
@@ -673,7 +675,7 @@ static int TASession_remoteStatus(TANet tanet)
     return -1;
 }
 
-static int TASession_remotePeriod(TANet tanet)
+static int TASession_remotePeriod(TANet tanet, TABool min)
 {
   int status_code;
   char *response_body;
@@ -685,7 +687,12 @@ static int TASession_remotePeriod(TANet tanet)
   if (response_body == NULL)
     return -1;
 
-  status_code = TANet_request(tanet, TANet_GET, "/period", "", response_body);
+  if (min == TRUE)
+    status_code = TANet_request(tanet, TANet_GET, "/period/min", "",
+                                response_body);
+  else
+    status_code = TANet_request(tanet, TANet_GET, "/period", "", response_body);
+
   if (status_code != TANet_OK)
     return -1;
 
