@@ -415,7 +415,7 @@ int TASessionManager_main(TASessionManager self, void **inout)
       exit(1);
     case 0:
       /* child */
-      if (self->urls[i] == NULL)
+      if (i >= MAX_REMOTE_URL_SIZE || self->urls[i] == NULL)
         TASession_main(session, inout);
       else
         TASession_mainWithURL(session, self->urls[i]);
