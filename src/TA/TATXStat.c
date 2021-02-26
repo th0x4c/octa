@@ -60,16 +60,11 @@ TATXStat TATXStat_initWithJSON(const char *json)
   char *s;
   char *e;
   char *end;
-  struct timeval usec;
 
   if (self == NULL)
     return NULL;
 
   memset(self, 0, sizeof(*self));
-
-  timerclear(&usec);
-  usec.tv_sec = 0;
-  usec.tv_usec = 1;
 
   s = strstr(json, "{deep_copied:");
   e = strstr(json, ",name:");
@@ -98,7 +93,7 @@ TATXStat TATXStat_initWithJSON(const char *json)
   e = strstr(s, ",start_time:");
   if (e == NULL)
     return NULL;
-  timermlt(&usec, (unsigned long) strtoul(s, &end, 10), &(self->first_time));
+  usec2timeval(strtoul(s, &end, 10), &(self->first_time));
   if (end == s || errno == ERANGE)
     return NULL;
 
@@ -106,7 +101,7 @@ TATXStat TATXStat_initWithJSON(const char *json)
   e = strstr(s, ",end_time:");
   if (e == NULL)
     return NULL;
-  timermlt(&usec, (unsigned long) strtoul(s, &end, 10), &(self->start_time));
+  usec2timeval(strtoul(s, &end, 10), &(self->start_time));
   if (end == s || errno == ERANGE)
     return NULL;
 
@@ -114,7 +109,7 @@ TATXStat TATXStat_initWithJSON(const char *json)
   e = strstr(s, ",elapsed_time:");
   if (e == NULL)
     return NULL;
-  timermlt(&usec, (unsigned long) strtoul(s, &end, 10), &(self->end_time));
+  usec2timeval(strtoul(s, &end, 10), &(self->end_time));
   if (end == s || errno == ERANGE)
     return NULL;
 
@@ -122,7 +117,7 @@ TATXStat TATXStat_initWithJSON(const char *json)
   e = strstr(s, ",total_elapsed_time:");
   if (e == NULL)
     return NULL;
-  timermlt(&usec, (unsigned long) strtoul(s, &end, 10), &(self->elapsed_time));
+  usec2timeval(strtoul(s, &end, 10), &(self->elapsed_time));
   if (end == s || errno == ERANGE)
     return NULL;
 
@@ -130,7 +125,7 @@ TATXStat TATXStat_initWithJSON(const char *json)
   e = strstr(s, ",max_elapsed_time:");
   if (e == NULL)
     return NULL;
-  timermlt(&usec, (unsigned long) strtoul(s, &end, 10), &(self->total_elapsed_time));
+  usec2timeval(strtoul(s, &end, 10), &(self->total_elapsed_time));
   if (end == s || errno == ERANGE)
     return NULL;
 
@@ -138,7 +133,7 @@ TATXStat TATXStat_initWithJSON(const char *json)
   e = strstr(s, ",min_elapsed_time:");
   if (e == NULL)
     return NULL;
-  timermlt(&usec, (unsigned long) strtoul(s, &end, 10), &(self->max_elapsed_time));
+  usec2timeval(strtoul(s, &end, 10), &(self->max_elapsed_time));
   if (end == s || errno == ERANGE)
     return NULL;
 
@@ -146,7 +141,7 @@ TATXStat TATXStat_initWithJSON(const char *json)
   e = strstr(s, ",error_count:");
   if (e == NULL)
     return NULL;
-  timermlt(&usec, (unsigned long) strtoul(s, &end, 10), &(self->min_elapsed_time));
+  usec2timeval(strtoul(s, &end, 10), &(self->min_elapsed_time));
   if (end == s || errno == ERANGE)
     return NULL;
 

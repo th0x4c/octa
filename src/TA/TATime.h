@@ -36,6 +36,14 @@
   }                                                                     \
   while (0)
 
+#define usec2timeval(usec, tvp)                                         \
+  do                                                                    \
+  {                                                                     \
+    (tvp)->tv_sec = (usec) / 1000000;                                   \
+    (tvp)->tv_usec = (usec) % 1000000;                                  \
+  }                                                                     \
+  while (0)
+
 /* Operations on timevals. They should be defined in <time.h> */
 #ifndef timerclear
 #define timerclear(tvp)         (tvp)->tv_sec = (tvp)->tv_usec = 0
