@@ -12,6 +12,7 @@
 #include <TA/TABool.h>
 #include <TA/TATime.h>
 #include <TA/TARandom.h>
+#include <TA/TALock.h>
 #include <TA/TALog.h>
 #include <TA/TANet.h>
 #include <TA/TADistribution.h>

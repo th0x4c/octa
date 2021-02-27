@@ -5,7 +5,9 @@ libTA_a_SOURCES = TARandom.c         \
                   TATXStat.c         \
                   TASession.c        \
                   TASessionManager.c \
-                  TANet.c
+                  TANet.c            \
+                  TALock.c
+
 TAincludedir = $(includedir)/TA
 TAinclude_HEADERS = TA.h               \
                     TABool.h           \
@@ -16,4 +18,5 @@ TAinclude_HEADERS = TA.h               \
                     TATXStat.h         \
                     TASession.h        \
                     TASessionManager.h \
-                    TANet.h
+                    TANet.h            \
+                    TALock.h
