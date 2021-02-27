@@ -228,14 +228,18 @@ void TASessionManager_printMonitoredTX(TASessionManager self,
     printf("\n");
     printf("Time           Period      Count    Error    AVG      TPS     ");
     if (long_format)
-      printf(" 0%%tile   50%%tile  80%%tile  90%%tile  100%%tile Transaction");
-
+    {
+      printf(" 0%%tile   25%%tile  50%%tile  75%%tile ");
+      printf(" 90%%tile  95%%tile  99%%tile  100%%tile Transaction");
+    }
     printf("\n");
 
     printf("-------------- ----------- -------- -------- -------- --------");
     if (long_format)
-      printf(" -------- -------- -------- -------- -------- -----------");
-
+    {
+      printf(" -------- -------- -------- --------");
+      printf(" -------- -------- -------- -------- -----------");
+    }
     printf("\n");
   }
   monitor_count++;
@@ -312,7 +316,7 @@ void TASessionManager_printNumericalQuantitiesSummary(TASessionManager self,
   }
   printf("\n");
 
-  printf("Response Times (50th/ 80th/ 90th percentile) in seconds\n");
+  printf("Response Times (25th/ 50th/ 75th percentile) in seconds\n");
   for (i = 0; i < tx_count; i++)
   {
     summary_stat = TASessionManager_summaryStatByNameInPeriodInPhase(self,
@@ -320,11 +324,28 @@ void TASessionManager_printNumericalQuantitiesSummary(TASessionManager self,
     printf("  - %-29s %-8.6f / %-8.6f / %-8.6f\n",
            tx_names[i],
            timeval2sec(TADistribution_percentile(
+                         TATXStat_distribution(summary_stat), 25)),
+           timeval2sec(TADistribution_percentile(
                          TATXStat_distribution(summary_stat), 50)),
            timeval2sec(TADistribution_percentile(
-                         TATXStat_distribution(summary_stat), 80)),
+                         TATXStat_distribution(summary_stat), 75)));
+    TATXStat_release(summary_stat);
+  }
+  printf("\n");
+
+  printf("Response Times (90th/ 95th/ 99th percentile) in seconds\n");
+  for (i = 0; i < tx_count; i++)
+  {
+    summary_stat = TASessionManager_summaryStatByNameInPeriodInPhase(self,
+                     tx_names[i], TASession_MEASUREMENT, TASession_TX);
+    printf("  - %-29s %-8.6f / %-8.6f / %-8.6f\n",
+           tx_names[i],
            timeval2sec(TADistribution_percentile(
-                         TATXStat_distribution(summary_stat), 90)));
+                         TATXStat_distribution(summary_stat), 90)),
+           timeval2sec(TADistribution_percentile(
+                         TATXStat_distribution(summary_stat), 95)),
+           timeval2sec(TADistribution_percentile(
+                         TATXStat_distribution(summary_stat), 99)));
     TATXStat_release(summary_stat);
   }
   printf("\n");
@@ -599,11 +620,14 @@ static void TASessionManager_printLineMonitoredTX(TASessionManager self,
     if (long_format)
     {
       distribution = TATXStat_distribution(txstat);
-      printf(" %8.6f %8.6f %8.6f %8.6f %8.6f %s",
+      printf(" %8.6f %8.6f %8.6f %8.6f %8.6f %8.6f %8.6f %8.6f %s",
              timeval2sec(TADistribution_percentile(distribution, 0)),
+             timeval2sec(TADistribution_percentile(distribution, 25)),
              timeval2sec(TADistribution_percentile(distribution, 50)),
-             timeval2sec(TADistribution_percentile(distribution, 80)),
+             timeval2sec(TADistribution_percentile(distribution, 75)),
              timeval2sec(TADistribution_percentile(distribution, 90)),
+             timeval2sec(TADistribution_percentile(distribution, 95)),
+             timeval2sec(TADistribution_percentile(distribution, 99)),
              timeval2sec(TADistribution_percentile(distribution, 100)),
              tx_name);
     }
@@ -618,7 +642,8 @@ static void TASessionManager_printLineMonitoredTX(TASessionManager self,
            TATXStat_errorCount(txstat),
            "", TATXStat_tps(txstat));
     if (long_format)
-      printf(" %8s %8s %8s %8s %8s %s", "", "", "", "", "", tx_name);
+      printf(" %8s %8s %8s %8s %8s %8s %8s %8s %s",
+             "", "", "", "", "", "", "", "", tx_name);
 
     printf("\n");
   }
