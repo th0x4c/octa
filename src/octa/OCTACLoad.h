@@ -9,7 +9,6 @@
 #ifndef _OCTACLOAD_H_
 #define _OCTACLOAD_H_
 
-#include <sys/sem.h> /* semop semget semctl */
 #include <sys/shm.h> /* shmget shmat shmdt shmctl */
 #include <stdio.h>   /* fprintf snprintf printf fflush */
 #include <string.h>  /* strerror */
@@ -17,7 +16,6 @@
 #include <oci.h>     /* OCITransCommit OCITransRollback */
 #include <OC/OC.h>
 #include <TA/TA.h>
-#include "config.h"
 #include "OCTAOption.h"
 #include "OCTACConfig.h"
 #include "OCTACLoadItem.h"

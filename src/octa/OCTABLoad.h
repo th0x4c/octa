@@ -9,7 +9,6 @@
 #ifndef _OCTABLOAD_H_
 #define _OCTABLOAD_H_
 
-#include <sys/sem.h> /* semop semget semctl */
 #include <sys/shm.h> /* shmget shmat shmdt shmctl */
 #include <stdio.h>   /* fprintf snprintf printf fflush */
 #include <string.h>  /* strerror */

@@ -7,19 +7,10 @@
  */
 
 #include "OCTABLoad.h"
-#include "config.h"
-
-#ifndef HAVE_UNION_SEMUN
-union semun {
-  int             val;            /* value for SETVAL */
-  struct semid_ds *buf;           /* buffer for IPC_STAT & IPC_SET */
-  unsigned short  *array;         /* array for GETALL & SETALL */
-};
-#endif
 
 /* All sessions share the following variables */
 static OCTAOption option;
-static int semid;
+static TALock talock;
 static int shmid;
 static int total_account;
 static int *loaded_account;
@@ -27,44 +18,10 @@ static int *loaded_account;
 /* Each session has its own vairable */
 static OCOracle oracle;
 
-#define SEMAPHORE_P                                            \
-  {                                                            \
-    struct sembuf sops;                                        \
-    sops.sem_num = 0;                                          \
-    sops.sem_op = -1; /* P */                                  \
-    sops.sem_flg = SEM_UNDO;                                   \
-    if (semop(semid, &sops, 1) == -1)                          \
-    {                                                          \
-      fprintf(stderr, "semop failed [%s]\n", strerror(errno)); \
-      exit(1);                                                 \
-    }                                                          \
-  }
-
-#define SEMAPHORE_V                                            \
-  {                                                            \
-    struct sembuf sops;                                        \
-    sops.sem_num = 0;                                          \
-    sops.sem_op = 1; /* V */                                   \
-    sops.sem_flg = SEM_UNDO;                                   \
-    if (semop(semid, &sops, 1) == -1)                          \
-    {                                                          \
-      fprintf(stderr, "semop failed [%s]\n", strerror(errno)); \
-      exit(1);                                                 \
-    }                                                          \
-  }
-
 static void OCTABLoad_beforeSetup(TASessionManager self, void **inout)
 {
-  union semun sem_union;
+  talock = TALock_init();
 
-  /* semaphore */
-  semid = semget(IPC_PRIVATE, 1, 0666 | IPC_CREAT);
-  sem_union.val = 1;
-  if (semctl(semid, 0, SETVAL, sem_union) == -1)
-  {
-    fprintf(stderr, "semctl failed [%s]\n", strerror(errno));
-    exit(1);
-  }
   /* shared memory */
   shmid = shmget(IPC_PRIVATE, sizeof(int), 0666 | IPC_CREAT);
   if (shmid < 0)
@@ -93,10 +50,10 @@ static void OCTABLoad_beforeTX(TASession self, void **inout)
 {
   int *account_id = (int *)*inout;
 
-  SEMAPHORE_P;
+  TALock_lock(talock);
   *loaded_account += 1;
   *account_id = *loaded_account;
-  SEMAPHORE_V;
+  TALock_unlock(talock);
 
   if (*account_id > total_account)
     TASession_setStatus(self, TASession_STOP);
@@ -312,7 +269,6 @@ static void OCTABLoad_monitor(TASessionManager self)
 
 static void OCTABLoad_afterTeardown(TASessionManager self, void **inout)
 {
-  union semun sem_union;
   TATXStat summary = TASessionManager_summaryStatByNameInPeriodInPhase(self,
                        "OCTAB load", TASession_MEASUREMENT, TASession_TX);
 #define DESC_SIZE 512
@@ -325,12 +281,7 @@ static void OCTABLoad_afterTeardown(TASessionManager self, void **inout)
   printf("%s\n", TATXStat_description(summary, desc, DESC_SIZE));
   printf("\n");
 
-  /* semaphore */
-  if (semctl(semid, 0, IPC_RMID, sem_union) == -1)
-  {
-    fprintf(stderr, "semctl failed [%s]\n", strerror(errno));
-    exit(1);
-  }
+  TALock_release(talock);
   /* shared memory */
   if (shmdt(loaded_account) == -1)
   {

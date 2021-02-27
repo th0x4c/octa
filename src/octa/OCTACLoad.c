@@ -8,14 +8,6 @@
 
 #include "OCTACLoad.h"
 
-#ifndef HAVE_UNION_SEMUN
-union semun {
-  int             val;            /* value for SETVAL */
-  struct semid_ds *buf;           /* buffer for IPC_STAT & IPC_SET */
-  unsigned short  *array;         /* array for GETALL & SETALL */
-};
-#endif
-
 struct OCTACLoadCount
 {
   long item;
@@ -29,7 +21,7 @@ typedef struct OCTACLoadCount OCTACLoadCount;
 
 /* All sessions share the following variables */
 static OCTAOption option;
-static int semid;
+static TALock talock;
 static int shmid;
 static OCTACLoadCount total_count;
 static OCTACLoadCount *loaded_count;
@@ -40,44 +32,10 @@ static OCOracle oracle;
 static OCTACLoadCount loading_count;
 static long o_c_id;
 
-#define SEMAPHORE_P                                            \
-  {                                                            \
-    struct sembuf sops;                                        \
-    sops.sem_num = 0;                                          \
-    sops.sem_op = -1; /* P */                                  \
-    sops.sem_flg = SEM_UNDO;                                   \
-    if (semop(semid, &sops, 1) == -1)                          \
-    {                                                          \
-      fprintf(stderr, "semop failed [%s]\n", strerror(errno)); \
-      exit(1);                                                 \
-    }                                                          \
-  }
-
-#define SEMAPHORE_V                                            \
-  {                                                            \
-    struct sembuf sops;                                        \
-    sops.sem_num = 0;                                          \
-    sops.sem_op = 1; /* V */                                   \
-    sops.sem_flg = SEM_UNDO;                                   \
-    if (semop(semid, &sops, 1) == -1)                          \
-    {                                                          \
-      fprintf(stderr, "semop failed [%s]\n", strerror(errno)); \
-      exit(1);                                                 \
-    }                                                          \
-  }
-
 static void OCTACLoad_beforeSetup(TASessionManager self, void **inout)
 {
-  union semun sem_union;
+  talock = TALock_init();
 
-  /* semaphore */
-  semid = semget(IPC_PRIVATE, 1, 0666 | IPC_CREAT);
-  sem_union.val = 1;
-  if (semctl(semid, 0, SETVAL, sem_union) == -1)
-  {
-    fprintf(stderr, "semctl failed [%s]\n", strerror(errno));
-    exit(1);
-  }
   /* shared memory */
   shmid = shmget(IPC_PRIVATE,
                  sizeof(OCTACLoadCount) + (sizeof(long) * CUST_PER_DIST),
@@ -332,7 +290,7 @@ static char *OCTACLoad_selectTX(TASession self)
                  "OCTAC load orders"};
   char *ret = "OCTAC load item";
 
-  SEMAPHORE_P;
+  TALock_lock(talock);
   if (loaded_count->item < total_count.item)
   {
     loaded_count->item += 1;
@@ -377,7 +335,7 @@ static char *OCTACLoad_selectTX(TASession self)
   {
     TASession_setStatus(self, TASession_STOP);
   }
-  SEMAPHORE_V;
+  TALock_unlock(talock);
 
   return ret;
 }
@@ -397,7 +355,6 @@ static void OCTACLoad_teardown(TASession self, void **inout)
 
 static void OCTACLoad_afterTeardown(TASessionManager self, void **inout)
 {
-  union semun sem_union;
   TATXStat summary_item =
     TASessionManager_summaryStatByNameInPeriodInPhase(self,
       "OCTAC load item", TASession_MEASUREMENT, TASession_TX);
@@ -447,12 +404,7 @@ static void OCTACLoad_afterTeardown(TASessionManager self, void **inout)
   TATXStat_release(summary_customer);
   TATXStat_release(summary_orders);
 
-  /* semaphore */
-  if (semctl(semid, 0, IPC_RMID, sem_union) == -1)
-  {
-    fprintf(stderr, "semctl failed [%s]\n", strerror(errno));
-    exit(1);
-  }
+  TALock_release(talock);
   /* shared memory */
   if (shmdt(loaded_count) == -1)
   {
