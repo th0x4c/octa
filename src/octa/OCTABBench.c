@@ -21,6 +21,7 @@ struct OCTABBenchInput
 typedef struct OCTABBenchInput OCTABBenchInput;
 
 static TABool long_format;
+static TALock talock;
 
 static void OCTABBench_beforeSetup(TASessionManager self, void **inout)
 {
@@ -33,6 +34,8 @@ static void OCTABBench_beforeSetup(TASessionManager self, void **inout)
   long_format = option.long_format;
 
   OCTAOption_print(option);
+
+  talock = TALock_init();
 
   timerclear(&start_time);
   gettimeofday(&start_time, (struct timezone *)0);
@@ -57,8 +60,10 @@ static void OCTABBench_setup(TASession self, void **inout)
 
   io->session_id = TASession_ID(self);
   io->oracle = OCOracle_init();
+  TALock_lock(talock);
   OCOracle_connect(io->oracle, io->option.username, io->option.password,
                    io->option.tnsname);
+  TALock_unlock(talock);
   TASession_setPeriod(self, TASession_RAMPUP);
   TASession_setStatus(self, TASession_RUNNING);
 
@@ -537,6 +542,8 @@ static void OCTABBench_afterTeardown(TASessionManager self, void **inout)
   TASessionManager_printMonitoredTX(self, "OCTAB bench", PAGESIZE, long_format);
   TADistribution_print(TATXStat_distribution(summary_stat));
   TASessionManager_printNumericalQuantitiesSummary(self, tx_names, 1);
+
+  TALock_release(talock);
 
   timerclear(&end_timeval);
   gettimeofday(&end_timeval, (struct timezone *)0);

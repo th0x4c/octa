@@ -23,6 +23,7 @@ typedef struct OCTACBenchInOut OCTACBenchInOut;
 
 static int tx_percentage[TXS];
 static TABool long_format;
+static TALock talock;
 
 static void OCTACBench_beforeSetup(TASessionManager self, void **inout)
 {
@@ -39,6 +40,8 @@ static void OCTACBench_beforeSetup(TASessionManager self, void **inout)
   long_format = option.long_format;
 
   OCTAOption_print(option);
+
+  talock = TALock_init();
 
   timerclear(&start_time);
   gettimeofday(&start_time, (struct timezone *)0);
@@ -68,8 +71,10 @@ static void OCTACBench_setup(TASession self, void **inout)
   TASession_setLog(self, log);
   io->session_id = TASession_ID(self);
   io->oracle = OCOracle_init();
+  TALock_lock(talock);
   OCOracle_connect(io->oracle, io->option.username, io->option.password,
                    io->option.tnsname);
+  TALock_unlock(talock);
   TASession_setPeriod(self, TASession_RAMPUP);
 
   if (io->option.port > 0)
@@ -285,6 +290,8 @@ static void OCTACBench_afterTeardown(TASessionManager self, void **inout)
   TASessionManager_printMonitoredTX(self, "New-Order", PAGESIZE, long_format);
   TADistribution_print(TATXStat_distribution(summary_stat));
   TASessionManager_printNumericalQuantitiesSummary(self, tx_names, TXS);
+
+  TALock_release(talock);
 
   timerclear(&end_timeval);
   gettimeofday(&end_timeval, (struct timezone *)0);

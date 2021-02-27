@@ -63,8 +63,10 @@ static void OCTACLoad_beforeSetup(TASessionManager self, void **inout)
 static void OCTACLoad_setup(TASession self, void **inout)
 {
   oracle = OCOracle_init();
+  TALock_lock(talock);
   OCOracle_connect(oracle, option.username, option.password,
                    option.tnsname);
+  TALock_unlock(talock);
   TASession_setStatus(self, TASession_RUNNING);
 }
 
