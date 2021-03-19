@@ -183,6 +183,7 @@ struct timeval TADistribution_percentile(TADistribution self, int percent)
   struct timeval min_bucket_tv;
   struct timeval min_tv;
   struct timeval ret;
+  unsigned int count = 0;
   int accum = 0;
   int decimal = 0;
   int i = 0;
@@ -201,11 +202,14 @@ struct timeval TADistribution_percentile(TADistribution self, int percent)
   {
     timermlt(&min_bucket_tv, decimal, &min_tv);
 
+    for (j = 0, count = 0; j < NUM_BUCKETS; j++)
+      count += self->buckets[i][j];
+
     for (j = 0, accum = 0; j < NUM_BUCKETS - 1; j++)
     {
       accum += self->buckets[i][j];
       if ((percent == 0 && accum > 0) ||
-          (percent > 0 && accum * 100 / self->count >= percent))
+          (percent > 0 && accum * 100 / count >= percent))
       {
         timermlt(&min_tv, j, &ret);
         return ret;
